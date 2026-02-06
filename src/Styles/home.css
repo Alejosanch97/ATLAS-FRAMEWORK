@@ -1,0 +1,195 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+:root {
+    --atlas-blue: #102a43;
+    --atlas-blue-light: #243b53;
+    --atlas-gold: #c5a059;
+    --atlas-white: #ffffff; /* Ajustado para que el logo flote sin bordes */
+    --atlas-text: #334e68;
+}
+
+.atlas-main-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at top right, #243b53, #102a43);
+    font-family: 'Inter', sans-serif;
+}
+
+/* El contenedor principal con efecto de elevación */
+.atlas-card-glass {
+    display: flex;
+    width: 950px;
+    height: 600px;
+    background: var(--atlas-white);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Panel Izquierdo */
+.atlas-side-visual {
+    flex: 1;
+    background: var(--atlas-blue);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    padding: 40px;
+}
+
+/* Efecto de luz interna para que no sea azul plano */
+.visual-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at 20% 30%, rgba(197, 160, 89, 0.15) 0%, transparent 70%);
+}
+
+.logo-typography {
+    font-size: 3.5rem;
+    font-weight: 700;
+    letter-spacing: 15px;
+    margin: 0;
+    z-index: 1;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.accent-line {
+    width: 80px;
+    height: 4px;
+    background: var(--atlas-gold);
+    margin: 24px 0;
+    z-index: 1;
+    border-radius: 2px;
+}
+
+.tagline {
+    font-size: 0.9rem;
+    letter-spacing: 4px;
+    font-weight: 300;
+    opacity: 0.9;
+    z-index: 1;
+}
+
+.phase-footer {
+    position: absolute;
+    bottom: 30px;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    opacity: 0.5;
+    text-transform: uppercase;
+}
+
+/* Panel Derecho */
+.atlas-auth-panel {
+    flex: 1.1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--atlas-white); /* Coincidencia total con tu logo */
+}
+
+.form-wrapper {
+    width: 100%;
+    max-width: 340px;
+    animation: fadeIn 0.8s ease-out;
+}
+
+.brand-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.institute-logo {
+    width: 110px;
+    margin-bottom: 20px;
+    /* Eliminamos cualquier sombra agresiva para que se integre al fondo blanco */
+}
+
+.brand-header h2 {
+    color: var(--atlas-blue);
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.brand-header p {
+    color: #829ab1;
+    font-size: 0.95rem;
+}
+
+/* Campos de entrada con diseño moderno */
+.input-field {
+    margin-bottom: 25px;
+}
+
+.input-field label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--atlas-text);
+    margin-bottom: 8px;
+    margin-left: 4px;
+}
+
+.input-field input {
+    width: 100%;
+    padding: 14px 18px;
+    background: #f0f4f8;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    font-size: 1rem;
+    color: var(--atlas-blue);
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.input-field input:focus {
+    outline: none;
+    border-color: var(--atlas-gold);
+    background: white;
+    box-shadow: 0 8px 20px rgba(197, 160, 89, 0.1);
+}
+
+.error-badge {
+    background: #ffe3e3;
+    color: #ab0909;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+    text-align: center;
+    border: 1px solid #ffbcbc;
+}
+
+/* Botón con degradado institucional */
+.btn-atlas-grad {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #102a43 0%, #243b53 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 10px 20px rgba(16, 42, 67, 0.2);
+}
+
+.btn-atlas-grad:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(16, 42, 67, 0.3);
+}
+
+.btn-atlas-grad:active {
+    transform: translateY(0);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

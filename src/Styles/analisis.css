@@ -1,0 +1,137 @@
+/* Prefijo atl-an (ATLAS Análisis) para evitar colisiones */
+
+.atl-an-container {
+    font-family: 'Inter', sans-serif;
+    color: #2d3748;
+}
+
+.atl-an-header {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #edf2f7;
+}
+
+.atl-an-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.atl-an-badge {
+    background: #4a5568;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.atl-an-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.atl-an-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.atl-an-stats-row {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.atl-an-mini-box {
+    flex: 1;
+    background: #f7fafc;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.atl-an-mini-box.dark { background: #1a202c; border: 1px solid #2d3748; }
+
+.atl-an-val { font-size: 1.2rem; font-weight: 800; display: block; }
+.atl-an-val.blue { color: #60a5fa; }
+.atl-an-val.green { color: #4ade80; }
+.atl-an-val.gold { color: #fbbf24; }
+
+.atl-an-lbl { font-size: 0.65rem; color: #718096; text-transform: uppercase; font-weight: bold; }
+
+.atl-an-btn-main {
+    width: 100%;
+    padding: 10px;
+    background: #3182ce;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.atl-an-btn-main:hover { background: #2b6cb0; }
+
+/* Modal */
+.atl-an-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.atl-an-modal {
+    background: white;
+    width: 90%;
+    max-width: 500px;
+    padding: 25px;
+    border-radius: 15px;
+}
+
+.atl-an-modal-head {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.atl-an-metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.atl-an-bar-bg {
+    background: #edf2f7;
+    height: 12px;
+    border-radius: 10px;
+    margin-top: 5px;
+    overflow: hidden;
+}
+
+.atl-an-bar-fill {
+    height: 100%;
+    background: #3182ce;
+    transition: width 0.8s ease-in-out;
+}
+
+.atl-an-insight-card {
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+    border-left: 4px solid #3182ce;
+}
+
+.atl-an-nivel { font-weight: bold; color: #2d3748; margin: 5px 0; }
+.atl-an-desc { font-size: 0.85rem; color: #4a5568; }
+
+.atl-an-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; }
