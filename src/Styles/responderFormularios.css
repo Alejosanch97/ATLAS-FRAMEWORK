@@ -474,3 +474,149 @@
 .modal-atlas-body::-webkit-scrollbar-track { background: #f1f5f9; }
 .modal-atlas-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 .modal-atlas-body::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* =========================================
+   RESPONSIVE: ATLAS RESPONDER
+   ========================================= */
+
+/* 1. Ajustes Generales para Tablets (992px o menos) */
+@media (max-width: 992px) {
+    .forms-grid-responder {
+        grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)); /* Una columna para evitar cards angostas */
+        gap: 1.5rem;
+    }
+
+    .modal-content-glass {
+        max-width: 95%;
+        max-height: 90vh;
+    }
+}
+
+/* 2. Celulares y Tablets Verticales (768px o menos) */
+@media (max-width: 768px) {
+    .atlas-responder-container {
+        padding: 1rem 0;
+    }
+
+    /* Fila de controles: Apilado vertical */
+    .responder-controls-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+        border-bottom: none;
+    }
+
+    /* Tabs: Scroll horizontal para no romper el diseño */
+    .tab-container-modern {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+        display: flex;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .tab-btn {
+        padding: 10px 16px;
+        white-space: nowrap; /* Evita que el texto de la pestaña se parta */
+        font-size: 0.85rem;
+    }
+
+    .sync-status-pill {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Modal */
+    .modal-atlas-header {
+        padding: 1.5rem;
+    }
+
+    .header-info h2 {
+        font-size: 1.3rem;
+    }
+
+    .modal-atlas-body {
+        padding: 1.5rem;
+    }
+
+    /* Tarjetas de Pregunta en Móvil */
+    .question-card-minimal {
+        flex-direction: column; /* El número arriba, la pregunta abajo */
+        gap: 12px;
+        padding: 1.5rem;
+    }
+
+    .q-text {
+        font-size: 1.05rem;
+    }
+
+    /* ESCALA 1-5: Muy importante para que no se desborde */
+    .atlas-scale-row {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr); /* Forzamos 5 columnas iguales */
+        gap: 8px;
+    }
+
+    .scale-pill {
+        padding: 12px 0;
+        text-align: center;
+        font-size: 1rem;
+        border-radius: 10px;
+    }
+}
+
+/* 3. Ajustes para Celulares Pequeños (480px o menos) */
+@media (max-width: 480px) {
+    .form-card-answerable {
+        padding: 1.5rem;
+    }
+
+    .form-card-answerable h3 {
+        font-size: 1.2rem;
+    }
+
+    .card-footer {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+
+    .btn-respond {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Ajuste de Inputs y Radios */
+    .custom-radio-row {
+        padding: 12px 15px;
+    }
+
+    .radio-label-text {
+        font-size: 0.9rem;
+    }
+
+    /* Modal Footer */
+    .modal-footer-sticky {
+        padding: 1rem 1.5rem;
+    }
+
+    .btn-submit-atlas {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+}
+
+/* 4. Corrección de Seguridad Global */
+.atlas-responder-container, 
+.form-card-answerable, 
+.modal-content-glass, 
+.question-card-minimal {
+    box-sizing: border-box; /* Crucial para que paddings no ensanchen la pantalla */
+}
+
+/* Evitar que el texto largo de las preguntas rompa el layout */
+.q-text {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}

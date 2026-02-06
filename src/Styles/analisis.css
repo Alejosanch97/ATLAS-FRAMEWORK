@@ -135,3 +135,91 @@
 .atl-an-desc { font-size: 0.85rem; color: #4a5568; }
 
 .atl-an-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; }
+
+/* =========================================
+   RESPONSIVE: ATLAS ANÁLISIS (atl-an)
+   ========================================= */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 992px) {
+    .atl-an-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)); /* Forzamos una columna si el espacio es poco */
+        gap: 15px;
+    }
+}
+
+/* Celulares y Tablets Verticales */
+@media (max-width: 768px) {
+    .atl-an-container {
+        padding: 5px; /* Evitamos que el contenedor empuje hacia afuera */
+    }
+
+    .atl-an-title-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    /* Ajuste de las Mini Cajas de Estadísticas */
+    .atl-an-stats-row {
+        flex-wrap: wrap; /* Permite que las cajitas bajen si no caben */
+        gap: 8px;
+    }
+
+    .atl-an-mini-box {
+        flex: 1 1 calc(45% - 8px); /* Dos columnas en móviles medianos */
+        padding: 12px 5px;
+    }
+
+    /* Modal de Análisis */
+    .atl-an-modal {
+        width: 92%;
+        padding: 20px;
+        max-height: 85vh;
+        overflow-y: auto; /* Scroll interno si el análisis es muy largo */
+    }
+
+    /* Grid de Métricas dentro del Modal */
+    .atl-an-metrics-grid {
+        grid-template-columns: 1fr; /* Apilamos las métricas (Puntaje, Respuestas, etc) */
+        gap: 8px;
+    }
+
+    .atl-an-insight-card {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Celulares muy pequeños */
+@media (max-width: 480px) {
+    .atl-an-mini-box {
+        flex: 1 1 100%; /* Una sola columna para las estadísticas mini */
+    }
+
+    .atl-an-val {
+        font-size: 1.1rem;
+    }
+
+    .atl-an-card {
+        padding: 15px;
+        border-radius: 10px;
+    }
+
+    .atl-an-header h2 {
+        font-size: 1.2rem;
+    }
+
+    /* Ajuste de los botones para que sean fáciles de presionar con el pulgar */
+    .atl-an-btn-main {
+        padding: 14px;
+        font-size: 1rem;
+    }
+}
+
+/* Corrección de seguridad para evitar desbordamiento horizontal en todo el bloque atl-an */
+.atl-an-container, 
+.atl-an-card, 
+.atl-an-modal {
+    box-sizing: border-box;
+}

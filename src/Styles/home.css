@@ -193,3 +193,138 @@
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* =========================================
+   RESPONSIVE: ATLAS LOGIN (Auth)
+   ========================================= */
+
+/* 1. Tablets y Laptops Pequeñas (hasta 1024px) */
+@media (max-width: 1024px) {
+    .atlas-card-glass {
+        width: 90%;
+        height: auto; /* Permitimos que crezca según contenido */
+        max-width: 800px;
+    }
+
+    .logo-typography {
+        font-size: 2.5rem;
+        letter-spacing: 10px;
+    }
+}
+
+/* 2. Tablets Verticales e iPads (hasta 768px) */
+@media (max-width: 768px) {
+    .atlas-main-container {
+        height: auto;
+        min-height: 100vh;
+        padding: 40px 0;
+        align-items: flex-start; /* Evita que flote en medio si el teclado sale */
+    }
+
+    .atlas-card-glass {
+        flex-direction: column; /* Apilado vertical */
+        width: 92%;
+        height: auto;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    }
+
+    .atlas-side-visual {
+        padding: 60px 20px;
+        order: 1; /* El logo/visual arriba */
+    }
+
+    .atlas-auth-panel {
+        padding: 50px 20px;
+        order: 2; /* Formulario abajo */
+    }
+
+    .logo-typography {
+        font-size: 2.2rem;
+    }
+
+    .phase-footer {
+        position: relative;
+        bottom: 0;
+        margin-top: 20px;
+    }
+}
+
+/* 3. Celulares (hasta 480px) */
+@media (max-width: 480px) {
+    .atlas-main-container {
+        background: var(--atlas-white); /* Fondo sólido para mimetizarse con el panel */
+        padding: 0;
+    }
+
+    .atlas-card-glass {
+        width: 100%;
+        border-radius: 0; /* Pantalla completa sin bordes */
+        box-shadow: none;
+    }
+
+    /* En celulares muy pequeños, simplificamos el panel visual */
+    .atlas-side-visual {
+        padding: 40px 20px;
+        min-height: 180px;
+    }
+
+    .logo-typography {
+        font-size: 1.8rem;
+        letter-spacing: 8px;
+    }
+
+    .accent-line {
+        margin: 15px 0;
+        width: 60px;
+    }
+
+    .tagline {
+        font-size: 0.75rem;
+        letter-spacing: 2px;
+    }
+
+    /* Ajustes del Formulario */
+    .form-wrapper {
+        max-width: 100%;
+        padding: 0 10px;
+    }
+
+    .brand-header {
+        margin-bottom: 30px;
+    }
+
+    .brand-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .input-field {
+        margin-bottom: 20px;
+    }
+
+    .input-field input {
+        padding: 16px; /* Más grande para facilitar el toque */
+        font-size: 16px !important; /* Evita zoom automático en iPhone */
+    }
+
+    .btn-atlas-grad {
+        padding: 18px;
+        font-size: 1.1rem;
+        border-radius: 12px;
+    }
+}
+
+/* 4. Ajuste para teclados virtuales (Landscape en móvil) */
+@media (max-height: 500px) and (orientation: landscape) {
+    .atlas-main-container {
+        height: auto;
+        padding: 20px;
+    }
+    
+    .atlas-card-glass {
+        flex-direction: row;
+    }
+    
+    .atlas-side-visual {
+        display: none; /* Escondemos visual para dar espacio al input */
+    }
+}

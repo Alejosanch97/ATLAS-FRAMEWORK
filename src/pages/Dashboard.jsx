@@ -14,6 +14,9 @@ export const Dashboard = ({ onLogout }) => {
     const [isSyncing, setIsSyncing] = useState(false); 
     const [huellaPuntaje, setHuellaPuntaje] = useState(0);
     
+    // --- ESTADOS PARA RESPONSIVIDAD ---
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
     const [misRetos, setMisRetos] = useState([]); 
     const [allUsers, setAllUsers] = useState([]);
     const [userResponses, setUserResponses] = useState([]); 
@@ -101,11 +104,10 @@ export const Dashboard = ({ onLogout }) => {
         } finally { setIsSyncing(false); }
     };
 
-    // FUNCIÓN DE ACTUALIZACIÓN MANUAL CONTEXTUAL
     const handleManualRefresh = () => {
         if (activeTab === "overview") loadInitialData(userData.Teacher_Key, userData.Rol);
         if (activeTab === "retos") fetchRetos(userData.Teacher_Key);
-        if (activeTab === "formularios" && userData.Rol === "ADMIN") fetchAllUsers(); // O la lógica de formularios
+        if (activeTab === "formularios" && userData.Rol === "ADMIN") fetchAllUsers();
         if (activeTab === "analisis") fetchAnalisisData();
         if (activeTab === "explorador") fetchAnalisisData();
     };
@@ -216,6 +218,12 @@ export const Dashboard = ({ onLogout }) => {
         navigate("/");
     };
 
+    // Función para cambiar pestaña y cerrar menú móvil automáticamente
+    const switchTab = (tab) => {
+        setActiveTab(tab);
+        setIsMobileMenuOpen(false);
+    };
+
     const getHeaderContent = () => {
         switch (activeTab) {
             case "formularios": return { title: "Arquitecto de Instrumentos", subtitle: "A - Auditar: Gestión de Formularios" };
@@ -231,7 +239,15 @@ export const Dashboard = ({ onLogout }) => {
     if (!userData) return <div className="atlas-loader">Iniciando Sesión...</div>;
 
     return (
-        <div className="atlas-dashboard-layout">
+        <div className={`atlas-dashboard-layout ${isMobileMenuOpen ? 'mobile-nav-open' : ''}`}>
+            {/* BOTÓN HAMBURGUESA RESPONSIVO */}
+            <button className="mobile-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                {isMobileMenuOpen ? "✕" : "☰"}
+            </button>
+
+            {/* OVERLAY PARA CIERRE EN MÓVIL */}
+            {isMobileMenuOpen && <div className="mobile-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>}
+
             {(isSyncing || isLoading) && (
                 <div className="sync-notification">
                     <span className="sync-spinner">🔄</span> 
@@ -239,7 +255,7 @@ export const Dashboard = ({ onLogout }) => {
                 </div>
             )}
 
-            <aside className="atlas-sidebar">
+            <aside className={`atlas-sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
                 <div className="sidebar-user-top">
                     <div className="user-avatar-initial">{userData.Nombre_Completo?.charAt(0)}</div>
                     <div className="user-text">
@@ -250,7 +266,7 @@ export const Dashboard = ({ onLogout }) => {
                 <div className="sidebar-divider"></div>
                 <nav className="sidebar-nav">
                     <div className="nav-section">CONSOLA ESTRATÉGICA</div>
-                    <button className={activeTab === "overview" ? "active" : ""} onClick={() => setActiveTab("overview")}>🏠 Panel de Control</button>
+                    <button className={activeTab === "overview" ? "active" : ""} onClick={() => switchTab("overview")}>🏠 Panel de Control</button>
                     
                     <div className="nav-section">MARCO ATLAS</div>
                     
@@ -258,23 +274,23 @@ export const Dashboard = ({ onLogout }) => {
                         <div className="atlas-group-header">🛡️ A - AUDITAR</div>
                         {userData.Rol === "ADMIN" && (
                             <>
-                                <button className="sub-btn" onClick={() => { setEditingUser(null); setShowUserModal(true); }}>👥 Gestión de Talentos</button>
-                                <button className={activeTab === "formularios" ? "active" : ""} onClick={() => setActiveTab("formularios")}>📐 Arquitecto de Instrumentos</button>
+                                <button className="sub-btn" onClick={() => { setEditingUser(null); setShowUserModal(true); setIsMobileMenuOpen(false); }}>👥 Gestión de Talentos</button>
+                                <button className={activeTab === "formularios" ? "active" : ""} onClick={() => switchTab("formularios")}>📐 Arquitecto de Instrumentos</button>
                             </>
                         )}
                     </div>
 
                     <div className="atlas-nav-group">
                         <div className="atlas-group-header">⚙️ T - TRANSFORMAR</div>
-                        <button className={activeTab === "explorador" ? "active" : ""} onClick={() => setActiveTab("explorador")}>🔎 Explorador de Evidencias</button>
+                        <button className={activeTab === "explorador" ? "active" : ""} onClick={() => switchTab("explorador")}>🔎 Explorador de Evidencias</button>
                         {userData.Rol === "ADMIN" && (
-                            <button className={activeTab === "analisis" ? "active" : ""} onClick={() => setActiveTab("analisis")}>📊 Análisis de Formularios</button>
+                            <button className={activeTab === "analisis" ? "active" : ""} onClick={() => switchTab("analisis")}>📊 Análisis de Formularios</button>
                         )}
                     </div>
 
                     <div className="atlas-nav-group">
                         <div className="atlas-group-header">🚀 L - LIDERAR</div>
-                        <button className={activeTab === "retos" ? "active" : ""} onClick={() => setActiveTab("retos")}>🎯 Mis Retos Estratégicos</button>
+                        <button className={activeTab === "retos" ? "active" : ""} onClick={() => switchTab("retos")}>🎯 Mis Retos Estratégicos</button>
                     </div>
 
                     <div className="atlas-nav-group">
@@ -313,18 +329,22 @@ export const Dashboard = ({ onLogout }) => {
                                         <mask id="maskA">
                                             <path d="M50 0 L100 100 H80 L70 75 H30 L20 100 H0 Z" fill="white" />
                                         </mask>
+                                        <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#c5a059" />
+                                            <stop offset="100%" stopColor="#8a6d3b" />
+                                        </linearGradient>
                                     </defs>
                                     <g mask="url(#maskA)">
                                         <rect x="0" y="0" width="100" height="100" fill="#f1f5f9" />
                                         <g className="liquid-group" style={{ transform: `translateY(${100 - huellaPuntaje}%)` }}>
                                             <path className="wave" d="M0,0 C30,-5 70,5 100,0 L100,100 L0,100 Z" />
-                                            <rect x="0" y="0" width="100" height="100" className="liquid-body" />
+                                            <rect x="0" y="0" width="100" height="100" className="liquid-body" fill="url(#goldGradient)" />
                                         </g>
                                     </g>
                                 </svg>
                                 <div className="huella-data">
-                                    <span className="huella-number" style={{ color: '#1a202c', textShadow: '0 0 8px #ffffff' }}>{huellaPuntaje}%</span>
-                                    <span className="huella-label" style={{ color: '#2d3748', fontWeight: '800' }}>NIVEL ATLAS</span>
+                                    <span className="huella-number">{huellaPuntaje}%</span>
+                                    <span className="huella-label">NIVEL ATLAS</span>
                                 </div>
                             </div>
                             <p style={{textAlign: 'center', fontSize: '0.75rem', color: '#64748b', marginTop: '15px', fontWeight: '500'}}>

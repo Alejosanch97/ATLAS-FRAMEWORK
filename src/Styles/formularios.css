@@ -424,3 +424,145 @@
     .q-controls-row { flex-direction: column; align-items: flex-start; gap: 15px; }
     .architect-footer-zone { flex-direction: column; }
 }
+
+/* =========================================
+   RESPONSIVE: ATLAS ARCHITECT (Formularios)
+   ========================================= */
+
+/* Tablets y Pantallas Medianas (992px o menos) */
+@media (max-width: 992px) {
+    .atlas-architect-container {
+        padding: 15px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .forms-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+    }
+}
+
+/* Celulares y Tablets Verticales (768px o menos) */
+@media (max-width: 768px) {
+    .info-card-modern {
+        padding: 20px;
+        border-radius: 15px;
+    }
+
+    /* Paso 1: Inputs apilados */
+    .row-split {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    /* Paso 2: Constructor de Preguntas */
+    .question-builder-card {
+        flex-direction: column; /* Apilamos el número y el contenido */
+        gap: 10px;
+        padding: 15px;
+    }
+
+    .q-number-side {
+        font-size: 1rem;
+        background: #f1f5f9;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+    }
+
+    .q-input-text-large {
+        font-size: 1rem;
+        padding: 8px 0;
+    }
+
+    /* Controles de la pregunta (Tipo, Puntos, Eliminar) */
+    .q-controls-row {
+        flex-direction: column; /* Apilado vertical */
+        align-items: stretch; /* Ocupa todo el ancho */
+        gap: 12px;
+        background: #f8fafc;
+        padding: 15px;
+        border-radius: 12px;
+    }
+
+    .control-item {
+        justify-content: space-between; /* Etiqueta a la izquierda, select a la derecha */
+        width: 100%;
+    }
+
+    .control-item select, .q-pts-mini {
+        width: 60%; /* Ajuste para que el select sea cómodo */
+    }
+
+    .btn-delete-q {
+        width: 100%;
+        justify-content: center;
+        display: flex;
+        gap: 8px;
+    }
+
+    /* Footer / Botones Finales */
+    .architect-footer-zone {
+        flex-direction: column-reverse; /* Cancelar abajo, Publicar arriba */
+        gap: 12px;
+    }
+
+    .btn-publish-main {
+        max-width: 100%;
+        padding: 15px;
+    }
+
+    .btn-cancel {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Celulares muy pequeños (480px o menos) */
+@media (max-width: 480px) {
+    .atlas-architect-container {
+        padding: 10px;
+    }
+
+    .card-header-minimal h2, .card-header-flex-modern h2 {
+        font-size: 1.1rem;
+    }
+
+    .step-badge {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+    }
+
+    /* Ajuste de los items de la lista de formularios */
+    .form-item-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .form-actions {
+        width: 100%;
+        justify-content: flex-end;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 10px;
+    }
+
+    .btn-add-pill {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Corrección Global de Inputs para evitar zoom en iOS y desbordamientos */
+.group-modern input, 
+.group-modern select, 
+.group-modern textarea,
+.q-options-field {
+    font-size: 16px !important; /* Evita zoom automático en iPhone */
+    max-width: 100%;
+    box-sizing: border-box;
+}
