@@ -55,22 +55,24 @@ export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncin
         return text ? String(text).replace(/\s*\(\d+\)$/, "").trim() : "";
     };
 
-    // --- LÓGICA DE SINCRONIZACIÓN SILENCIOSA Y RÁPIDA ---
-    const handleSubmitAnswers = (e) => {
+    // --- LÓGICA DE ENVÍO OPTIMIZADA (BATCH/RÁPIDA) ---
+    const handleSubmitAnswers = async (e) => {
         e.preventDefault();
         
-        // 1. Cerramos el modal inmediatamente y marcamos como completado en UI
         const formToSave = { ...selectedForm };
         const responsesToSave = { ...currentResponses };
         
+        // 1. Efecto visual inmediato (Cierra modal y mueve a completados)
         const completionStamp = { ID_Form: formToSave.ID_Form };
         setUserAnswers(prev => [...prev, completionStamp]);
         setSelectedForm(null);
-
-        // 2. Iniciamos sincronización en segundo plano
         setIsSyncing(true);
 
-        const promises = formToSave.questions.map(q => {
+        const batchTimestamp = new Date().toISOString();
+        const globalID = `G-${Date.now()}`;
+
+        // 2. Preparamos el ARRAY con todas las respuestas (Batch)
+        const batchData = formToSave.questions.map(q => {
             const answerValue = responsesToSave[q.ID_Pregunta];
             
             let questionPoints = 0;
@@ -85,38 +87,36 @@ export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncin
                 }
             }
 
-            const detailedResponse = {
-                ID_Respuesta: `RES-${Date.now()}-${q.ID_Pregunta}-${Math.random().toString(36).substr(2, 5)}`,
+            return {
+                ID_Respuesta_Global: globalID,
                 Teacher_Key: userData?.Teacher_Key,
                 ID_Form: formToSave.ID_Form,
                 ID_Pregunta: q.ID_Pregunta,
                 Valor_Respondido: cleanOptionText(answerValue),
                 Puntos_Ganados: questionPoints,
-                Fecha_Respuesta: new Date().toISOString()
+                Fecha_Respuesta: batchTimestamp
             };
-
-            return fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors', // Optimiza la velocidad de envío si no necesitas leer la respuesta inmediata
-                body: JSON.stringify({
-                    action: 'create',
-                    sheet: 'Respuestas_Usuarios',
-                    data: detailedResponse
-                })
-            });
         });
 
-        // 3. Ejecutamos todas las peticiones en paralelo
-        Promise.all(promises)
-            .then(() => {
-                console.log("Sincronización completa");
-            })
-            .catch(err => {
-                console.error("Error en sincronización silenciosa:", err);
-            })
-            .finally(() => {
-                setIsSyncing(false);
+        try {
+            // 3. ENVIAMOS TODO EN UNA SOLA PETICIÓN
+            // Usamos la acción 'create_batch' que definimos en el App Script
+            await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors', 
+                body: JSON.stringify({
+                    action: 'create_batch',
+                    sheet: 'Respuestas_Usuarios',
+                    data: batchData
+                })
             });
+            console.log("Sincronización masiva (Batch) completada con éxito.");
+        } catch (err) {
+            console.error("Error en el envío masivo:", err);
+            alert("Hubo un problema al sincronizar con la nube.");
+        } finally {
+            setIsSyncing(false);
+        }
     };
 
     return (

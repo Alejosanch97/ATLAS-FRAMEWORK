@@ -1,25 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "../Styles/dashboard.css"; 
-import { Formularios } from "./Formularios"; 
-import { ResponderFormularios } from "./ResponderFormularios"; 
-import { Analisis } from "./Analisis"; 
+import "../Styles/dashboard.css";
+import { Formularios } from "./Formularios";
+import { ResponderFormularios } from "./ResponderFormularios";
+import { Analisis } from "./Analisis";
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbxcqIbNhC3H7za-GsBF9iuTU___o8OBCF8URGNxwdQm5q8pUd1vpgthbYyrBRkGXJ5Y8Q/exec';
 
 export const Dashboard = ({ onLogout }) => {
     const [activeTab, setActiveTab] = useState("overview");
     const [userData, setUserData] = useState(null);
-    const [isLoading, setIsLoading] = useState(true); 
-    const [isSyncing, setIsSyncing] = useState(false); 
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSyncing, setIsSyncing] = useState(false);
     const [huellaPuntaje, setHuellaPuntaje] = useState(0);
-    
+
     // --- ESTADOS PARA RESPONSIVIDAD ---
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    const [misRetos, setMisRetos] = useState([]); 
+    const [misRetos, setMisRetos] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
-    const [userResponses, setUserResponses] = useState([]); 
+    const [userResponses, setUserResponses] = useState([]);
     const [showRetoForm, setShowRetoForm] = useState(false);
     const [editingReto, setEditingReto] = useState(null);
     const [showUserModal, setShowUserModal] = useState(false);
@@ -149,7 +149,7 @@ export const Dashboard = ({ onLogout }) => {
         if (editingReto) {
             setMisRetos(prev => prev.map(r => r.ID_Challenge === currentId ? nuevoReto : r));
         } else {
-            setMisRetos(prev => [...prev, nuevoReto]); 
+            setMisRetos(prev => [...prev, nuevoReto]);
         }
 
         setShowRetoForm(false);
@@ -157,15 +157,15 @@ export const Dashboard = ({ onLogout }) => {
         setIsSyncing(true);
 
         try {
-            await fetch(API_URL, { 
-                method: 'POST', 
+            await fetch(API_URL, {
+                method: 'POST',
                 body: JSON.stringify({
                     action: editingReto ? 'update' : 'create',
                     sheet: 'Weekly_Challenges',
                     idField: 'ID_Challenge',
                     idValue: currentId,
                     data: nuevoReto
-                }) 
+                })
             });
         } finally {
             setIsSyncing(false);
@@ -197,15 +197,15 @@ export const Dashboard = ({ onLogout }) => {
         setEditingUser(null);
         setIsSyncing(true);
         try {
-            await fetch(API_URL, { 
-                method: 'POST', 
+            await fetch(API_URL, {
+                method: 'POST',
                 body: JSON.stringify({
                     action: editingUser ? 'update' : 'create',
                     sheet: 'Users_ATLAS',
                     idField: 'Teacher_Key',
                     idValue: tkey,
                     data: { ...userObj, Password_Hash: fd.get("pass") }
-                }) 
+                })
             });
         } finally {
             setIsSyncing(false);
@@ -218,7 +218,6 @@ export const Dashboard = ({ onLogout }) => {
         navigate("/");
     };
 
-    // Función para cambiar pestaña y cerrar menú móvil automáticamente
     const switchTab = (tab) => {
         setActiveTab(tab);
         setIsMobileMenuOpen(false);
@@ -240,17 +239,15 @@ export const Dashboard = ({ onLogout }) => {
 
     return (
         <div className={`atlas-dashboard-layout ${isMobileMenuOpen ? 'mobile-nav-open' : ''}`}>
-            {/* BOTÓN HAMBURGUESA RESPONSIVO */}
             <button className="mobile-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
                 {isMobileMenuOpen ? "✕" : "☰"}
             </button>
 
-            {/* OVERLAY PARA CIERRE EN MÓVIL */}
             {isMobileMenuOpen && <div className="mobile-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>}
 
             {(isSyncing || isLoading) && (
                 <div className="sync-notification">
-                    <span className="sync-spinner">🔄</span> 
+                    <span className="sync-spinner">🔄</span>
                     {isLoading ? "Sincronizando Sistema..." : "Actualizando nube..."}
                 </div>
             )}
@@ -267,9 +264,7 @@ export const Dashboard = ({ onLogout }) => {
                 <nav className="sidebar-nav">
                     <div className="nav-section">CONSOLA ESTRATÉGICA</div>
                     <button className={activeTab === "overview" ? "active" : ""} onClick={() => switchTab("overview")}>🏠 Panel de Control</button>
-                    
                     <div className="nav-section">MARCO ATLAS</div>
-                    
                     <div className="atlas-nav-group">
                         <div className="atlas-group-header">🛡️ A - AUDITAR</div>
                         {userData.Rol === "ADMIN" && (
@@ -279,7 +274,6 @@ export const Dashboard = ({ onLogout }) => {
                             </>
                         )}
                     </div>
-
                     <div className="atlas-nav-group">
                         <div className="atlas-group-header">⚙️ T - TRANSFORMAR</div>
                         <button className={activeTab === "explorador" ? "active" : ""} onClick={() => switchTab("explorador")}>🔎 Explorador de Evidencias</button>
@@ -287,12 +281,10 @@ export const Dashboard = ({ onLogout }) => {
                             <button className={activeTab === "analisis" ? "active" : ""} onClick={() => switchTab("analisis")}>📊 Análisis de Formularios</button>
                         )}
                     </div>
-
                     <div className="atlas-nav-group">
                         <div className="atlas-group-header">🚀 L - LIDERAR</div>
                         <button className={activeTab === "retos" ? "active" : ""} onClick={() => switchTab("retos")}>🎯 Mis Retos Estratégicos</button>
                     </div>
-
                     <div className="atlas-nav-group">
                         <div className="atlas-group-header">📊 A / 🌱 S</div>
                         <button disabled className="btn-disabled">🔒 Módulos en Desarrollo</button>
@@ -312,7 +304,6 @@ export const Dashboard = ({ onLogout }) => {
                             <h1>{headerContent.title}</h1>
                             <p className="header-subtitle">{headerContent.subtitle}</p>
                         </div>
-
                         <button className="btn-refresh-data" onClick={handleManualRefresh} title="Actualizar Información">
                             🔄 <span>Sincronizar</span>
                         </button>
@@ -347,7 +338,7 @@ export const Dashboard = ({ onLogout }) => {
                                     <span className="huella-label">NIVEL ATLAS</span>
                                 </div>
                             </div>
-                            <p style={{textAlign: 'center', fontSize: '0.75rem', color: '#64748b', marginTop: '15px', fontWeight: '500'}}>
+                            <p style={{ textAlign: 'center', fontSize: '0.75rem', color: '#64748b', marginTop: '15px', fontWeight: '500' }}>
                                 Promedio Formularios + Bono Retos
                             </p>
                         </div>
@@ -359,14 +350,12 @@ export const Dashboard = ({ onLogout }) => {
                             </div>
                             <div className="prompt-content-rich">
                                 <p className="intro-text">Para obtener resultados excepcionales de la IA, utiliza la estructura <strong>Rol + Contexto + Tarea + Formato</strong>:</p>
-                                
                                 <div className="method-grid">
                                     <div className="method-item"><strong>R</strong><span>ol</span></div>
                                     <div className="method-item"><strong>C</strong><span>ontexto</span></div>
                                     <div className="method-item"><strong>T</strong><span>area</span></div>
                                     <div className="method-item"><strong>F</strong><span>ormato</span></div>
                                 </div>
-
                                 <div className="example-box">
                                     <span className="example-label">Ejemplo para Docentes:</span>
                                     <code>
@@ -443,13 +432,74 @@ export const Dashboard = ({ onLogout }) => {
                                 ))}
                             </div>
                         </div>
+
+                        {/* TABLA DE RESULTADOS CONSOLIDADOS */}
+                        <div className="info-card wide-card">
+                            <div className="card-header-flex">
+                                <h3>📊 Mis Calificaciones Consolidadas</h3>
+                                <span className="badge-info">Mi Progreso Personal</span>
+                            </div>
+                            <div className="user-scroll-list">
+                                <table className="atlas-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Instrumento (ID)</th>
+                                            <th>Última Fecha</th>
+                                            <th>Tu Nota Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {(() => {
+                                            // LÓGICA DE CONSOLIDACIÓN: Agrupamos por ID_Form y sumamos Puntos_Ganados
+                                            const consolidado = userResponses.reduce((acc, curr) => {
+                                                const id = curr.ID_Form;
+                                                if (!acc[id]) {
+                                                    acc[id] = {
+                                                        id: id,
+                                                        totalPuntos: 0,
+                                                        fecha: curr.Fecha_Respuesta
+                                                    };
+                                                }
+                                                acc[id].totalPuntos += parseFloat(curr.Puntos_Ganados || 0);
+                                                return acc;
+                                            }, {});
+
+                                            const listaConsolidada = Object.values(consolidado);
+
+                                            return listaConsolidada.length > 0 ? (
+                                                listaConsolidada.reverse().map((item, index) => (
+                                                    <tr key={index}>
+                                                        <td>
+                                                            <span style={{fontWeight: '600', color: '#1e293b'}}>🆔 {item.id}</span>
+                                                        </td>
+                                                        <td>{new Date(item.fecha).toLocaleDateString()}</td>
+                                                        <td>
+                                                            <div style={{display: 'flex', flexDirection: 'column', gap: '2px'}}>
+                                                                <span className="user-key-tag" style={{ background: '#c5a059', color: 'white', fontWeight: 'bold', textAlign: 'center' }}>
+                                                                    {item.totalPuntos} pts
+                                                                </span>
+                                                                <small style={{fontSize: '0.65rem', color: '#64748b'}}>Consolidado ATLAS</small>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            ) : (
+                                                <tr>
+                                                    <td colSpan="3" style={{ textAlign: 'center', padding: '20px' }}>No hay registros de formularios realizados.</td>
+                                                </tr>
+                                            );
+                                        })()}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </section>
                 )}
 
                 {activeTab === "formularios" && userData.Rol === "ADMIN" && <Formularios userData={userData} isSyncing={isSyncing} setIsSyncing={setIsSyncing} API_URL={API_URL} />}
                 {activeTab === "explorador" && <ResponderFormularios userData={userData} isSyncing={isSyncing} setIsSyncing={setIsSyncing} API_URL={API_URL} />}
                 {activeTab === "analisis" && userData.Rol === "ADMIN" && <Analisis userData={userData} API_URL={API_URL} />}
-                
+
                 {activeTab === "retos" && (
                     <section className="dashboard-grid">
                         <div className="info-card wide-card">
