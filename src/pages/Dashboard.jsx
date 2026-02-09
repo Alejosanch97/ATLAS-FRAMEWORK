@@ -197,6 +197,7 @@ export const Dashboard = ({ onLogout }) => {
 
     const getHeaderContent = () => {
         switch (activeTab) {
+            case "talentos": return { title: "Gestión de Talentos", subtitle: "L - Liderar: Administración de Usuarios" };
             case "formularios": return { title: "Arquitecto de Instrumentos", subtitle: "A - Auditar: Gestión de Formularios" };
             case "explorador": return { title: "Explorador de Evidencias", subtitle: "T - Transformar: Centro de Respuesta" };
             case "analisis": return { title: "Análisis Estratégico", subtitle: "T - Transformar: Data e Insights" };
@@ -209,7 +210,7 @@ export const Dashboard = ({ onLogout }) => {
 
     const filteredUsers = useMemo(() => {
         return allUsers.filter(u => 
-            u.Teacher_Key !== userData.Teacher_Key && 
+            u.Teacher_Key !== userData?.Teacher_Key && 
             (u.Nombre_Completo?.toLowerCase().includes(userSearchTerm.toLowerCase()) || 
              u.Teacher_Key?.toLowerCase().includes(userSearchTerm.toLowerCase()))
         );
@@ -248,7 +249,6 @@ export const Dashboard = ({ onLogout }) => {
                 next: "Optar por la certificación ATLAS y contribuir como referente, mentor o diseñador."
             }
         ];
-        // Retornamos el objeto basado en el estado compassTab
         return info[compassTab] || info[0];
     };
 
@@ -282,10 +282,9 @@ export const Dashboard = ({ onLogout }) => {
                     <div className="nav-section">CONSOLA ESTRATÉGICA</div>
                     <button className={activeTab === "overview" ? "active" : ""} onClick={() => switchTab("overview")}>🏠 Panel de Control</button>
                     
-                    {/* BOTONES MOVIDOS DEBAJO DE PANEL DE CONTROL PERO MANTENIENDO SU FUNCIONALIDAD */}
                     {userData.Rol === "ADMIN" && (
                         <>
-                            <button className="sub-btn" onClick={() => { setEditingUser(null); setShowUserModal(true); setIsMobileMenuOpen(false); }}>👥 Gestión de Talentos</button>
+                            <button className={activeTab === "talentos" ? "active" : ""} onClick={() => switchTab("talentos")}>👥 Gestión de Talentos</button>
                             <button className={activeTab === "formularios" ? "active" : ""} onClick={() => switchTab("formularios")}>📐 Arquitecto de Instrumentos</button>
                             <button className={activeTab === "analisis" ? "active" : ""} onClick={() => switchTab("analisis")}>📊 Análisis de Formularios</button>
                         </>
@@ -294,21 +293,11 @@ export const Dashboard = ({ onLogout }) => {
                     <button className={activeTab === "retos" ? "active" : ""} onClick={() => switchTab("retos")}>🎯 Mis Retos Estratégicos</button>
 
                     <div className="nav-section">MARCO ATLAS</div>
-                    <div className="atlas-nav-group">
-                        <div className="atlas-group-header">🛡️ A — AUDIT | Auditar el uso pedagógico de la IA</div>
-                    </div>
-                    <div className="atlas-nav-group">
-                        <div className="atlas-group-header">⚙️ T — TRANSFORM | Transformar prácticas pedagógicas con IA</div>
-                    </div>
-                    <div className="atlas-nav-group">
-                        <div className="atlas-group-header">🚀 L — LEAD | Liderar y gobernar el uso institucional de la IA</div>
-                    </div>
-                    <div className="atlas-nav-group">
-                        <div className="atlas-group-header">💎 A — ASSURE | Asegurar la calidad y el impacto pedagógico</div>
-                    </div>
-                    <div className="atlas-nav-group">
-                        <div className="atlas-group-header">🌱 S — SUSTAIN | Sostener y mejorar en un contexto de cambio</div>
-                    </div>
+                    <div className="atlas-nav-group"><div className="atlas-group-header">🛡️ A — AUDIT</div></div>
+                    <div className="atlas-nav-group"><div className="atlas-group-header">⚙️ T — TRANSFORM</div></div>
+                    <div className="atlas-nav-group"><div className="atlas-group-header">🚀 L — LEAD</div></div>
+                    <div className="atlas-nav-group"><div className="atlas-group-header">💎 A — ASSURE</div></div>
+                    <div className="atlas-nav-group"><div className="atlas-group-header">🌱 S — SUSTAIN</div></div>
                 </nav>
                 <div className="sidebar-bottom">
                     <button className="btn-logout-minimal" onClick={handleLogoutAction}>
@@ -324,7 +313,7 @@ export const Dashboard = ({ onLogout }) => {
                             <h1>{headerContent.title}</h1>
                             <p className="header-subtitle">{headerContent.subtitle}</p>
                         </div>
-                        <button className="btn-refresh-data" onClick={handleManualRefresh} title="Actualizar Información">
+                        <button className="btn-refresh-data" onClick={handleManualRefresh}>
                             🔄 <span>Sincronizar</span>
                         </button>
                     </div>
@@ -357,37 +346,17 @@ export const Dashboard = ({ onLogout }) => {
                             </div>
                         </div>
 
-                        {/* CARD CORREGIDA: MÉTODO ATLAS COMPASS */}
-                        {/* CARD CORREGIDA: MÉTODO ATLAS COMPASS */}
                         <div className="info-card prompt-card professional-upgrade">
                             <div className="card-header-flex">
-                                {/* Mostramos el título dinámico según el rango */}
                                 <h3>🧭 COMPASS: {getCompassData().title} ({getCompassData().range})</h3>
                             </div>
-
                             <div className="prompt-content-rich">
-                                <p className="intro-text-dark">
-                                    {getCompassData().body}
-                                </p>
-
-                                <span className="next-step-text-on-dark">
-                                    <strong>Siguiente paso:</strong> {getCompassData().next}
-                                </span>
-
+                                <p className="intro-text-dark">{getCompassData().body}</p>
+                                <span className="next-step-text-on-dark"><strong>Siguiente paso:</strong> {getCompassData().next}</span>
                                 <div className="method-grid">
                                     {["0-39%", "40-59%", "60-74%", "75-89%", "90-100%"].map((label, idx) => (
-                                        <div
-                                            key={idx}
-                                            className={`method-item ${compassTab === idx ? 'active' : ''}`}
-                                            onClick={() => setCompassTab(idx)}
-                                            style={{
-                                                cursor: 'pointer',
-                                                transition: 'all 0.3s ease',
-                                                borderBottom: compassTab === idx ? '3px solid var(--atlas-accent)' : '1px solid transparent'
-                                            }}
-                                        >
-                                            <strong>{label.split('-')[0]}</strong>
-                                            <span>{label.split('-')[1]}</span>
+                                        <div key={idx} className={`method-item ${compassTab === idx ? 'active' : ''}`} onClick={() => setCompassTab(idx)} style={{ cursor: 'pointer' }}>
+                                            <strong>{label.split('-')[0]}</strong><span>{label.split('-')[1]}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -420,10 +389,6 @@ export const Dashboard = ({ onLogout }) => {
                                         </div>
                                         <div className="challenge-meta">
                                             <span className="reto-tag">{reto.Status}</span>
-                                            <div className="actions-cell">
-                                                <button className="btn-action-icon edit-small" onClick={(e) => { e.stopPropagation(); handleEditReto(reto); }}>✏️</button>
-                                                <button className="btn-action-icon delete-small" onClick={(e) => { e.stopPropagation(); handleDelete('Weekly_Challenges', 'ID_Challenge', reto.ID_Challenge); }}>🗑️</button>
-                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -457,6 +422,38 @@ export const Dashboard = ({ onLogout }) => {
                                                 </tr>
                                             )) : <tr><td colSpan="3" style={{textAlign:'center', padding:'20px'}}>No hay registros.</td></tr>;
                                         })()}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {activeTab === "talentos" && userData.Rol === "ADMIN" && (
+                    <section className="dashboard-grid">
+                        <div className="info-card wide-card">
+                            <div className="card-header-flex">
+                                <h3>Base de Talentos ATLAS</h3>
+                                <div style={{display:'flex', gap:'10px'}}>
+                                    <input type="text" placeholder="Buscar docente..." className="search-input-small" onChange={(e)=>setUserSearchTerm(e.target.value)} />
+                                    <button className="btn-add-reto" onClick={() => { setEditingUser(null); setShowUserModal(true); }}>➕ Nuevo Talento</button>
+                                </div>
+                            </div>
+                            <div className="user-scroll-list" style={{maxHeight:'500px', overflowY:'auto'}}>
+                                <table className="atlas-table">
+                                    <thead><tr><th>Key</th><th>Nombre</th><th>Rol</th><th>Acciones</th></tr></thead>
+                                    <tbody>
+                                        {filteredUsers.map(u => (
+                                            <tr key={u.Teacher_Key}>
+                                                <td><span className="user-key-tag">{u.Teacher_Key}</span></td>
+                                                <td>{u.Nombre_Completo}</td>
+                                                <td><span className={`role-pill ${u.Rol}`}>{u.Rol}</span></td>
+                                                <td className="actions-cell">
+                                                    <button className="btn-action-icon edit" onClick={() => { setEditingUser(u); setShowUserModal(true); }}>✏️</button>
+                                                    <button className="btn-action-icon delete" onClick={() => handleDelete('Users_ATLAS', 'Teacher_Key', u.Teacher_Key)}>🗑️</button>
+                                                </td>
+                                            </tr>
+                                        ))}
                                     </tbody>
                                 </table>
                             </div>
