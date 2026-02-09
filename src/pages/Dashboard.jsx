@@ -211,27 +211,27 @@ export const Dashboard = ({ onLogout }) => {
             {
                 title: "Exploración inicial (0–39%)",
                 body: "Tu COMPASS indica que estás comenzando a tomar conciencia de cómo la inteligencia artificial puede aparecer en la práctica educativa. Tal vez aún no la usas, o lo haces de forma intuitiva, pero eso es un punto de partida valioso: la reflexión precede a cualquier decisión pedagógica sólida. ATLAS está aquí para acompañarte paso a paso.",
-                next: "Siguiente oportunidad: iniciar un recorrido guiado que te ayude a leer tu práctica con nuevos lentes."
+                next: "Iniciar un recorrido guiado que te ayude a leer tu práctica con nuevos lentes."
             },
             {
                 title: "Uso emergente (40–59%)",
                 body: "Tu COMPASS muestra que ya has experimentado con la IA de forma ocasional y que estás empezando a desarrollar criterio sobre cuándo y para qué usarla. Aparecen preguntas importantes, ajustes por hacer y decisiones que aún se están afinando. Este perfil refleja curiosidad profesional.",
-                next: "Siguiente oportunidad: transformar algunas prácticas concretas y asumir pequeños retos que fortalezcan tu intención pedagógica."
+                next: "Transformar algunas prácticas concretas y asumir pequeños retos que fortalezcan tu intención pedagógica."
             },
             {
                 title: "Práctica consciente (60–74%)",
                 body: "Tu COMPASS indica un uso intencional de la IA, con evidencias claras de reflexión pedagógica. No se trata solo de usar tecnología, sino de decidir con sentido, cuidando el aprendizaje y el rol docente. En este punto, la IA empieza a convertirse en una aliada pensada.",
-                next: "Siguiente oportunidad: consolidar evidencias de impacto y asegurar que lo que haces realmente mejora los procesos formativos."
+                next: "Consolidar evidencias de impacto y asegurar que lo que haces realmente mejora los procesos formativos."
             },
             {
                 title: "Práctica alineada (75–89%)",
                 body: "Tu COMPASS refleja una práctica altamente coherente con marcos pedagógicos y éticos internacionales. Usas la IA con criterio, documentas decisiones y puedes explicar por qué haces lo que haces. Este perfil muestra madurez profesional y capacidad de modelaje.",
-                next: "Siguiente oportunidad: ejercer liderazgo pedagógico, compartir aprendizajes y pulir los últimos ajustes antes de la certificación."
+                next: "Ejercer liderazgo pedagógico, compartir aprendizajes y pulir los últimos ajustes antes de la certificación."
             },
             {
                 title: "Capacidad ATLAS demostrada (90–100%)",
                 body: "Tu COMPASS muestra capacidad profesional demostrada para integrar la IA de forma pedagógica, ética y sostenible. Has generado evidencia en todas las fases ATLAS y mantienes un alto nivel de autorregulación y coherencia. Es un reconocimiento a tu trayectoria.",
-                next: "Siguiente oportunidad: optar por la certificación ATLAS y contribuir como referente, mentor o diseñador."
+                next: "Optar por la certificación ATLAS y contribuir como referente, mentor o diseñador."
             }
         ];
         return info[compassTab];
