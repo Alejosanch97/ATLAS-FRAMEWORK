@@ -226,6 +226,103 @@
 
 .wide-card { grid-column: span 2; width: 100%; box-sizing: border-box; }
 
+/* 1. card jugable Contenedor principal - Mantenemos la elegancia */
+.professional-upgrade.prompt-card {
+    background: #ffffff;
+    border-radius: 35px;
+    padding: 35px;
+    border: 1px solid #f1f5f9;
+    border-top: 6px solid #f8a500; /* Un poco más grueso para que destaque */
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 2. Título (Negro azulado para contraste en fondo blanco) */
+.professional-upgrade h3 {
+    font-size: 1.7rem;
+    color: #0f172a; 
+    font-weight: 800;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 3. Bloque de contenido OSCURO (La clave de la legibilidad) */
+.prompt-content-rich {
+    background: #1e293b; /* Un azul marino un poco más claro que el negro total ayuda a leer mejor */
+    border-radius: 28px;
+    padding: 30px;
+    margin-top: 20px;
+    border-left: 6px solid #f8a500;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.2); /* Profundidad */
+}
+
+/* 4. TEXTO DENTRO DEL BLOQUE (Aquí corregimos la lectura) */
+.intro-text-dark {
+    color: #f8fafc !important; /* Blanco hueso/celeste muy claro para que no canse la vista */
+    font-size: 1.05rem; /* Un poco más grande para facilitar lectura */
+    line-height: 1.8; /* Más espacio entre líneas */
+    font-weight: 400;
+    font-family: 'Inter', system-ui, sans-serif;
+    margin-bottom: 20px;
+}
+
+/* Resaltado dentro del texto oscuro (Dorado para que combine con ATLAS) */
+.intro-text-dark strong {
+    color: #f8a500; /* Dorado brillante para resaltar palabras clave */
+    font-weight: 700;
+}
+
+/* 5. Texto de "Siguiente oportunidad" (Color tierra/dorado sobre el fondo oscuro) */
+.next-step-text-on-dark {
+    font-size: 0.95rem;
+    color: #f8a500; /* Amarillo/Dorado claro */
+    font-weight: 700;
+    margin-top: 15px;
+    display: block;
+    border-top: 1px solid rgba(255,255,255,0.1); /* Línea divisoria sutil */
+    padding-top: 15px;
+}
+
+/* 6. Grid de Botones (Estilo Pastilla) */
+.professional-upgrade .method-grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px; /* Reducimos un poco el gap para ganar espacio */
+    margin-top: 25px;
+    width: 100%; /* Asegura que ocupe todo el ancho disponible */
+}
+
+.professional-upgrade .method-item {
+    flex: 1;
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    color: #475569;
+    padding: 12px 2px; /* Reducimos padding lateral */
+    border-radius: 16px;
+    cursor: pointer;
+    font-weight: 700;
+    
+    /* MAGIA PARA EVITAR EL SALTO DE LÍNEA */
+    font-size: 0.75rem; /* Bajamos a 0.75rem para que quepa bien en pantallas pequeñas */
+    white-space: nowrap; /* ¡ESTA ES LA CLAVE! Impide que el texto se parta */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    transition: all 0.2s ease;
+}
+
+.professional-upgrade .method-item.active {
+    background: #ffffff;
+    border-color: #f8a500;
+    color: #f8a500;
+    box-shadow: 0 5px 15px rgba(248, 165, 0, 0.2);
+    transform: translateY(-2px);
+}
+
 /* --- CORRECCIÓN: SECCIÓN PROMPT R-C-T-F (PARA QUE NO SE CORTE) --- */
 .professional-upgrade {
     border-top: 4px solid var(--atlas-accent);
@@ -477,22 +574,41 @@
 }
 
 /* =========================================
-   LA "A" PROFESIONAL
+   LA "A" PROFESIONAL - ESCALADA Y DEFINIDA
    ========================================= */
+
 .huella-card {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start; /* Ajustado para dar espacio al título arriba */
     background: linear-gradient(to bottom, #ffffff, #fdfbf7);
+    padding: 30px;
+    border-radius: 24px;
 }
 
+/* 1. TÍTULO GRANDE Y PROFESIONAL */
+.huella-card h3 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 20px;
+    align-self: flex-start; /* Alineado a la izquierda como en tu imagen */
+}
+
+/* 2. "A" MUCHO MÁS GRANDE */
 .atlas-a-container {
     position: relative;
-    width: 200px; 
-    height: 220px;
-    margin: 15px auto;
-    filter: drop-shadow(0 15px 35px rgba(197, 160, 89, 0.4));
+    width: 320px;   /* Aumentado de 200px */
+    height: 340px;  /* Aumentado de 220px */
+    margin: 20px auto;
+    
+    /* 3. BORDE Y DEFINICIÓN PARA QUE NO SE PIERDA */
+    /* Sombra exterior para relieve y un drop-shadow oscuro para definir el borde de la A */
+    filter: 
+        drop-shadow(0 15px 35px rgba(197, 160, 89, 0.3))
+        drop-shadow(0 0 1px rgba(15, 23, 42, 0.2)); 
+    
     display: flex;
     align-items: center;
     justify-content: center;
@@ -507,18 +623,18 @@
     left: 0;
 }
 
+/* MANTENEMOS TU LÓGICA DE ANIMACIÓN ORIGINAL */
 .liquid-group {
     transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
     animation: liquidPulse 4s infinite alternate ease-in-out;
 }
 
 .liquid-body {
-    fill: var(--atlas-gold);
-    fill: url(#goldGradient); 
+    fill: var(--atlas-blue-mid) !important;
 }
 
 .wave {
-    fill: var(--atlas-gold);
+    fill: var(--atlas-blue-mid) !important;
     animation: atlasWaveDynamic 1.5s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95);
 }
 
@@ -527,6 +643,7 @@
     50% { d: path("M0,0 C15,20 85,-20 100,0 L100,100 L0,100 Z"); }
 }
 
+/* BRILLO (SHEEN) ORIGINAL */
 .atlas-a-container::after {
     content: "";
     position: absolute;
@@ -552,6 +669,7 @@
     to { filter: brightness(1.15) saturate(1.2) drop-shadow(0 0 10px rgba(197,160,89,0.5)); }
 }
 
+/* DATOS Y NÚMERO */
 .huella-data {
     position: absolute;
     top: 55%; 
@@ -565,18 +683,19 @@
 
 .huella-number {
     display: block;
-    font-size: 3.8rem; 
+    font-size: 5.5rem; /* Aumentado para que combine con la A más grande */
     font-weight: 900;
-    color: var(--atlas-blue-dark);
+    color: var(--atlas-gold) !important;
     line-height: 0.9;
+    /* Resalte blanco para que el dorado sea legible sobre azul oscuro */
     text-shadow: 0 0 20px rgba(255,255,255,0.8), 2px 2px 0px rgba(255,255,255,1);
 }
 
 .huella-label {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: 800;
     letter-spacing: 2px;
-    color: var(--atlas-blue-dark);
+    color: var(--atlas-gold) !important;
     opacity: 0.9;
     text-transform: uppercase;
     margin-top: 5px;
@@ -789,23 +908,33 @@
     .atlas-main-content {
         padding: 30px 20px;
         width: 100%;
-        overflow-x: hidden; /* Evita fugas de contenido */
+        overflow-x: hidden;
     }
 
     .dashboard-grid {
-        grid-template-columns: 1fr; /* Cambiamos a 1 columna antes para evitar amontonamiento */
-        gap: 20px;
+        grid-template-columns: 1fr; /* Colapso de columnas para evitar amontonamiento */
+        gap: 25px;
     }
 
     .wide-card {
         grid-column: span 1;
+    }
+
+    /* Escalado intermedio de la A */
+    .atlas-a-container {
+        width: 280px;
+        height: 300px;
+    }
+    
+    .huella-number {
+        font-size: 4.8rem;
     }
 }
 
 /* 4. Media Query para Celulares y Tablets Verticales (768px o menos) */
 @media (max-width: 768px) {
     .mobile-toggle {
-        display: flex;
+        display: flex; /* Botón hamburguesa visible */
     }
 
     /* Sidebar - Ajuste de posición */
@@ -824,102 +953,139 @@
 
     .atlas-dashboard-layout {
         flex-direction: column;
-        width: 100vw; /* Asegura que el layout mida exactamente el ancho de pantalla */
+        width: 100vw;
     }
 
     .atlas-main-content {
-        padding: 85px 15px 30px; /* Padding reducido para ganar espacio en cards */
+        padding: 85px 15px 30px;
         width: 100%;
-        max-width: 100vw; /* Prohíbe crecer más allá de la pantalla */
+        max-width: 100vw;
         overflow-x: hidden;
         box-sizing: border-box;
     }
 
-    /* Grid EXACTO a una sola columna */
+    /* Ajuste de la "A" para celular */
+    .huella-card h3 {
+        font-size: 1.6rem;
+        align-self: center; /* Centramos el título en móvil para mejor estética */
+    }
+
+    .atlas-a-container {
+        width: 240px; /* Tamaño seguro para celulares */
+        height: 260px;
+        margin: 15px auto;
+        /* Mantenemos las animaciones y sombras */
+        filter: drop-shadow(0 10px 25px rgba(197, 160, 89, 0.3));
+    }
+
+    .huella-number {
+        font-size: 4.2rem;
+    }
+
+    /* Grid de tarjetas */
     .dashboard-grid {
         display: flex;
         flex-direction: column;
         width: 100%;
-        gap: 15px;
+        gap: 20px;
     }
 
     .info-card {
-        padding: 20px; /* Reducimos padding interno de las cards */
+        padding: 20px;
         width: 100%;
-        box-sizing: border-box; /* Asegura que padding no sume al ancho */
-        border-radius: 20px; /* Redondeado más sutil en móvil */
+        box-sizing: border-box;
+        border-radius: 20px;
     }
 
-    /* Cabecera Responsiva */
-    .main-header {
-        margin-bottom: 25px;
-    }
-
-    .header-left-content h1 {
-        font-size: 1.4rem; /* Título más pequeño para que no rompa */
-    }
-
-    /* Ajuste del Método ATLAS (R-C-T-F) - CRÍTICO PARA EL SCROLL */
+    /* Método ATLAS R-C-T-F (2 columnas) */
     .method-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
+        gap: 10px;
         width: 100%;
     }
 
     .method-item {
-        padding: 10px 4px;
-        min-width: 0; /* Permite que los items se encojan */
+        padding: 12px 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    .method-item span {
-        font-size: 0.6rem; /* Texto más pequeño para evitar desbordamiento */
-    }
-
-    .example-box {
-        padding: 15px;
-        font-size: 0.85rem;
-    }
-
-    /* Tablas con scroll controlado */
-    .user-scroll-list {
-        width: 100%;
-        overflow-x: auto;
-        border: 1px solid #eef2f6;
-    }
-
-    /* Ajuste de Retos */
-    .challenge-card-item {
+    /* Formulario de Retos (Pila vertical) */
+    .form-row {
+        grid-template-columns: 1fr;
         gap: 10px;
+    }
+
+    .btn-save-reto {
         padding: 12px;
     }
 
-    .challenge-main-info label {
-        font-size: 0.9rem;
+    /* Tablas con scroll táctil */
+    .user-scroll-list {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 }
 
 /* 5. Ajustes finales para Celulares Pequeños (480px o menos) */
 @media (max-width: 480px) {
     .atlas-main-content {
-        padding: 80px 12px 20px;
+        padding: 80px 10px 20px;
     }
 
-    .method-grid {
-        grid-template-columns: 1fr; /* Una columna para máxima claridad */
+    /* La "A" en su tamaño mínimo pero funcional */
+    .atlas-a-container {
+        width: 190px;
+        height: 210px;
     }
 
     .huella-number {
-        font-size: 2.5rem;
+        font-size: 3.2rem;
     }
 
-    .atlas-a-container {
-        width: 140px;
-        height: 160px;
+    .huella-card h3 {
+        font-size: 1.4rem;
     }
 
-    /* Hacer que los botones de acción sean más fáciles de tocar */
+    /* Botones R-C-T-F en 1 sola columna para que no se corte el texto */
+    .method-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .method-item {
+        justify-content: flex-start;
+        padding-left: 20px;
+    }
+
+    .method-item span {
+        font-size: 0.75rem;
+    }
+
+    /* Ajuste de botones de acción para dedos */
     .btn-action-icon {
-        width: 40px;
-        height: 40px;
+        width: 42px;
+        height: 42px;
     }
+
+    .challenge-card-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .challenge-meta {
+        width: 100%;
+        justify-content: space-between;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+    }
+}
+
+/* 6. GARANTÍA DE ANIMACIONES (Siempre activas) */
+.liquid-group, .wave, .atlas-a-container::after {
+    /* Forzamos que la aceleración por hardware esté activa en móvil */
+    backface-visibility: hidden;
+    perspective: 1000px;
 }

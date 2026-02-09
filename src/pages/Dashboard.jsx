@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import "../Styles/dashboard.css";
 import { Formularios } from "./Formularios";
@@ -14,9 +14,13 @@ export const Dashboard = ({ onLogout }) => {
     const [isSyncing, setIsSyncing] = useState(false);
     const [huellaPuntaje, setHuellaPuntaje] = useState(0);
 
-    // --- ESTADOS PARA RESPONSIVIDAD ---
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    // --- ESTADOS ADICIONALES ---
+    const [allFormsInfo, setAllFormsInfo] = useState([]);
+    const [userSearchTerm, setUserSearchTerm] = useState("");
+    const [isUserCardExpanded, setIsUserCardExpanded] = useState(true);
+    const [compassTab, setCompassTab] = useState(0); // 0: 0-39, 1: 40-59, 2: 60-74, 3: 75-89, 4: 90-100
 
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [misRetos, setMisRetos] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
     const [userResponses, setUserResponses] = useState([]);
@@ -41,6 +45,10 @@ export const Dashboard = ({ onLogout }) => {
     const loadInitialData = async (key, rol) => {
         setIsLoading(true);
         try {
+            const resForms = await fetch(`${API_URL}?sheet=Config_Formularios`);
+            const dataForms = await resForms.json();
+            if (Array.isArray(dataForms)) setAllFormsInfo(dataForms);
+
             const resRetos = await fetch(`${API_URL}?sheet=Weekly_Challenges&user_key=${key}`);
             const dataRetos = await resRetos.json();
             if (Array.isArray(dataRetos)) setMisRetos(dataRetos);
@@ -57,32 +65,37 @@ export const Dashboard = ({ onLogout }) => {
         }
     };
 
-    // --- CÁLCULO DE MADUREZ INSTITUCIONAL ---
     useEffect(() => {
-        const calcularMadurez = () => {
-            if (userResponses.length === 0 && misRetos.length === 0) return 0;
-            const notasPorForm = {};
-            userResponses.forEach(resp => {
-                if (!notasPorForm[resp.ID_Form]) notasPorForm[resp.ID_Form] = 0;
-                notasPorForm[resp.ID_Form] += parseFloat(resp.Puntos_Ganados || 0);
+        const calcularHuella = () => {
+            if (allFormsInfo.length === 0) return;
+            let maxPuntosConfigurados = 0;
+            allFormsInfo.forEach(f => {
+                maxPuntosConfigurados += parseFloat(f.Puntos_Maximos || 0);
             });
-            const promedios = Object.values(notasPorForm);
-            const promedioFormularios = promedios.length > 0 ? promedios.reduce((a, b) => a + b, 0) / promedios.length : 0;
-            const tieneRetosCompletos = misRetos.some(r => r.Status === 'completed');
-            const bonoRetos = tieneRetosCompletos ? 8 : 0;
-            const total = Math.min(promedioFormularios + bonoRetos, 100);
+            if (maxPuntosConfigurados === 0) maxPuntosConfigurados = 100;
+            const sumaNotasObtenidas = userResponses.reduce((sum, r) => sum + parseFloat(r.Puntos_Ganados || 0), 0);
+            const porcentajeForms = (sumaNotasObtenidas / maxPuntosConfigurados) * 92;
+            const totalRetos = misRetos.length;
+            const retosCompletados = misRetos.filter(r => r.Status === 'completed').length;
+            const porcentajeRetos = totalRetos > 0 ? (retosCompletados / totalRetos) * 8 : 0;
+            const total = Math.min(porcentajeForms + porcentajeRetos, 100);
             setHuellaPuntaje(Math.round(total));
         };
-        calcularMadurez();
-    }, [userResponses, misRetos]);
+        calcularHuella();
+    }, [userResponses, misRetos, allFormsInfo]);
 
-    const fetchRetos = async (key) => {
-        setIsSyncing(true);
+    const handleToggleRetoStatus = async (reto) => {
+        const nuevoEstado = reto.Status === 'completed' ? 'non completed' : 'completed';
+        const retoActualizado = { ...reto, Status: nuevoEstado };
+        setMisRetos(prev => prev.map(r => r.ID_Challenge === reto.ID_Challenge ? retoActualizado : r));
         try {
-            const res = await fetch(`${API_URL}?sheet=Weekly_Challenges&user_key=${key}`);
-            const data = await res.json();
-            if (Array.isArray(data)) setMisRetos(data);
-        } finally { setIsSyncing(false); }
+            await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'update', sheet: 'Weekly_Challenges', idField: 'ID_Challenge', idValue: reto.ID_Challenge, data: retoActualizado
+                })
+            });
+        } catch (e) { console.error("Error actualizando reto", e); }
     };
 
     const fetchAllUsers = async () => {
@@ -95,21 +108,8 @@ export const Dashboard = ({ onLogout }) => {
         finally { setIsSyncing(false); }
     };
 
-    const fetchAnalisisData = async () => {
-        setIsSyncing(true);
-        try {
-            const resResp = await fetch(`${API_URL}?sheet=Respuestas_Usuarios&user_key=${userData.Teacher_Key}`);
-            const dataResp = await resResp.json();
-            if (Array.isArray(dataResp)) setUserResponses(dataResp);
-        } finally { setIsSyncing(false); }
-    };
-
     const handleManualRefresh = () => {
-        if (activeTab === "overview") loadInitialData(userData.Teacher_Key, userData.Rol);
-        if (activeTab === "retos") fetchRetos(userData.Teacher_Key);
-        if (activeTab === "formularios" && userData.Rol === "ADMIN") fetchAllUsers();
-        if (activeTab === "analisis") fetchAnalisisData();
-        if (activeTab === "explorador") fetchAnalisisData();
+        loadInitialData(userData.Teacher_Key, userData.Rol);
     };
 
     const handleDelete = async (sheet, idField, idValue) => {
@@ -125,12 +125,7 @@ export const Dashboard = ({ onLogout }) => {
                 method: 'POST',
                 body: JSON.stringify({ action: 'delete', sheet, idField, idValue })
             });
-        } catch (e) {
-            console.error("Error al eliminar", e);
-            sheet === 'Weekly_Challenges' ? fetchRetos(userData.Teacher_Key) : fetchAllUsers();
-        } finally {
-            setIsSyncing(false);
-        }
+        } finally { setIsSyncing(false); }
     };
 
     const handleSubmitReto = async (e) => {
@@ -145,71 +140,39 @@ export const Dashboard = ({ onLogout }) => {
             Days_Active: formData.get("Days_Active"),
             Status: editingReto ? editingReto.Status : 'non completed'
         };
-
-        if (editingReto) {
-            setMisRetos(prev => prev.map(r => r.ID_Challenge === currentId ? nuevoReto : r));
-        } else {
-            setMisRetos(prev => [...prev, nuevoReto]);
-        }
-
-        setShowRetoForm(false);
-        setEditingReto(null);
-        setIsSyncing(true);
-
+        if (editingReto) setMisRetos(prev => prev.map(r => r.ID_Challenge === currentId ? nuevoReto : r));
+        else setMisRetos(prev => [...prev, nuevoReto]);
+        setShowRetoForm(false); setEditingReto(null); setIsSyncing(true);
         try {
             await fetch(API_URL, {
                 method: 'POST',
                 body: JSON.stringify({
-                    action: editingReto ? 'update' : 'create',
-                    sheet: 'Weekly_Challenges',
-                    idField: 'ID_Challenge',
-                    idValue: currentId,
-                    data: nuevoReto
+                    action: editingReto ? 'update' : 'create', sheet: 'Weekly_Challenges', idField: 'ID_Challenge', idValue: currentId, data: nuevoReto
                 })
             });
-        } finally {
-            setIsSyncing(false);
-        }
+        } finally { setIsSyncing(false); }
     };
 
-    const handleEditReto = (reto) => {
-        setEditingReto(reto);
-        setShowRetoForm(true);
-    };
+    const handleEditReto = (reto) => { setEditingReto(reto); setShowRetoForm(true); };
 
     const handleCreateUser = async (e) => {
         e.preventDefault();
         const fd = new FormData(e.target);
         const tkey = fd.get("tkey");
         const userObj = {
-            Teacher_Key: tkey,
-            Nombre_Completo: fd.get("nombre"),
-            Rol: fd.get("rol"),
-            Email: fd.get("email"),
-            Huella_IA_Total: editingUser ? editingUser.Huella_IA_Total : 0
+            Teacher_Key: tkey, Nombre_Completo: fd.get("nombre"), Rol: fd.get("rol"), Email: fd.get("email"), Huella_IA_Total: editingUser ? editingUser.Huella_IA_Total : 0
         };
-        if (editingUser) {
-            setAllUsers(prev => prev.map(u => u.Teacher_Key === tkey ? userObj : u));
-        } else {
-            setAllUsers(prev => [...prev, userObj]);
-        }
-        setShowUserModal(false);
-        setEditingUser(null);
-        setIsSyncing(true);
+        if (editingUser) setAllUsers(prev => prev.map(u => u.Teacher_Key === tkey ? userObj : u));
+        else setAllUsers(prev => [...prev, userObj]);
+        setShowUserModal(false); setEditingUser(null); setIsSyncing(true);
         try {
             await fetch(API_URL, {
                 method: 'POST',
                 body: JSON.stringify({
-                    action: editingUser ? 'update' : 'create',
-                    sheet: 'Users_ATLAS',
-                    idField: 'Teacher_Key',
-                    idValue: tkey,
-                    data: { ...userObj, Password_Hash: fd.get("pass") }
+                    action: editingUser ? 'update' : 'create', sheet: 'Users_ATLAS', idField: 'Teacher_Key', idValue: tkey, data: { ...userObj, Password_Hash: fd.get("pass") }
                 })
             });
-        } finally {
-            setIsSyncing(false);
-        }
+        } finally { setIsSyncing(false); }
     };
 
     const handleLogoutAction = () => {
@@ -234,6 +197,45 @@ export const Dashboard = ({ onLogout }) => {
     };
 
     const headerContent = getHeaderContent();
+
+    const filteredUsers = useMemo(() => {
+        return allUsers.filter(u => 
+            u.Teacher_Key !== userData.Teacher_Key && 
+            (u.Nombre_Completo?.toLowerCase().includes(userSearchTerm.toLowerCase()) || 
+             u.Teacher_Key?.toLowerCase().includes(userSearchTerm.toLowerCase()))
+        );
+    }, [allUsers, userSearchTerm, userData]);
+
+    const getCompassData = () => {
+        const info = [
+            {
+                title: "Exploración inicial (0–39%)",
+                body: "Tu COMPASS indica que estás comenzando a tomar conciencia de cómo la inteligencia artificial puede aparecer en la práctica educativa. Tal vez aún no la usas, o lo haces de forma intuitiva, pero eso es un punto de partida valioso: la reflexión precede a cualquier decisión pedagógica sólida. ATLAS está aquí para acompañarte paso a paso.",
+                next: "Siguiente oportunidad: iniciar un recorrido guiado que te ayude a leer tu práctica con nuevos lentes."
+            },
+            {
+                title: "Uso emergente (40–59%)",
+                body: "Tu COMPASS muestra que ya has experimentado con la IA de forma ocasional y que estás empezando a desarrollar criterio sobre cuándo y para qué usarla. Aparecen preguntas importantes, ajustes por hacer y decisiones que aún se están afinando. Este perfil refleja curiosidad profesional.",
+                next: "Siguiente oportunidad: transformar algunas prácticas concretas y asumir pequeños retos que fortalezcan tu intención pedagógica."
+            },
+            {
+                title: "Práctica consciente (60–74%)",
+                body: "Tu COMPASS indica un uso intencional de la IA, con evidencias claras de reflexión pedagógica. No se trata solo de usar tecnología, sino de decidir con sentido, cuidando el aprendizaje y el rol docente. En este punto, la IA empieza a convertirse en una aliada pensada.",
+                next: "Siguiente oportunidad: consolidar evidencias de impacto y asegurar que lo que haces realmente mejora los procesos formativos."
+            },
+            {
+                title: "Práctica alineada (75–89%)",
+                body: "Tu COMPASS refleja una práctica altamente coherente con marcos pedagógicos y éticos internacionales. Usas la IA con criterio, documentas decisiones y puedes explicar por qué haces lo que haces. Este perfil muestra madurez profesional y capacidad de modelaje.",
+                next: "Siguiente oportunidad: ejercer liderazgo pedagógico, compartir aprendizajes y pulir los últimos ajustes antes de la certificación."
+            },
+            {
+                title: "Capacidad ATLAS demostrada (90–100%)",
+                body: "Tu COMPASS muestra capacidad profesional demostrada para integrar la IA de forma pedagógica, ética y sostenible. Has generado evidencia en todas las fases ATLAS y mantienes un alto nivel de autorregulación y coherencia. Es un reconocimiento a tu trayectoria.",
+                next: "Siguiente oportunidad: optar por la certificación ATLAS y contribuir como referente, mentor o diseñador."
+            }
+        ];
+        return info[compassTab];
+    };
 
     if (!userData) return <div className="atlas-loader">Iniciando Sesión...</div>;
 
@@ -264,30 +266,33 @@ export const Dashboard = ({ onLogout }) => {
                 <nav className="sidebar-nav">
                     <div className="nav-section">CONSOLA ESTRATÉGICA</div>
                     <button className={activeTab === "overview" ? "active" : ""} onClick={() => switchTab("overview")}>🏠 Panel de Control</button>
+                    
+                    {/* BOTONES MOVIDOS DEBAJO DE PANEL DE CONTROL PERO MANTENIENDO SU FUNCIONALIDAD */}
+                    {userData.Rol === "ADMIN" && (
+                        <>
+                            <button className="sub-btn" onClick={() => { setEditingUser(null); setShowUserModal(true); setIsMobileMenuOpen(false); }}>👥 Gestión de Talentos</button>
+                            <button className={activeTab === "formularios" ? "active" : ""} onClick={() => switchTab("formularios")}>📐 Arquitecto de Instrumentos</button>
+                            <button className={activeTab === "analisis" ? "active" : ""} onClick={() => switchTab("analisis")}>📊 Análisis de Formularios</button>
+                        </>
+                    )}
+                    <button className={activeTab === "explorador" ? "active" : ""} onClick={() => switchTab("explorador")}>🔎 Explorador de Evidencias</button>
+                    <button className={activeTab === "retos" ? "active" : ""} onClick={() => switchTab("retos")}>🎯 Mis Retos Estratégicos</button>
+
                     <div className="nav-section">MARCO ATLAS</div>
                     <div className="atlas-nav-group">
-                        <div className="atlas-group-header">🛡️ A - AUDITAR</div>
-                        {userData.Rol === "ADMIN" && (
-                            <>
-                                <button className="sub-btn" onClick={() => { setEditingUser(null); setShowUserModal(true); setIsMobileMenuOpen(false); }}>👥 Gestión de Talentos</button>
-                                <button className={activeTab === "formularios" ? "active" : ""} onClick={() => switchTab("formularios")}>📐 Arquitecto de Instrumentos</button>
-                            </>
-                        )}
+                        <div className="atlas-group-header">🛡️ A — AUDIT | Auditar el uso pedagógico de la IA</div>
                     </div>
                     <div className="atlas-nav-group">
-                        <div className="atlas-group-header">⚙️ T - TRANSFORMAR</div>
-                        <button className={activeTab === "explorador" ? "active" : ""} onClick={() => switchTab("explorador")}>🔎 Explorador de Evidencias</button>
-                        {userData.Rol === "ADMIN" && (
-                            <button className={activeTab === "analisis" ? "active" : ""} onClick={() => switchTab("analisis")}>📊 Análisis de Formularios</button>
-                        )}
+                        <div className="atlas-group-header">⚙️ T — TRANSFORM | Transformar prácticas pedagógicas con IA</div>
                     </div>
                     <div className="atlas-nav-group">
-                        <div className="atlas-group-header">🚀 L - LIDERAR</div>
-                        <button className={activeTab === "retos" ? "active" : ""} onClick={() => switchTab("retos")}>🎯 Mis Retos Estratégicos</button>
+                        <div className="atlas-group-header">🚀 L — LEAD | Liderar y gobernar el uso institucional de la IA</div>
                     </div>
                     <div className="atlas-nav-group">
-                        <div className="atlas-group-header">📊 A / 🌱 S</div>
-                        <button disabled className="btn-disabled">🔒 Módulos en Desarrollo</button>
+                        <div className="atlas-group-header">💎 A — ASSURE | Asegurar la calidad y el impacto pedagógico</div>
+                    </div>
+                    <div className="atlas-nav-group">
+                        <div className="atlas-group-header">🌱 S — SUSTAIN | Sostener y mejorar en un contexto de cambio</div>
                     </div>
                 </nav>
                 <div className="sidebar-bottom">
@@ -313,21 +318,18 @@ export const Dashboard = ({ onLogout }) => {
                 {activeTab === "overview" && (
                     <section className="dashboard-grid">
                         <div className="info-card huella-card">
-                            <h3>Huella Digital de IA</h3>
+                            <h3>Compass de IA</h3>
                             <div className="atlas-a-container">
                                 <svg viewBox="0 0 100 100" className="atlas-svg-shape">
                                     <defs>
-                                        <mask id="maskA">
-                                            <path d="M50 0 L100 100 H80 L70 75 H30 L20 100 H0 Z" fill="white" />
-                                        </mask>
+                                        <mask id="maskA"><path d="M50 0 L100 100 H80 L70 75 H30 L20 100 H0 Z" fill="white" /></mask>
                                         <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#c5a059" />
-                                            <stop offset="100%" stopColor="#8a6d3b" />
+                                            <stop offset="0%" stopColor="#c5a059" /><stop offset="100%" stopColor="#8a6d3b" />
                                         </linearGradient>
                                     </defs>
                                     <g mask="url(#maskA)">
                                         <rect x="0" y="0" width="100" height="100" fill="#f1f5f9" />
-                                        <g className="liquid-group" style={{ transform: `translateY(${100 - huellaPuntaje}%)` }}>
+                                        <g className="liquid-group" style={{ transform: `translateY(${100 - huellaPuntaje}%)`, transition: 'transform 1s ease' }}>
                                             <path className="wave" d="M0,0 C30,-5 70,5 100,0 L100,100 L0,100 Z" />
                                             <rect x="0" y="0" width="100" height="100" className="liquid-body" fill="url(#goldGradient)" />
                                         </g>
@@ -338,32 +340,36 @@ export const Dashboard = ({ onLogout }) => {
                                     <span className="huella-label">NIVEL ATLAS</span>
                                 </div>
                             </div>
-                            <p style={{ textAlign: 'center', fontSize: '0.75rem', color: '#64748b', marginTop: '15px', fontWeight: '500' }}>
-                                Promedio Formularios + Bono Retos
-                            </p>
                         </div>
 
+                        {/* CARD CORREGIDA: MÉTODO ATLAS COMPASS */}
                         <div className="info-card prompt-card professional-upgrade">
                             <div className="card-header-flex">
-                                <h3>🚀 El Arte del Prompt: Método ATLAS</h3>
-                                <span className="badge-pro">PRO</span>
+                                <h3>🧭 COMPASS: {getCompassData().title}</h3>
                             </div>
+
+                            {/* TODO ESTO VA DENTRO DEL BLOQUE OSCURO PARA QUE SE VEA COMO LA IMAGEN */}
                             <div className="prompt-content-rich">
-                                <p className="intro-text">Para obtener resultados excepcionales de la IA, utiliza la estructura <strong>Rol + Contexto + Tarea + Formato</strong>:</p>
+                                <p className="intro-text-dark">
+                                    {getCompassData().body}
+                                </p>
+
+                                <span className="next-step-text-on-dark">
+                                    Siguiente oportunidad: {getCompassData().next}
+                                </span>
+
+                                {/* Los botones ahora viven dentro o fuera según prefieras, 
+            pero la imagen 2 los muestra "flotando" abajo */}
                                 <div className="method-grid">
-                                    <div className="method-item"><strong>R</strong><span>ol</span></div>
-                                    <div className="method-item"><strong>C</strong><span>ontexto</span></div>
-                                    <div className="method-item"><strong>T</strong><span>area</span></div>
-                                    <div className="method-item"><strong>F</strong><span>ormato</span></div>
-                                </div>
-                                <div className="example-box">
-                                    <span className="example-label">Ejemplo para Docentes:</span>
-                                    <code>
-                                        "Actúa como un <strong>experto en pedagogía universitaria</strong> (R).
-                                        Estoy diseñando una clase para <strong>estudiantes universitarios</strong> sobre <strong>pensamiento crítico y uso ético de la IA</strong> (C).
-                                        Diseña <strong>3 actividades académicas activas</strong> que fomenten análisis y discusión, sin software especializado (T).
-                                        Presenta el resultado en una <strong>tabla comparativa</strong> con objetivos y evidencias de aprendizaje (F)."
-                                    </code>
+                                    {["0-39%", "40-59%", "60-74%", "75-89%", "90-100%"].map((label, idx) => (
+                                        <div
+                                            key={idx}
+                                            className={`method-item ${compassTab === idx ? 'active' : ''}`}
+                                            onClick={() => setCompassTab(idx)}
+                                        >
+                                            {label}
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
@@ -371,29 +377,36 @@ export const Dashboard = ({ onLogout }) => {
                         {userData.Rol === "ADMIN" && (
                             <div className="info-card wide-card">
                                 <div className="card-header-flex">
-                                    <h3>Gestión de Usuarios (Admin)</h3>
-                                    <button className="btn-add-reto" onClick={() => { setEditingUser(null); setShowUserModal(true); }}>➕ Nuevo Talento</button>
+                                    <h3 onClick={() => setIsUserCardExpanded(!isUserCardExpanded)} style={{cursor:'pointer'}}>
+                                        Gestión de Usuarios {isUserCardExpanded ? '▾' : '▸'}
+                                    </h3>
+                                    <div style={{display:'flex', gap:'10px'}}>
+                                        <input type="text" placeholder="Buscar..." className="search-input-small" onChange={(e)=>setUserSearchTerm(e.target.value)} />
+                                        <button className="btn-add-reto" onClick={() => { setEditingUser(null); setShowUserModal(true); }}>➕</button>
+                                    </div>
                                 </div>
-                                <div className="user-scroll-list">
-                                    <table className="atlas-table">
-                                        <thead>
-                                            <tr><th>Key</th><th>Nombre</th><th>Rol</th><th>Acciones</th></tr>
-                                        </thead>
-                                        <tbody>
-                                            {allUsers.filter(u => u.Teacher_Key !== userData.Teacher_Key).map(u => (
-                                                <tr key={u.Teacher_Key}>
-                                                    <td><span className="user-key-tag">{u.Teacher_Key}</span></td>
-                                                    <td>{u.Nombre_Completo}</td>
-                                                    <td><span className={`role-pill ${u.Rol}`}>{u.Rol}</span></td>
-                                                    <td className="actions-cell">
-                                                        <button className="btn-action-icon edit" onClick={() => { setEditingUser(u); setShowUserModal(true); }}>✏️</button>
-                                                        <button className="btn-action-icon delete" onClick={() => handleDelete('Users_ATLAS', 'Teacher_Key', u.Teacher_Key)}>🗑️</button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                {isUserCardExpanded && (
+                                    <div className="user-scroll-list" style={{maxHeight:'320px', overflowY:'auto'}}>
+                                        <table className="atlas-table">
+                                            <thead style={{position:'sticky', top:0, backgroundColor:'#f8fafc', zIndex:5}}>
+                                                <tr><th>Key</th><th>Nombre</th><th>Rol</th><th>Acciones</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                {filteredUsers.map(u => (
+                                                    <tr key={u.Teacher_Key}>
+                                                        <td><span className="user-key-tag">{u.Teacher_Key}</span></td>
+                                                        <td>{u.Nombre_Completo}</td>
+                                                        <td><span className={`role-pill ${u.Rol}`}>{u.Rol}</span></td>
+                                                        <td className="actions-cell">
+                                                            <button className="btn-action-icon edit" onClick={() => { setEditingUser(u); setShowUserModal(true); }}>✏️</button>
+                                                            <button className="btn-action-icon delete" onClick={() => handleDelete('Users_ATLAS', 'Teacher_Key', u.Teacher_Key)}>🗑️</button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -417,15 +430,15 @@ export const Dashboard = ({ onLogout }) => {
                             <div className="challenges-grid-modern">
                                 {misRetos.map(reto => (
                                     <div key={reto.ID_Challenge} className={`challenge-card-item ${reto.Status === 'completed' ? 'done' : ''}`}>
-                                        <div className="challenge-main-info">
+                                        <div className="challenge-main-info" onClick={() => handleToggleRetoStatus(reto)} style={{cursor:'pointer'}}>
                                             <input type="checkbox" checked={reto.Status === 'completed'} readOnly />
                                             <label>{reto.Challenge_Description}</label>
                                         </div>
                                         <div className="challenge-meta">
                                             <span className="reto-tag">{reto.Status}</span>
                                             <div className="actions-cell">
-                                                <button className="btn-action-icon edit-small" onClick={() => handleEditReto(reto)}>✏️</button>
-                                                <button className="btn-action-icon delete-small" onClick={() => handleDelete('Weekly_Challenges', 'ID_Challenge', reto.ID_Challenge)}>🗑️</button>
+                                                <button className="btn-action-icon edit-small" onClick={(e) => { e.stopPropagation(); handleEditReto(reto); }}>✏️</button>
+                                                <button className="btn-action-icon delete-small" onClick={(e) => { e.stopPropagation(); handleDelete('Weekly_Challenges', 'ID_Challenge', reto.ID_Challenge); }}>🗑️</button>
                                             </div>
                                         </div>
                                     </div>
@@ -433,61 +446,32 @@ export const Dashboard = ({ onLogout }) => {
                             </div>
                         </div>
 
-                        {/* TABLA DE RESULTADOS CONSOLIDADOS */}
                         <div className="info-card wide-card">
-                            <div className="card-header-flex">
-                                <h3>📊 Mis Calificaciones Consolidadas</h3>
-                                <span className="badge-info">Mi Progreso Personal</span>
-                            </div>
-                            <div className="user-scroll-list">
+                            <h3>📊 Mis Calificaciones Consolidadas</h3>
+                            <div className="user-scroll-list" style={{maxHeight:'320px', overflowY:'auto'}}>
                                 <table className="atlas-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Instrumento (ID)</th>
-                                            <th>Última Fecha</th>
-                                            <th>Tu Nota Total</th>
-                                        </tr>
+                                    <thead style={{position:'sticky', top:0, backgroundColor:'#f8fafc', zIndex:5}}>
+                                        <tr><th>Instrumento</th><th>Fecha</th><th>Tu Nota</th></tr>
                                     </thead>
                                     <tbody>
                                         {(() => {
-                                            // LÓGICA DE CONSOLIDACIÓN: Agrupamos por ID_Form y sumamos Puntos_Ganados
                                             const consolidado = userResponses.reduce((acc, curr) => {
                                                 const id = curr.ID_Form;
                                                 if (!acc[id]) {
-                                                    acc[id] = {
-                                                        id: id,
-                                                        totalPuntos: 0,
-                                                        fecha: curr.Fecha_Respuesta
-                                                    };
+                                                    const formRef = allFormsInfo.find(f => f.ID_Form === id);
+                                                    acc[id] = { id, titulo: formRef ? formRef.Titulo_Form : id, puntos: 0, fecha: curr.Fecha_Respuesta };
                                                 }
-                                                acc[id].totalPuntos += parseFloat(curr.Puntos_Ganados || 0);
+                                                acc[id].puntos += parseFloat(curr.Puntos_Ganados || 0);
                                                 return acc;
                                             }, {});
-
-                                            const listaConsolidada = Object.values(consolidado);
-
-                                            return listaConsolidada.length > 0 ? (
-                                                listaConsolidada.reverse().map((item, index) => (
-                                                    <tr key={index}>
-                                                        <td>
-                                                            <span style={{fontWeight: '600', color: '#1e293b'}}>🆔 {item.id}</span>
-                                                        </td>
-                                                        <td>{new Date(item.fecha).toLocaleDateString()}</td>
-                                                        <td>
-                                                            <div style={{display: 'flex', flexDirection: 'column', gap: '2px'}}>
-                                                                <span className="user-key-tag" style={{ background: '#c5a059', color: 'white', fontWeight: 'bold', textAlign: 'center' }}>
-                                                                    {item.totalPuntos} pts
-                                                                </span>
-                                                                <small style={{fontSize: '0.65rem', color: '#64748b'}}>Consolidado ATLAS</small>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            ) : (
-                                                <tr>
-                                                    <td colSpan="3" style={{ textAlign: 'center', padding: '20px' }}>No hay registros de formularios realizados.</td>
+                                            const lista = Object.values(consolidado);
+                                            return lista.length > 0 ? lista.reverse().map((item, i) => (
+                                                <tr key={i}>
+                                                    <td><strong>{item.titulo}</strong></td>
+                                                    <td>{new Date(item.fecha).toLocaleDateString()}</td>
+                                                    <td><span className="user-key-tag" style={{ background: '#c5a059', color: 'white' }}>{item.puntos} pts</span></td>
                                                 </tr>
-                                            );
+                                            )) : <tr><td colSpan="3" style={{textAlign:'center', padding:'20px'}}>No hay registros.</td></tr>;
                                         })()}
                                     </tbody>
                                 </table>
@@ -496,10 +480,9 @@ export const Dashboard = ({ onLogout }) => {
                     </section>
                 )}
 
-                {activeTab === "formularios" && userData.Rol === "ADMIN" && <Formularios userData={userData} isSyncing={isSyncing} setIsSyncing={setIsSyncing} API_URL={API_URL} />}
+                {activeTab === "formularios" && <Formularios userData={userData} isSyncing={isSyncing} setIsSyncing={setIsSyncing} API_URL={API_URL} />}
                 {activeTab === "explorador" && <ResponderFormularios userData={userData} isSyncing={isSyncing} setIsSyncing={setIsSyncing} API_URL={API_URL} />}
-                {activeTab === "analisis" && userData.Rol === "ADMIN" && <Analisis userData={userData} API_URL={API_URL} />}
-
+                {activeTab === "analisis" && <Analisis userData={userData} API_URL={API_URL} />}
                 {activeTab === "retos" && (
                     <section className="dashboard-grid">
                         <div className="info-card wide-card">
@@ -507,15 +490,15 @@ export const Dashboard = ({ onLogout }) => {
                             <div className="challenges-grid-modern">
                                 {misRetos.map(reto => (
                                     <div key={reto.ID_Challenge} className={`challenge-card-item ${reto.Status === 'completed' ? 'done' : ''}`}>
-                                        <div className="challenge-main-info">
+                                        <div className="challenge-main-info" onClick={() => handleToggleRetoStatus(reto)} style={{cursor:'pointer'}}>
                                             <input type="checkbox" checked={reto.Status === 'completed'} readOnly />
                                             <label>{reto.Challenge_Description}</label>
                                         </div>
                                         <div className="challenge-meta">
                                             <span className="reto-tag">{reto.Status}</span>
                                             <div className="actions-cell">
-                                                <button className="btn-action-icon edit-small" onClick={() => handleEditReto(reto)}>✏️</button>
-                                                <button className="btn-action-icon delete-small" onClick={() => handleDelete('Weekly_Challenges', 'ID_Challenge', reto.ID_Challenge)}>🗑️</button>
+                                                <button className="btn-action-icon edit-small" onClick={(e) => { e.stopPropagation(); handleEditReto(reto); }}>✏️</button>
+                                                <button className="btn-action-icon delete-small" onClick={(e) => { e.stopPropagation(); handleDelete('Weekly_Challenges', 'ID_Challenge', reto.ID_Challenge); }}>🗑️</button>
                                             </div>
                                         </div>
                                     </div>
@@ -529,19 +512,19 @@ export const Dashboard = ({ onLogout }) => {
             {showUserModal && (
                 <div className="atlas-modal-overlay">
                     <div className="atlas-modal">
-                        <h2>{editingUser ? "Editar Talento" : "Registrar Nuevo Talento"}</h2>
+                        <h2>{editingUser ? "Editar Talento" : "Nuevo Talento"}</h2>
                         <form onSubmit={handleCreateUser} className="modal-form">
                             <input name="tkey" placeholder="Teacher Key" defaultValue={editingUser?.Teacher_Key} readOnly={!!editingUser} required />
                             <input name="nombre" placeholder="Nombre Completo" defaultValue={editingUser?.Nombre_Completo} required />
                             <input name="email" type="email" placeholder="Correo" defaultValue={editingUser?.Email} required />
-                            <input name="pass" type="password" placeholder={editingUser ? "Nueva clave (opcional)" : "Contraseña"} required={!editingUser} />
+                            <input name="pass" type="password" placeholder="Contraseña" required={!editingUser} />
                             <select name="rol" defaultValue={editingUser?.Rol || "DOCENTE"}>
                                 <option value="DOCENTE">DOCENTE</option>
                                 <option value="ADMIN">ADMIN</option>
                             </select>
                             <div className="modal-btns">
-                                <button type="submit" className="btn-save-reto">{editingUser ? "Actualizar" : "Crear Usuario"}</button>
-                                <button type="button" onClick={() => { setShowUserModal(false); setEditingUser(null); }} className="btn-exit">Cerrar</button>
+                                <button type="submit" className="btn-save-reto">Guardar</button>
+                                <button type="button" onClick={() => setShowUserModal(false)} className="btn-exit">Cerrar</button>
                             </div>
                         </form>
                     </div>
