@@ -84,6 +84,15 @@ export const Dashboard = ({ onLogout }) => {
         calcularHuella();
     }, [userResponses, misRetos, allFormsInfo]);
 
+    // --- NUEVO: Sincronizar Compass con la Huella ---
+    useEffect(() => {
+        if (huellaPuntaje >= 90) setCompassTab(4);
+        else if (huellaPuntaje >= 75) setCompassTab(3);
+        else if (huellaPuntaje >= 60) setCompassTab(2);
+        else if (huellaPuntaje >= 40) setCompassTab(1);
+        else setCompassTab(0);
+    }, [huellaPuntaje]);
+
     const handleToggleRetoStatus = async (reto) => {
         const nuevoEstado = reto.Status === 'completed' ? 'non completed' : 'completed';
         const retoActualizado = { ...reto, Status: nuevoEstado };
@@ -209,32 +218,38 @@ export const Dashboard = ({ onLogout }) => {
     const getCompassData = () => {
         const info = [
             {
-                title: "Exploración inicial (0–39%)",
+                range: "0-39%",
+                title: "Exploración inicial",
                 body: "Tu COMPASS indica que estás comenzando a tomar conciencia de cómo la inteligencia artificial puede aparecer en la práctica educativa. Tal vez aún no la usas, o lo haces de forma intuitiva, pero eso es un punto de partida valioso: la reflexión precede a cualquier decisión pedagógica sólida. ATLAS está aquí para acompañarte paso a paso.",
                 next: "Iniciar un recorrido guiado que te ayude a leer tu práctica con nuevos lentes."
             },
             {
-                title: "Uso emergente (40–59%)",
+                range: "40-59%",
+                title: "Uso emergente",
                 body: "Tu COMPASS muestra que ya has experimentado con la IA de forma ocasional y que estás empezando a desarrollar criterio sobre cuándo y para qué usarla. Aparecen preguntas importantes, ajustes por hacer y decisiones que aún se están afinando. Este perfil refleja curiosidad profesional.",
                 next: "Transformar algunas prácticas concretas y asumir pequeños retos que fortalezcan tu intención pedagógica."
             },
             {
-                title: "Práctica consciente (60–74%)",
+                range: "60-74%",
+                title: "Práctica consciente",
                 body: "Tu COMPASS indica un uso intencional de la IA, con evidencias claras de reflexión pedagógica. No se trata solo de usar tecnología, sino de decidir con sentido, cuidando el aprendizaje y el rol docente. En este punto, la IA empieza a convertirse en una aliada pensada.",
                 next: "Consolidar evidencias de impacto y asegurar que lo que haces realmente mejora los procesos formativos."
             },
             {
-                title: "Práctica alineada (75–89%)",
+                range: "75-89%",
+                title: "Práctica alineada",
                 body: "Tu COMPASS refleja una práctica altamente coherente con marcos pedagógicos y éticos internacionales. Usas la IA con criterio, documentas decisiones y puedes explicar por qué haces lo que haces. Este perfil muestra madurez profesional y capacidad de modelaje.",
                 next: "Ejercer liderazgo pedagógico, compartir aprendizajes y pulir los últimos ajustes antes de la certificación."
             },
             {
-                title: "Capacidad ATLAS demostrada (90–100%)",
-                body: "Tu COMPASS muestra capacidad profesional demostrada para integrar la IA de forma pedagógica, ética y sostenible. Has generado evidencia en todas las fases ATLAS y mantienes un alto nivel de autorregulación y coherencia. Es un reconocimiento a tu trayectoria.",
+                range: "90-100%",
+                title: "Capacidad ATLAS demostrada",
+                body: "Tu COMPASS muestra capacidad profesional demostrada para integrar la IA de forma pedagógica, ética y sostenible. Has generado evidencia en todas las fases ATLAS y mantiene un alto nivel de autorregulación y coherencia. Es un reconocimiento a tu trayectoria.",
                 next: "Optar por la certificación ATLAS y contribuir como referente, mentor o diseñador."
             }
         ];
-        return info[compassTab];
+        // Retornamos el objeto basado en el estado compassTab
+        return info[compassTab] || info[0];
     };
 
     if (!userData) return <div className="atlas-loader">Iniciando Sesión...</div>;
@@ -343,72 +358,41 @@ export const Dashboard = ({ onLogout }) => {
                         </div>
 
                         {/* CARD CORREGIDA: MÉTODO ATLAS COMPASS */}
+                        {/* CARD CORREGIDA: MÉTODO ATLAS COMPASS */}
                         <div className="info-card prompt-card professional-upgrade">
                             <div className="card-header-flex">
-                                <h3>🧭 COMPASS: {getCompassData().title}</h3>
+                                {/* Mostramos el título dinámico según el rango */}
+                                <h3>🧭 COMPASS: {getCompassData().title} ({getCompassData().range})</h3>
                             </div>
 
-                            {/* TODO ESTO VA DENTRO DEL BLOQUE OSCURO PARA QUE SE VEA COMO LA IMAGEN */}
                             <div className="prompt-content-rich">
                                 <p className="intro-text-dark">
                                     {getCompassData().body}
                                 </p>
 
                                 <span className="next-step-text-on-dark">
-                                    Siguiente oportunidad: {getCompassData().next}
+                                    <strong>Siguiente paso:</strong> {getCompassData().next}
                                 </span>
 
-                                {/* Los botones ahora viven dentro o fuera según prefieras, 
-            pero la imagen 2 los muestra "flotando" abajo */}
                                 <div className="method-grid">
                                     {["0-39%", "40-59%", "60-74%", "75-89%", "90-100%"].map((label, idx) => (
                                         <div
                                             key={idx}
                                             className={`method-item ${compassTab === idx ? 'active' : ''}`}
                                             onClick={() => setCompassTab(idx)}
+                                            style={{
+                                                cursor: 'pointer',
+                                                transition: 'all 0.3s ease',
+                                                borderBottom: compassTab === idx ? '3px solid var(--atlas-accent)' : '1px solid transparent'
+                                            }}
                                         >
-                                            {label}
+                                            <strong>{label.split('-')[0]}</strong>
+                                            <span>{label.split('-')[1]}</span>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         </div>
-
-                        {userData.Rol === "ADMIN" && (
-                            <div className="info-card wide-card">
-                                <div className="card-header-flex">
-                                    <h3 onClick={() => setIsUserCardExpanded(!isUserCardExpanded)} style={{cursor:'pointer'}}>
-                                        Gestión de Usuarios {isUserCardExpanded ? '▾' : '▸'}
-                                    </h3>
-                                    <div style={{display:'flex', gap:'10px'}}>
-                                        <input type="text" placeholder="Buscar..." className="search-input-small" onChange={(e)=>setUserSearchTerm(e.target.value)} />
-                                        <button className="btn-add-reto" onClick={() => { setEditingUser(null); setShowUserModal(true); }}>➕</button>
-                                    </div>
-                                </div>
-                                {isUserCardExpanded && (
-                                    <div className="user-scroll-list" style={{maxHeight:'320px', overflowY:'auto'}}>
-                                        <table className="atlas-table">
-                                            <thead style={{position:'sticky', top:0, backgroundColor:'#f8fafc', zIndex:5}}>
-                                                <tr><th>Key</th><th>Nombre</th><th>Rol</th><th>Acciones</th></tr>
-                                            </thead>
-                                            <tbody>
-                                                {filteredUsers.map(u => (
-                                                    <tr key={u.Teacher_Key}>
-                                                        <td><span className="user-key-tag">{u.Teacher_Key}</span></td>
-                                                        <td>{u.Nombre_Completo}</td>
-                                                        <td><span className={`role-pill ${u.Rol}`}>{u.Rol}</span></td>
-                                                        <td className="actions-cell">
-                                                            <button className="btn-action-icon edit" onClick={() => { setEditingUser(u); setShowUserModal(true); }}>✏️</button>
-                                                            <button className="btn-action-icon delete" onClick={() => handleDelete('Users_ATLAS', 'Teacher_Key', u.Teacher_Key)}>🗑️</button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
-                            </div>
-                        )}
 
                         <div className="info-card wide-card">
                             <div className="card-header-flex">
