@@ -132,7 +132,7 @@
     top: 0;
     bottom: 0;
     width: 5px;
-    background: #3b82f6; /* Azul Atlas */
+    background: #3b82f6; 
 }
 
 .card-done .card-accent { background: #10b981; }
@@ -287,14 +287,12 @@
     transform: rotate(90deg);
 }
 
-/* Cuerpo del Modal con Scroll */
 .modal-atlas-body {
     padding: 2.5rem;
     overflow-y: auto;
     background: #ffffff;
 }
 
-/* Tarjetas de Pregunta dentro del Modal */
 .question-card-minimal {
     display: flex;
     gap: 20px;
@@ -351,7 +349,7 @@
     box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
 }
 
-/* Opciones Verticales (Radio) */
+/* Opciones Verticales */
 .options-vertical {
     display: flex;
     flex-direction: column;
@@ -375,10 +373,12 @@
     background: #f0f7ff;
 }
 
-.custom-radio-row input[type="radio"] {
+.custom-radio-row input[type="radio"], 
+.custom-radio-row input[type="checkbox"] {
     width: 20px;
     height: 20px;
     accent-color: #3b82f6;
+    cursor: pointer;
 }
 
 .radio-label-text {
@@ -387,40 +387,65 @@
     color: #475569;
 }
 
-/* Escala 1-5 */
+/* =============================================
+   NUEVA ESCALA EXPERTA (CORREGIDA)
+   ============================================= */
+.scale-container-expert {
+    margin-top: 1rem;
+    background: #f1f5f9;
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+.scale-labels-top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.label-min { color: #ef4444; } /* Rojo para desacuerdo */
+.label-max { color: #10b981; } /* Verde para acuerdo */
+
 .atlas-scale-row {
     display: flex;
-    gap: 15px;
+    gap: 12px;
     justify-content: space-between;
 }
 
 .scale-pill {
     flex: 1;
-    padding: 15px;
-    border-radius: 16px;
-    border: 2px solid #e2e8f0;
+    padding: 14px;
+    border-radius: 14px;
+    border: 2px solid #cbd5e1;
     background: white;
     font-weight: 800;
     font-size: 1.1rem;
     cursor: pointer;
-    transition: all 0.2s;
-    color: #64748b;
+    transition: all 0.2s ease;
+    color: #1e293b; /* Color de número asegurado */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .scale-pill:hover {
     border-color: #3b82f6;
     color: #3b82f6;
+    background: #eff6ff;
 }
 
 .scale-pill.active {
     background: #3b82f6;
-    color: white;
+    color: white !important;
     border-color: #3b82f6;
     transform: scale(1.05);
-    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 8px 15px -3px rgba(59, 130, 246, 0.4);
 }
 
-/* Footer Fijo en Modal */
+/* Footer Fijo */
 .modal-footer-sticky {
     position: sticky;
     bottom: 0;
@@ -442,181 +467,38 @@
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
 }
 
-.btn-submit-atlas:hover {
-    background: #1d4ed8;
-    transform: translateY(-2px);
-    box-shadow: 0 15px 25px -5px rgba(59, 130, 246, 0.5);
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+@media (max-width: 768px) {
+    .scale-labels-top {
+        flex-direction: column;
+        gap: 4px;
+        text-align: center;
+    }
+    
+    .atlas-scale-row {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
+    }
+
+    .scale-pill {
+        padding: 10px 0;
+        font-size: 0.95rem;
+    }
 }
 
-/* =============================================
-   ANIMACIONES
-   ============================================= */
 @keyframes pulse {
     0% { transform: scale(1); opacity: 1; }
     50% { transform: scale(1.02); opacity: 0.8; }
     100% { transform: scale(1); opacity: 1; }
 }
 
-.animate-fade-in {
-    animation: fadeIn 0.5s ease-out;
-}
-
+.animate-fade-in { animation: fadeIn 0.5s ease-out; }
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(15px); }
     to { opacity: 1; transform: translateY(0); }
-}
-
-/* Personalización del Scrollbar para ATLAS */
-.modal-atlas-body::-webkit-scrollbar { width: 8px; }
-.modal-atlas-body::-webkit-scrollbar-track { background: #f1f5f9; }
-.modal-atlas-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-.modal-atlas-body::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-/* =========================================
-   RESPONSIVE: ATLAS RESPONDER
-   ========================================= */
-
-/* 1. Ajustes Generales para Tablets (992px o menos) */
-@media (max-width: 992px) {
-    .forms-grid-responder {
-        grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)); /* Una columna para evitar cards angostas */
-        gap: 1.5rem;
-    }
-
-    .modal-content-glass {
-        max-width: 95%;
-        max-height: 90vh;
-    }
-}
-
-/* 2. Celulares y Tablets Verticales (768px o menos) */
-@media (max-width: 768px) {
-    .atlas-responder-container {
-        padding: 1rem 0;
-    }
-
-    /* Fila de controles: Apilado vertical */
-    .responder-controls-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 20px;
-        border-bottom: none;
-    }
-
-    /* Tabs: Scroll horizontal para no romper el diseño */
-    .tab-container-modern {
-        width: 100%;
-        overflow-x: auto;
-        padding-bottom: 8px;
-        -webkit-overflow-scrolling: touch;
-        display: flex;
-        border-bottom: 2px solid #f1f5f9;
-    }
-
-    .tab-btn {
-        padding: 10px 16px;
-        white-space: nowrap; /* Evita que el texto de la pestaña se parta */
-        font-size: 0.85rem;
-    }
-
-    .sync-status-pill {
-        width: 100%;
-        justify-content: center;
-    }
-
-    /* Modal */
-    .modal-atlas-header {
-        padding: 1.5rem;
-    }
-
-    .header-info h2 {
-        font-size: 1.3rem;
-    }
-
-    .modal-atlas-body {
-        padding: 1.5rem;
-    }
-
-    /* Tarjetas de Pregunta en Móvil */
-    .question-card-minimal {
-        flex-direction: column; /* El número arriba, la pregunta abajo */
-        gap: 12px;
-        padding: 1.5rem;
-    }
-
-    .q-text {
-        font-size: 1.05rem;
-    }
-
-    /* ESCALA 1-5: Muy importante para que no se desborde */
-    .atlas-scale-row {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr); /* Forzamos 5 columnas iguales */
-        gap: 8px;
-    }
-
-    .scale-pill {
-        padding: 12px 0;
-        text-align: center;
-        font-size: 1rem;
-        border-radius: 10px;
-    }
-}
-
-/* 3. Ajustes para Celulares Pequeños (480px o menos) */
-@media (max-width: 480px) {
-    .form-card-answerable {
-        padding: 1.5rem;
-    }
-
-    .form-card-answerable h3 {
-        font-size: 1.2rem;
-    }
-
-    .card-footer {
-        flex-direction: column;
-        gap: 15px;
-        align-items: stretch;
-    }
-
-    .btn-respond {
-        width: 100%;
-        text-align: center;
-    }
-
-    /* Ajuste de Inputs y Radios */
-    .custom-radio-row {
-        padding: 12px 15px;
-    }
-
-    .radio-label-text {
-        font-size: 0.9rem;
-    }
-
-    /* Modal Footer */
-    .modal-footer-sticky {
-        padding: 1rem 1.5rem;
-    }
-
-    .btn-submit-atlas {
-        padding: 1rem;
-        font-size: 1rem;
-    }
-}
-
-/* 4. Corrección de Seguridad Global */
-.atlas-responder-container, 
-.form-card-answerable, 
-.modal-content-glass, 
-.question-card-minimal {
-    box-sizing: border-box; /* Crucial para que paddings no ensanchen la pantalla */
-}
-
-/* Evitar que el texto largo de las preguntas rompa el layout */
-.q-text {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
 }

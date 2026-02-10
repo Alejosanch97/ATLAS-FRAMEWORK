@@ -1,5 +1,6 @@
 /* ============================================================
    ATLAS ARCHITECT - FORMULARIOS CSS CORE 2026
+   CORRECCIÓN: DESBORDAMIENTO DE TÍTULO Y ALINEACIÓN DE CARDS
    ============================================================ */
 
 /* Contenedor principal ajustado para flujo vertical */
@@ -7,6 +8,16 @@
     padding: 20px;
     max-width: 1000px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* --- CORRECCIÓN BOTÓN DORADO SUPERIOR --- */
+.btn-create-top {
+    align-self: flex-start;
+    margin-bottom: 10px; 
+    z-index: 10;
 }
 
 /* Layout Vertical */
@@ -26,23 +37,51 @@
     transition: all 0.3s ease;
 }
 
-/* Encabezados de los Pasos (Ajustado para Click y Colapso) */
+/* --- CORRECCIÓN ESTRUCTURAL DE CABECERAS --- */
 .card-header-minimal, .card-header-flex-modern {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 15px;
     padding-bottom: 15px;
     border-bottom: 2px solid #f8fafc;
     cursor: pointer;
     user-select: none;
     transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.card-header-flex-modern {
-    justify-content: space-between;
+/* Grupo Izquierdo: Badge + Título con CORRECCIÓN DE ANCHO */
+.header-left-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-width: 0; /* PERMITE QUE EL HIJO SE CONTRAIGA */
+    flex: 1;      /* TOMA EL ESPACIO DISPONIBLE */
 }
 
-/* Efecto hover para indicar que son desplegables */
+/* CORRECCIÓN: Evitar que el título largo empuje los botones */
+.header-left-group h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: #1e293b;
+    white-space: nowrap;      /* No salta de línea */
+    overflow: hidden;         /* Oculta lo que sobra */
+    text-overflow: ellipsis;  /* Pone puntos suspensivos (...) */
+    max-width: 100%;
+}
+
+/* Grupo Derecho: Contiene Alertas, Botón "Añadir" y Flecha */
+.header-right-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    justify-content: flex-end;
+    flex-shrink: 0; /* NUNCA SE ENCOGE, mantiene sus botones visibles */
+}
+
+/* Efecto hover */
 .card-header-minimal:hover, .card-header-flex-modern:hover {
     background: #fcfcfc;
     border-bottom-color: #d4af37;
@@ -53,6 +92,7 @@
     color: white;
     width: 32px;
     height: 32px;
+    min-width: 32px; /* Evita que se deforme el círculo */
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -60,6 +100,34 @@
     font-weight: 800;
     font-size: 1rem;
     box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3);
+}
+
+/* Estilo para el aviso de faltante de puntos */
+.header-alert-badge {
+    color: #f59e0b;
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+/* Flecha de despliegue (Toggle Icon) */
+.toggle-icon {
+    font-size: 0.9rem;
+    color: #64748b;
+    transition: transform 0.3s ease;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 5px;
+}
+
+/* Rotación de la flecha */
+.is-open .toggle-icon {
+    transform: rotate(180deg);
 }
 
 /* Inputs en el Paso 1 */
@@ -124,12 +192,6 @@
 }
 
 /* Sección de Preguntas (Paso 2) */
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
 .btn-add-pill {
     background: #1e293b;
     color: white;
@@ -143,6 +205,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    white-space: nowrap;
 }
 
 .btn-add-pill:hover {
@@ -187,7 +250,27 @@
     gap: 20px;
 }
 
+/* FILA: BLOQUE + PREGUNTA */
+.q-inputs-row {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    width: 100%;
+}
+
+.q-block-input {
+    width: 140px;
+    padding: 10px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    font-weight: 700;
+    color: #1e293b;
+    text-align: center;
+}
+
 .q-input-text-large {
+    flex: 1;
     border: none;
     border-bottom: 2px solid #f1f5f9;
     font-size: 1.2rem;
@@ -196,6 +279,7 @@
     outline: none;
     font-weight: 600;
     color: #1e293b;
+    background: transparent;
 }
 
 .q-input-text-large:focus { border-bottom-color: #d4af37; }
@@ -269,7 +353,7 @@
     border-top: 2px solid #f8fafc;
     display: flex;
     justify-content: center;
-    gap: 15px; /* Espacio para el botón cancelar */
+    gap: 15px; 
 }
 
 .btn-publish-main {
@@ -315,11 +399,13 @@
     color: #0f172a;
 }
 
-/* --- LISTA DE FORMULARIOS CREADOS (Grid) --- */
+/* --- LISTA DE FORMULARIOS CREADOS --- */
 .list-area {
     background: #f8fafc !important;
     border: 2px dashed #e2e8f0 !important;
     margin-top: 30px;
+    padding: 25px;
+    border-radius: 20px;
 }
 
 .forms-grid {
@@ -373,7 +459,7 @@
     gap: 8px;
 }
 
-/* Botones de Editar y Eliminar de la Lista Inferior */
+/* Botones de Editar y Eliminar */
 .btn-edit-small, .btn-delete-small {
     padding: 8px;
     border-radius: 8px;
@@ -386,25 +472,13 @@
     justify-content: center;
 }
 
-.btn-edit-small { 
-    background: #e0f2fe; /* Azul suave */
-    color: #0369a1; 
-} 
-.btn-delete-small { 
-    background: #fff1f2; /* Rojo suave */
-    color: #be123c; 
-}
+.btn-edit-small { background: #e0f2fe; color: #0369a1; } 
+.btn-delete-small { background: #fff1f2; color: #be123c; }
 
-.btn-edit-small:hover { 
-    background: #0369a1; 
-    color: white; 
-}
-.btn-delete-small:hover { 
-    background: #be123c; 
-    color: white; 
-}
+.btn-edit-small:hover { background: #0369a1; color: white; }
+.btn-delete-small:hover { background: #be123c; color: white; }
 
-/* Animaciones de Colapso y Entrada */
+/* Animaciones */
 .animate-fade-in { animation: fadeIn 0.5s ease forwards; }
 .animate-slide-down { animation: slideDown 0.4s ease-out forwards; }
 
@@ -418,49 +492,39 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-    .row-split { grid-template-columns: 1fr; }
-    .q-controls-row { flex-direction: column; align-items: flex-start; gap: 15px; }
-    .architect-footer-zone { flex-direction: column; }
-}
-
 /* =========================================
-   RESPONSIVE: ATLAS ARCHITECT (Formularios)
+   RESPONSIVE CORE & ATLAS ARCHITECT
    ========================================= */
 
-/* Tablets y Pantallas Medianas (992px o menos) */
 @media (max-width: 992px) {
-    .atlas-architect-container {
-        padding: 15px;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .forms-grid {
-        grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
-    }
+    .atlas-architect-container { padding: 15px; }
+    .forms-grid { grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)); }
 }
 
-/* Celulares y Tablets Verticales (768px o menos) */
 @media (max-width: 768px) {
-    .info-card-modern {
-        padding: 20px;
-        border-radius: 15px;
+    .info-card-modern { padding: 20px; border-radius: 15px; }
+
+    .row-split { grid-template-columns: 1fr; gap: 15px; }
+
+    /* Cabecera en Móvil */
+    .card-header-minimal, .card-header-flex-modern {
+        flex-wrap: wrap; 
     }
 
-    /* Paso 1: Inputs apilados */
-    .row-split {
-        grid-template-columns: 1fr;
-        gap: 15px;
+    .header-left-group {
+        width: 100%;
     }
 
-    /* Paso 2: Constructor de Preguntas */
-    .question-builder-card {
-        flex-direction: column; /* Apilamos el número y el contenido */
-        gap: 10px;
-        padding: 15px;
+    .header-right-controls {
+        width: 100%;
+        justify-content: space-between; 
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #f1f5f9;
     }
+
+    /* Constructor de Preguntas en Móvil */
+    .question-builder-card { flex-direction: column; gap: 10px; padding: 15px; }
 
     .q-number-side {
         font-size: 1rem;
@@ -473,29 +537,19 @@
         border-radius: 8px;
     }
 
-    .q-input-text-large {
-        font-size: 1rem;
-        padding: 8px 0;
-    }
+    .q-input-text-large { font-size: 1rem; padding: 8px 0; }
 
-    /* Controles de la pregunta (Tipo, Puntos, Eliminar) */
     .q-controls-row {
-        flex-direction: column; /* Apilado vertical */
-        align-items: stretch; /* Ocupa todo el ancho */
+        flex-direction: column;
+        align-items: stretch;
         gap: 12px;
         background: #f8fafc;
         padding: 15px;
         border-radius: 12px;
     }
 
-    .control-item {
-        justify-content: space-between; /* Etiqueta a la izquierda, select a la derecha */
-        width: 100%;
-    }
-
-    .control-item select, .q-pts-mini {
-        width: 60%; /* Ajuste para que el select sea cómodo */
-    }
+    .control-item { justify-content: space-between; width: 100%; }
+    .control-item select, .q-pts-mini { width: 60%; }
 
     .btn-delete-q {
         width: 100%;
@@ -504,65 +558,28 @@
         gap: 8px;
     }
 
-    /* Footer / Botones Finales */
-    .architect-footer-zone {
-        flex-direction: column-reverse; /* Cancelar abajo, Publicar arriba */
-        gap: 12px;
-    }
-
-    .btn-publish-main {
-        max-width: 100%;
-        padding: 15px;
-    }
-
-    .btn-cancel {
-        width: 100%;
-        text-align: center;
-    }
+    .architect-footer-zone { flex-direction: column-reverse; gap: 12px; }
+    .btn-publish-main { max-width: 100%; padding: 15px; }
+    .btn-cancel { width: 100%; text-align: center; }
 }
 
-/* Celulares muy pequeños (480px o menos) */
 @media (max-width: 480px) {
-    .atlas-architect-container {
-        padding: 10px;
-    }
-
-    .card-header-minimal h2, .card-header-flex-modern h2 {
-        font-size: 1.1rem;
-    }
-
-    .step-badge {
-        width: 28px;
-        height: 28px;
-        font-size: 0.9rem;
-    }
-
-    /* Ajuste de los items de la lista de formularios */
-    .form-item-card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-    }
-
-    .form-actions {
-        width: 100%;
-        justify-content: flex-end;
-        border-top: 1px solid #f1f5f9;
-        padding-top: 10px;
-    }
-
-    .btn-add-pill {
-        width: 100%;
-        justify-content: center;
-    }
+    .atlas-architect-container { padding: 10px; }
+    .card-header-minimal h2, .card-header-flex-modern h2 { font-size: 1.1rem; }
+    .step-badge { width: 28px; height: 28px; font-size: 0.9rem; }
+    .form-item-card { flex-direction: column; align-items: flex-start; gap: 15px; }
+    .form-actions { width: 100%; justify-content: flex-end; border-top: 1px solid #f1f5f9; padding-top: 10px; }
+    .btn-add-pill { width: 100%; justify-content: center; }
 }
 
-/* Corrección Global de Inputs para evitar zoom en iOS y desbordamientos */
+/* Corrección Global de Inputs */
 .group-modern input, 
 .group-modern select, 
 .group-modern textarea,
-.q-options-field {
-    font-size: 16px !important; /* Evita zoom automático en iPhone */
+.q-options-field,
+.q-block-input,
+.q-pts-mini {
+    font-size: 16px !important; 
     max-width: 100%;
     box-sizing: border-box;
 }

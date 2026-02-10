@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import "../Styles/formularios.css";
 
 export const Formularios = ({ userData, isSyncing, setIsSyncing, API_URL }) => {
@@ -21,16 +21,38 @@ export const Formularios = ({ userData, isSyncing, setIsSyncing, API_URL }) => {
 
     const [formConfig, setFormConfig] = useState(initialFormState);
     const [preguntas, setPreguntas] = useState([
-        { idTemp: Date.now(), Texto_Pregunta: "", Tipo_Respuesta: "MULTIPLE", Opciones_Seleccion: "", Puntaje_Asociado: 0 }
+        { idTemp: Date.now(), Bloque: "", Texto_Pregunta: "", Tipo_Respuesta: "MULTIPLE", Opciones_Seleccion: "", Puntaje_Asociado: 0 }
     ]);
+
+    // --- LÓGICA DE VALIDACIÓN DE PUNTAJE ---
+    const totalPuntosActuales = useMemo(() => {
+        return preguntas.reduce((sum, p) => sum + parseFloat(p.Puntaje_Asociado || 0), 0);
+    }, [preguntas]);
+
+    const statusPuntaje = useMemo(() => {
+        const totalMeta = parseFloat(formConfig.Puntos_Maximos) || 0;
+        const actual = parseFloat(totalPuntosActuales.toFixed(2));
+        
+        if (actual < totalMeta) {
+            return { color: "#f59e0b", msg: `Faltan ${(totalMeta - actual).toFixed(2)} pts` };
+        } else if (actual > totalMeta) {
+            return { color: "#ef4444", msg: `Excedido por ${(actual - totalMeta).toFixed(2)} pts` };
+        }
+        return { color: "#10b981", msg: "Puntaje perfecto" };
+    }, [totalPuntosActuales, formConfig.Puntos_Maximos]);
 
     // --- CARGAR LISTA AL INICIAR ---
     const fetchForms = async () => {
+        setIsSyncing(true); // Mostrar nube al cargar lista
         try {
             const res = await fetch(`${API_URL}?sheet=Config_Formularios&user_key=${userData?.Teacher_Key}`);
             const data = await res.json();
             if (Array.isArray(data)) setFormsList(data);
-        } catch (e) { console.error("Error al cargar lista:", e); }
+        } catch (e) { 
+            console.error("Error al cargar lista:", e); 
+        } finally {
+            setIsSyncing(false);
+        }
     };
 
     useEffect(() => { fetchForms(); }, []);
@@ -51,6 +73,7 @@ export const Formularios = ({ userData, isSyncing, setIsSyncing, API_URL }) => {
         setIsQuestionsOpen(true);
         window.scrollTo({ top: 0, behavior: "smooth" });
 
+        setIsSyncing(true); // Mostrar nube mientras bajan las preguntas
         try {
             const res = await fetch(`${API_URL}?sheet=Config_Preguntas`);
             const allQuestions = await res.json();
@@ -59,24 +82,26 @@ export const Formularios = ({ userData, isSyncing, setIsSyncing, API_URL }) => {
             if(filtered.length > 0) {
                 setPreguntas(filtered.map(q => ({
                     idTemp: q.ID_Pregunta || (Date.now() + Math.random()),
+                    Bloque: q.Bloque || "",
                     Texto_Pregunta: q.Texto_Pregunta,
                     Tipo_Respuesta: q.Tipo_Respuesta,
                     Opciones_Seleccion: q.Opciones_Seleccion || "",
                     Puntaje_Asociado: q.Puntaje_Asociado
                 })));
             }
-        } catch (e) { console.error("Error cargando preguntas"); }
+        } catch (e) { 
+            console.error("Error cargando preguntas"); 
+        } finally {
+            setIsSyncing(false);
+        }
     };
 
-    // --- LÓGICA DE BORRADO ---
     const handleDeleteForm = async (id) => {
         const confirmFirst = window.confirm("¿Eliminar este instrumento y todas sus preguntas?");
         if (!confirmFirst) return;
-        
         const confirmSecond = window.confirm("¡ADVERTENCIA! Se pueden perder datos asociados. ¿Desea continuar?");
         if (!confirmSecond) return;
 
-        // Actualización optimista para borrado
         const backup = [...formsList];
         setFormsList(formsList.filter(f => f.ID_Form !== id));
 
@@ -98,6 +123,7 @@ export const Formularios = ({ userData, isSyncing, setIsSyncing, API_URL }) => {
     const handleAddPregunta = () => {
         setPreguntas([...preguntas, { 
             idTemp: Date.now() + Math.random(), 
+            Bloque: "",
             Texto_Pregunta: "", 
             Tipo_Respuesta: "MULTIPLE", 
             Opciones_Seleccion: "", 
@@ -113,77 +139,77 @@ export const Formularios = ({ userData, isSyncing, setIsSyncing, API_URL }) => {
         setPreguntas(preguntas.map(p => p.idTemp === id ? { ...p, [field]: value } : p));
     };
 
-    // --- GUARDAR / ACTUALIZAR (OPTIMIZADO) ---
+    const getPlaceholderByTipo = (tipo) => {
+        switch(tipo) {
+            case "MULTIPLE": return "Ej: Sí(2), No(1.5), No estoy seguro(1)";
+            case "CHECKBOX": return "Ej: Planificación(0.7), Evaluación(0.7), Ninguno(1)";
+            case "ESCALA": return "Ej: 1(0.5), 2(1.0), 3(1.5), 4(2.0), 5(2.5)";
+            default: return "Escribe las opciones separadas por comas...";
+        }
+    };
+
     const handleSubmitInstrumento = async (e) => {
         e.preventDefault();
-        setIsSyncing(true);
-
-        // --- LÓGICA OPTIMISTA: Actualizamos el Front de inmediato ---
-        const updatedForm = { ...formConfig };
-        
-        if (isEditing) {
-            setFormsList(prev => prev.map(f => f.ID_Form === updatedForm.ID_Form ? updatedForm : f));
-        } else {
-            // Si es nuevo, lo añadimos temporalmente a la lista
-            setFormsList(prev => [updatedForm, ...prev]);
+        if (totalPuntosActuales !== parseFloat(formConfig.Puntos_Maximos)) {
+            const proceed = window.confirm(`El puntaje total (${totalPuntosActuales}) no coincide con el máximo (${formConfig.Puntos_Maximos}). ¿Deseas guardar de todos modos?`);
+            if (!proceed) return;
         }
-
-        // Cerramos el formulario de inmediato para dar sensación de velocidad
-        const wasEditing = isEditing;
-        setIsEditing(false);
-        setIsConfigOpen(false);
-        setIsQuestionsOpen(false);
-
+        setIsSyncing(true);
         const payload = {
-            action: wasEditing ? 'update_instrumento' : 'create_instrumento',
+            action: isEditing ? 'update_instrumento' : 'create_instrumento',
             form: { ...formConfig, Teacher_Key: userData?.Teacher_Key },
             questions: preguntas
         };
-
-        // Reseteamos campos internos
-        setFormConfig({ ...initialFormState, ID_Form: `FORM-${Date.now()}` });
-        setPreguntas([{ idTemp: Date.now(), Texto_Pregunta: "", Tipo_Respuesta: "MULTIPLE", Opciones_Seleccion: "", Puntaje_Asociado: 0 }]);
-
         try {
-            const response = await fetch(API_URL, { 
-                method: 'POST', 
-                mode: 'cors',
-                body: JSON.stringify(payload) 
-            });
-            const resData = await response.json();
-
-            if (resData.status === "success") {
-                console.log("Sincronización en la nube exitosa");
-            }
+            await fetch(API_URL, { method: 'POST', mode: 'cors', body: JSON.stringify(payload) });
+            setIsEditing(false);
+            setIsConfigOpen(false);
+            setIsQuestionsOpen(false);
+            setFormConfig({ ...initialFormState, ID_Form: `FORM-${Date.now()}` });
+            setPreguntas([{ idTemp: Date.now(), Bloque: "", Texto_Pregunta: "", Tipo_Respuesta: "MULTIPLE", Opciones_Seleccion: "", Puntaje_Asociado: 0 }]);
         } catch (error) {
-            console.error("Error en sincronización:", error);
-            alert("Hubo un problema al guardar en la nube, pero tus cambios se ven en el front.");
+            alert("Error al guardar.");
         } finally {
             setIsSyncing(false);
-            fetchForms(); // Refrescamos al final para asegurar que los IDs de fila y datos estén perfectos
+            fetchForms();
         }
     };
 
     return (
         <div className="atlas-architect-container animate-fade-in">
+            
+            {/* INDICADOR DE SINCRONIZACIÓN (LA NUBE) */}
+            {isSyncing && (
+                <div className="sync-overlay-status">
+                    <div className="sync-pill">
+                    </div>
+                </div>
+            )}
+
+            {/* BOTÓN SUPERIOR DE CREACIÓN */}
             {!isEditing && !isConfigOpen && (
-                <button 
-                    className="btn-publish-main" 
-                    style={{marginBottom: '20px'}}
-                    onClick={() => setIsConfigOpen(true)}
-                >
+                <button className="btn-publish-main btn-create-top" onClick={() => setIsConfigOpen(true)}>
                     ➕ Crear Nuevo Instrumento
                 </button>
             )}
 
             <form onSubmit={handleSubmitInstrumento} className="architect-layout-grid">
-                
                 {/* PASO 1: CONFIGURACIÓN */}
-                <section className={`info-card-modern ${!isConfigOpen ? 'card-closed' : ''}`}>
+                <section className={`info-card-modern ${isConfigOpen ? 'is-open' : ''}`}>
                     <div className="card-header-minimal" onClick={() => setIsConfigOpen(!isConfigOpen)}>
-                        <span className="step-badge">1</span>
-                        <h3 style={{flex: 1}}>{isEditing ? "Editando: " + formConfig.Titulo_Form : "Configuración Base del Instrumento"}</h3>
-                        <span>{isConfigOpen ? "▲" : "▼"}</span>
+                        <div className="header-left-group">
+                            <span className="step-badge">1</span>
+                            <h3 className="header-title-main">
+                                {isEditing ? "Editando: " + formConfig.Titulo_Form : "Configuración Base"}
+                            </h3>
+                        </div>
+                        
+                        <div className="header-right-controls">
+                            <div className="header-alert-badge" style={{ color: statusPuntaje.color }}>
+                                <span>{statusPuntaje.msg}</span>
+                            </div>
+                            <span className="toggle-icon">{isConfigOpen ? "▲" : "▼"}</span>
+                        </div>
                     </div>
                     
                     {isConfigOpen && (
@@ -211,16 +237,17 @@ export const Formularios = ({ userData, isSyncing, setIsSyncing, API_URL }) => {
                                     <label>Puntos Máximos</label>
                                     <input 
                                         type="number" 
+                                        step="0.1"
                                         value={formConfig.Puntos_Maximos}
                                         onChange={(e) => setFormConfig({...formConfig, Puntos_Maximos: e.target.value})}
                                     />
                                 </div>
                             </div>
                             <div className="group-modern">
-                                <label>Instrucciones / Descripción</label>
+                                <label>Instrucciones</label>
                                 <textarea 
-                                    rows="4" 
-                                    placeholder="Define el objetivo de este instrumento..."
+                                    rows="3" 
+                                    placeholder="Define el objetivo..."
                                     value={formConfig.Descripcion}
                                     onChange={(e) => setFormConfig({...formConfig, Descripcion: e.target.value})}
                                 />
@@ -230,17 +257,18 @@ export const Formularios = ({ userData, isSyncing, setIsSyncing, API_URL }) => {
                 </section>
 
                 {/* PASO 2: PREGUNTAS */}
-                <section className={`info-card-modern ${!isQuestionsOpen ? 'card-closed' : ''}`} ref={questionsRef}>
+                <section className={`info-card-modern ${isQuestionsOpen ? 'is-open' : ''}`} ref={questionsRef}>
                     <div className="card-header-flex-modern" onClick={() => setIsQuestionsOpen(!isQuestionsOpen)}>
-                        <div className="header-left" style={{flex: 1}}>
+                        <div className="header-left-group">
                             <span className="step-badge">2</span>
                             <h3>Diseño de Preguntas</h3>
                         </div>
-                        <div style={{display: 'flex', alignItems: 'center', gap: '20px'}}>
+                        
+                        <div className="header-right-controls">
                             <button type="button" className="btn-add-pill" onClick={(e) => {e.stopPropagation(); handleAddPregunta();}}>
                                 ➕ Añadir Pregunta
                             </button>
-                            <span>{isQuestionsOpen ? "▲" : "▼"}</span>
+                            <span className="toggle-icon">{isQuestionsOpen ? "▲" : "▼"}</span>
                         </div>
                     </div>
 
@@ -250,30 +278,43 @@ export const Formularios = ({ userData, isSyncing, setIsSyncing, API_URL }) => {
                                 <div key={pregunta.idTemp} className="question-builder-card">
                                     <div className="q-number-side">{index + 1}</div>
                                     <div className="q-main-fields">
-                                        <input 
-                                            type="text" 
-                                            placeholder="Escribe la pregunta..." 
-                                            className="q-input-text-large"
-                                            value={pregunta.Texto_Pregunta}
-                                            onChange={(e) => updatePregunta(pregunta.idTemp, 'Texto_Pregunta', e.target.value)}
-                                            required
-                                        />
+                                        <div className="q-inputs-row">
+                                            <input 
+                                                type="text"
+                                                className="q-block-input"
+                                                placeholder="Bloque"
+                                                value={pregunta.Bloque}
+                                                onChange={(e) => updatePregunta(pregunta.idTemp, 'Bloque', e.target.value)}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                placeholder="Escribe la pregunta..." 
+                                                className="q-input-text-large"
+                                                value={pregunta.Texto_Pregunta}
+                                                onChange={(e) => updatePregunta(pregunta.idTemp, 'Texto_Pregunta', e.target.value)}
+                                                required
+                                            />
+                                        </div>
+                                        
                                         <div className="q-controls-row">
                                             <div className="control-item">
-                                                <span>Tipo:</span>
+                                                <label>Tipo:</label>
                                                 <select 
                                                     value={pregunta.Tipo_Respuesta}
                                                     onChange={(e) => updatePregunta(pregunta.idTemp, 'Tipo_Respuesta', e.target.value)}
                                                 >
                                                     <option value="MULTIPLE">Opción Múltiple</option>
-                                                    <option value="TEXTO">Texto Abierto</option>
+                                                    <option value="CHECKBOX">Casillas</option>
                                                     <option value="ESCALA">Escala (1-5)</option>
+                                                    <option value="TEXTO">Respuesta Corta</option>
+                                                    <option value="PARRAFO">Párrafo</option>
                                                 </select>
                                             </div>
                                             <div className="control-item">
-                                                <span>Valor Pts:</span>
+                                                <label>Pts:</label>
                                                 <input 
                                                     type="number" 
+                                                    step="0.1"
                                                     className="q-pts-mini"
                                                     value={pregunta.Puntaje_Asociado}
                                                     onChange={(e) => updatePregunta(pregunta.idTemp, 'Puntaje_Asociado', e.target.value)}
@@ -282,24 +323,25 @@ export const Formularios = ({ userData, isSyncing, setIsSyncing, API_URL }) => {
                                             <button type="button" className="btn-delete-q" onClick={() => handleRemovePregunta(pregunta.idTemp)}>🗑️</button>
                                         </div>
 
-                                        {pregunta.Tipo_Respuesta === "MULTIPLE" && (
+                                        {["MULTIPLE", "CHECKBOX", "ESCALA"].includes(pregunta.Tipo_Respuesta) && (
                                             <div className="options-zone animate-fade-in">
                                                 <input 
                                                     type="text"
                                                     className="q-options-field"
-                                                    placeholder="Ej: Opción 1, Opción 2, Opción 3"
+                                                    placeholder={getPlaceholderByTipo(pregunta.Tipo_Respuesta)}
                                                     value={pregunta.Opciones_Seleccion}
                                                     onChange={(e) => updatePregunta(pregunta.idTemp, 'Opciones_Seleccion', e.target.value)}
                                                 />
-                                                <small>Separa las opciones por comas.</small>
+                                                <small>Usa el formato: <strong>Respuesta(Valor)</strong> separado por comas.</small>
                                             </div>
                                         )}
                                     </div>
                                 </div>
                             ))}
+                            
                             <div className="architect-footer-zone">
                                 <button type="submit" className="btn-publish-main" disabled={isSyncing}>
-                                    {isSyncing ? "💾 Sincronizando..." : isEditing ? "🔄 Actualizar Instrumento" : "🚀 Publicar Instrumento ATLAS"}
+                                    {isSyncing ? "💾 Sincronizando..." : isEditing ? "🔄 Actualizar Instrumento" : "🚀 Publicar Instrumento"}
                                 </button>
                                 {isEditing && (
                                     <button type="button" className="btn-cancel" onClick={() => {
@@ -307,9 +349,9 @@ export const Formularios = ({ userData, isSyncing, setIsSyncing, API_URL }) => {
                                         setIsConfigOpen(false);
                                         setIsQuestionsOpen(false);
                                         setFormConfig({ ...initialFormState, ID_Form: `FORM-${Date.now()}` });
-                                        setPreguntas([{ idTemp: Date.now(), Texto_Pregunta: "", Tipo_Respuesta: "MULTIPLE", Opciones_Seleccion: "", Puntaje_Asociado: 0 }]);
+                                        setPreguntas([{ idTemp: Date.now(), Bloque: "", Texto_Pregunta: "", Tipo_Respuesta: "MULTIPLE", Opciones_Seleccion: "", Puntaje_Asociado: 0 }]);
                                     }}>
-                                        Cancelar Edición
+                                        Cancelar
                                     </button>
                                 )}
                             </div>
@@ -318,22 +360,27 @@ export const Formularios = ({ userData, isSyncing, setIsSyncing, API_URL }) => {
                 </section>
             </form>
 
-            {/* LISTADO INFERIOR */}
+            {/* LISTADO DE INSTRUMENTOS */}
             <section className="info-card-modern list-area">
-                <div className="card-header-minimal"><h3>Mis Instrumentos Creados</h3></div>
+                <div className="card-header-minimal">
+                    <div className="header-left-group">
+                        <h3>Mis Instrumentos Creados</h3>
+                    </div>
+                </div>
                 <div className="forms-grid">
                     {formsList.length > 0 ? formsList.map((f) => (
                         <div key={f.ID_Form} className="form-item-card animate-fade-in">
                             <div className="form-info">
                                 <span className="phase-pill">{f.Fase_ATLAS}</span>
                                 <h4>{f.Titulo_Form}</h4>
+                                <small>{f.Puntos_Maximos} pts</small>
                             </div>
                             <div className="form-actions">
                                 <button className="btn-edit-small" onClick={() => handleEditForm(f)}>✏️</button>
                                 <button className="btn-delete-small" onClick={() => handleDeleteForm(f.ID_Form)}>🗑️</button>
                             </div>
                         </div>
-                    )) : <p style={{textAlign: 'center', color: '#64748b', width: '100%'}}>No has creado instrumentos todavía.</p>}
+                    )) : <p className="empty-msg">No has creado instrumentos todavía.</p>}
                 </div>
             </section>
         </div>

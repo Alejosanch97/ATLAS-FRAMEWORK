@@ -47,43 +47,62 @@ export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncin
         }
     };
 
-    const handleInputChange = (questionId, value) => {
-        setCurrentResponses(prev => ({ ...prev, [questionId]: value }));
+    const splitOptions = (text) => {
+        if (!text) return [];
+        return text.split(/(?<!\d),/).map(opt => opt.trim());
+    };
+
+    const handleInputChange = (questionId, value, isCheckbox = false) => {
+        if (isCheckbox) {
+            setCurrentResponses(prev => {
+                const prevValues = prev[questionId] || [];
+                const newValues = prevValues.includes(value)
+                    ? prevValues.filter(v => v !== value)
+                    : [...prevValues, value];
+                return { ...prev, [questionId]: newValues };
+            });
+        } else {
+            setCurrentResponses(prev => ({ ...prev, [questionId]: value }));
+        }
     };
 
     const cleanOptionText = (text) => {
-        return text ? String(text).replace(/\s*\(\d+\)$/, "").trim() : "";
+        if (!text) return "";
+        return String(text).replace(/\s*\([^)]+\)$/, "").trim();
     };
 
-    // --- LÓGICA DE ENVÍO OPTIMIZADA (BATCH/RÁPIDA) ---
     const handleSubmitAnswers = async (e) => {
         e.preventDefault();
-        
         const formToSave = { ...selectedForm };
         const responsesToSave = { ...currentResponses };
         
-        // 1. Efecto visual inmediato (Cierra modal y mueve a completados)
-        const completionStamp = { ID_Form: formToSave.ID_Form };
-        setUserAnswers(prev => [...prev, completionStamp]);
+        setUserAnswers(prev => [...prev, { ID_Form: formToSave.ID_Form }]);
         setSelectedForm(null);
         setIsSyncing(true);
 
         const batchTimestamp = new Date().toISOString();
         const globalID = `G-${Date.now()}`;
 
-        // 2. Preparamos el ARRAY con todas las respuestas (Batch)
         const batchData = formToSave.questions.map(q => {
-            const answerValue = responsesToSave[q.ID_Pregunta];
-            
-            let questionPoints = 0;
-            if (answerValue !== undefined && answerValue !== null) {
-                const scoreMatch = String(answerValue).match(/\((\d+)\)$/);
-                if (scoreMatch) {
-                    questionPoints = parseFloat(scoreMatch[1]);
+            const rawValue = responsesToSave[q.ID_Pregunta];
+            let answerString = "";
+            let totalPoints = 0;
+
+            if (Array.isArray(rawValue)) {
+                answerString = rawValue.map(v => cleanOptionText(v)).join(", ");
+                rawValue.forEach(v => {
+                    const match = String(v).match(/\(([^)]+)\)$/);
+                    if (match) totalPoints += parseFloat(match[1].replace(',', '.'));
+                });
+            } else {
+                answerString = q.Tipo_Respuesta === "ESCALA" ? `Nivel ${rawValue}` : cleanOptionText(rawValue);
+                const match = String(rawValue).match(/\(([^)]+)\)$/);
+                if (match) {
+                    totalPoints = parseFloat(match[1].replace(',', '.'));
                 } else if (q.Tipo_Respuesta === "ESCALA") {
-                    questionPoints = parseFloat(answerValue || 0);
+                    totalPoints = parseFloat(rawValue || 0);
                 } else {
-                    questionPoints = parseFloat(q.Puntaje_Asociado || 0);
+                    totalPoints = parseFloat(q.Puntaje_Asociado || 0);
                 }
             }
 
@@ -92,28 +111,21 @@ export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncin
                 Teacher_Key: userData?.Teacher_Key,
                 ID_Form: formToSave.ID_Form,
                 ID_Pregunta: q.ID_Pregunta,
-                Valor_Respondido: cleanOptionText(answerValue),
-                Puntos_Ganados: questionPoints,
+                Valor_Respondido: answerString,
+                Puntos_Ganados: totalPoints,
                 Fecha_Respuesta: batchTimestamp
             };
         });
 
         try {
-            // 3. ENVIAMOS TODO EN UNA SOLA PETICIÓN
-            // Usamos la acción 'create_batch' que definimos en el App Script
             await fetch(API_URL, {
                 method: 'POST',
                 mode: 'no-cors', 
-                body: JSON.stringify({
-                    action: 'create_batch',
-                    sheet: 'Respuestas_Usuarios',
-                    data: batchData
-                })
+                body: JSON.stringify({ action: 'create_batch', sheet: 'Respuestas_Usuarios', data: batchData })
             });
-            console.log("Sincronización masiva (Batch) completada con éxito.");
         } catch (err) {
-            console.error("Error en el envío masivo:", err);
-            alert("Hubo un problema al sincronizar con la nube.");
+            console.error("Error:", err);
+            alert("Error al sincronizar.");
         } finally {
             setIsSyncing(false);
         }
@@ -175,34 +187,48 @@ export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncin
                                         
                                         {q.Tipo_Respuesta === "MULTIPLE" && (
                                             <div className="options-vertical">
-                                                {q.Opciones_Seleccion.split(',').map(opt => {
-                                                    const originalValue = opt.trim();
-                                                    const cleanLabel = cleanOptionText(originalValue);
-                                                    return (
-                                                        <label key={opt} className="custom-radio-row">
-                                                            <input 
-                                                                type="radio" 
-                                                                name={q.ID_Pregunta} 
-                                                                value={originalValue} 
-                                                                required
-                                                                onChange={(e) => handleInputChange(q.ID_Pregunta, e.target.value)}
-                                                            />
-                                                            <span className="radio-label-text">{cleanLabel}</span>
-                                                        </label>
-                                                    );
-                                                })}
+                                                {splitOptions(q.Opciones_Seleccion).map(opt => (
+                                                    <label key={opt} className="custom-radio-row">
+                                                        <input type="radio" name={q.ID_Pregunta} value={opt} required onChange={(e) => handleInputChange(q.ID_Pregunta, e.target.value)} />
+                                                        <span className="radio-label-text">{cleanOptionText(opt)}</span>
+                                                    </label>
+                                                ))}
                                             </div>
                                         )}
 
-                                        {q.Tipo_Respuesta === "TEXTO" && (
-                                            <textarea className="atlas-textarea" placeholder="Escribe tu respuesta aquí..." onChange={(e) => handleInputChange(q.ID_Pregunta, e.target.value)} required />
+                                        {q.Tipo_Respuesta === "CHECKBOX" && (
+                                            <div className="options-vertical">
+                                                {splitOptions(q.Opciones_Seleccion).map(opt => (
+                                                    <label key={opt} className="custom-radio-row">
+                                                        <input type="checkbox" value={opt} onChange={(e) => handleInputChange(q.ID_Pregunta, e.target.value, true)} />
+                                                        <span className="radio-label-text">{cleanOptionText(opt)}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {["TEXTO", "PARRAFO"].includes(q.Tipo_Respuesta) && (
+                                            <textarea className="atlas-textarea" placeholder={q.Tipo_Respuesta === "PARRAFO" ? "Escribe un párrafo detallado..." : "Respuesta corta..."} onChange={(e) => handleInputChange(q.ID_Pregunta, e.target.value)} required />
                                         )}
 
                                         {q.Tipo_Respuesta === "ESCALA" && (
-                                            <div className="atlas-scale-row">
-                                                {[1,2,3,4,5].map(num => (
-                                                    <button key={num} type="button" className={`scale-pill ${currentResponses[q.ID_Pregunta] == num ? 'active' : ''}`} onClick={() => handleInputChange(q.ID_Pregunta, num)}>{num}</button>
-                                                ))}
+                                            <div className="scale-container-expert">
+                                                <div className="scale-labels-top">
+                                                    <span className="label-min">1 - Totalmente en desacuerdo</span>
+                                                    <span className="label-max">5 - Totalmente de acuerdo</span>
+                                                </div>
+                                                <div className="atlas-scale-row">
+                                                    {[1,2,3,4,5].map(num => (
+                                                        <button 
+                                                            key={num} 
+                                                            type="button" 
+                                                            className={`scale-pill ${currentResponses[q.ID_Pregunta] == num ? 'active' : ''}`} 
+                                                            onClick={() => handleInputChange(q.ID_Pregunta, num)}
+                                                        >
+                                                            {num}
+                                                        </button>
+                                                    ))}
+                                                </div>
                                             </div>
                                         )}
                                     </div>
