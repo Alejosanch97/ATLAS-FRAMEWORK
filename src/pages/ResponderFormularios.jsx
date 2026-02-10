@@ -21,7 +21,7 @@ export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncin
             const answers = await resAnswers.json();
             
             if (Array.isArray(forms)) {
-                // LÓGICA DE FILTRADO CORREGIDA
+                // LÓGICA DE FILTRADO
                 if (filterPhase) {
                     // Si hay una fase activa (A, T o L), filtramos los formularios
                     const filtered = forms.filter(f => f.Fase_ATLAS === filterPhase);
@@ -42,7 +42,7 @@ export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncin
 
     const isFormAnswered = (formId) => userAnswers.some(ans => ans.ID_Form === formId);
     
-    // Estos arrays ahora dependen de availableForms ya filtrado por fase
+    // Estos arrays dependen de availableForms ya filtrado por fase
     const pendingForms = availableForms.filter(f => !isFormAnswered(f.ID_Form));
     const completedForms = availableForms.filter(f => isFormAnswered(f.ID_Form));
 
@@ -163,8 +163,12 @@ export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncin
             </div>
 
             <div className="forms-grid-responder">
-                {/* Si no hay formularios en esta fase, mostrar un mensaje amigable */}
-                {(activeTab === 'pending' ? pendingForms : completedForms).length === 0 ? (
+                {/* LÓGICA CORREGIDA: Solo muestra el mensaje si NO está sincronizando y el array está vacío */}
+                {isSyncing ? (
+                    <div className="loading-state-placeholder">
+                        <p>Buscando instrumentos en la nube...</p>
+                    </div>
+                ) : (activeTab === 'pending' ? pendingForms : completedForms).length === 0 ? (
                     <div className="no-forms-message">
                         <p>No hay instrumentos disponibles en la Fase {filterPhase || ''} por ahora.</p>
                     </div>

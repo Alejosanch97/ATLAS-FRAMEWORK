@@ -193,10 +193,15 @@ export const Dashboard = ({ onLogout }) => {
     };
 
     // --- MODIFICADO: AHORA SOPORTA FASES ---
-    const switchTab = (tab, phase = "") => {
+   const switchTab = (tab, phase = "") => {
         setActiveTab(tab);
-        setFilterPhase(phase); // Almacenamos la fase seleccionada (A, T, o L)
+        setFilterPhase(phase);
         setIsMobileMenuOpen(false);
+
+        // Si el usuario vuelve al Panel de Control, se sincroniza automáticamente
+        if (tab === "overview") {
+            handleManualRefresh();
+        }
     };
 
     const getHeaderContent = () => {
