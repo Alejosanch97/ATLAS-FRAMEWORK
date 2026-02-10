@@ -19,6 +19,9 @@ export const Dashboard = ({ onLogout }) => {
     const [userSearchTerm, setUserSearchTerm] = useState("");
     const [isUserCardExpanded, setIsUserCardExpanded] = useState(true);
     const [compassTab, setCompassTab] = useState(0); // 0: 0-39, 1: 40-59, 2: 60-74, 3: 75-89, 4: 90-100
+    
+    // --- NUEVO ESTADO PARA FILTRADO POR FASE ---
+    const [filterPhase, setFilterPhase] = useState(""); 
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [misRetos, setMisRetos] = useState([]);
@@ -84,7 +87,6 @@ export const Dashboard = ({ onLogout }) => {
         calcularHuella();
     }, [userResponses, misRetos, allFormsInfo]);
 
-    // --- NUEVO: Sincronizar Compass con la Huella ---
     useEffect(() => {
         if (huellaPuntaje >= 90) setCompassTab(4);
         else if (huellaPuntaje >= 75) setCompassTab(3);
@@ -190,8 +192,10 @@ export const Dashboard = ({ onLogout }) => {
         navigate("/");
     };
 
-    const switchTab = (tab) => {
+    // --- MODIFICADO: AHORA SOPORTA FASES ---
+    const switchTab = (tab, phase = "") => {
         setActiveTab(tab);
+        setFilterPhase(phase); // Almacenamos la fase seleccionada (A, T, o L)
         setIsMobileMenuOpen(false);
     };
 
@@ -202,6 +206,9 @@ export const Dashboard = ({ onLogout }) => {
             case "explorador": return { title: "Explorador de Evidencias", subtitle: "T - Transformar: Centro de Respuesta" };
             case "analisis": return { title: "Análisis Estratégico", subtitle: "T - Transformar: Data e Insights" };
             case "retos": return { title: "Mis Retos Estratégicos", subtitle: "L - Liderar: Seguimiento de Objetivos" };
+            case "responder_fase": 
+                const faseTxt = filterPhase === "A" ? "AUDITAR" : filterPhase === "T" ? "TRANSFORM" : "LEAD";
+                return { title: `Fase ${faseTxt}`, subtitle: `Instrumentos de la Etapa ${filterPhase}` };
             default: return { title: "Bienvenido al Marco ATLAS", subtitle: "Liderazgo y Transformación Digital" };
         }
     };
@@ -287,15 +294,50 @@ export const Dashboard = ({ onLogout }) => {
                             <button className={activeTab === "talentos" ? "active" : ""} onClick={() => switchTab("talentos")}>👥 Gestión de Talentos</button>
                             <button className={activeTab === "formularios" ? "active" : ""} onClick={() => switchTab("formularios")}>📐 Arquitecto de Instrumentos</button>
                             <button className={activeTab === "analisis" ? "active" : ""} onClick={() => switchTab("analisis")}>📊 Análisis de Formularios</button>
+                            <button className={activeTab === "explorador" ? "active" : ""} onClick={() => switchTab("explorador")}>🔎 Explorador de Evidencias</button>
                         </>
                     )}
-                    <button className={activeTab === "explorador" ? "active" : ""} onClick={() => switchTab("explorador")}>🔎 Explorador de Evidencias</button>
+                    
                     <button className={activeTab === "retos" ? "active" : ""} onClick={() => switchTab("retos")}>🎯 Mis Retos Estratégicos</button>
 
                     <div className="nav-section">MARCO ATLAS</div>
-                    <div className="atlas-nav-group"><div className="atlas-group-header">🛡️ A — AUDIT</div></div>
-                    <div className="atlas-nav-group"><div className="atlas-group-header">⚙️ T — TRANSFORM</div></div>
-                    <div className="atlas-nav-group"><div className="atlas-group-header">🚀 L — LEAD</div></div>
+                    
+                    {/* SECCIÓN A - AUDIT */}
+                    <div className="atlas-nav-group">
+                        <div className="atlas-group-header">🛡️ A — AUDIT</div>
+                        {userData.Rol === "DOCENTE" && (
+                            <button 
+                                className={activeTab === "responder_fase" && filterPhase === "A" ? "active-phase" : "phase-btn"} 
+                                onClick={() => switchTab("responder_fase", "A")}>
+                                Bitácora de Diagnóstico
+                            </button>
+                        )}
+                    </div>
+
+                    {/* SECCIÓN T - TRANSFORM */}
+                    <div className="atlas-nav-group">
+                        <div className="atlas-group-header">⚙️ T — TRANSFORM</div>
+                        {userData.Rol === "DOCENTE" && (
+                            <button 
+                                className={activeTab === "responder_fase" && filterPhase === "T" ? "active-phase" : "phase-btn"} 
+                                onClick={() => switchTab("responder_fase", "T")}>
+                                Taller de Co-Creación
+                            </button>
+                        )}
+                    </div>
+
+                    {/* SECCIÓN L - LEAD */}
+                    <div className="atlas-nav-group">
+                        <div className="atlas-group-header">🚀 L — LEAD</div>
+                        {userData.Rol === "DOCENTE" && (
+                            <button 
+                                className={activeTab === "responder_fase" && filterPhase === "L" ? "active-phase" : "phase-btn"} 
+                                onClick={() => switchTab("responder_fase", "L")}>
+                                Panel de Influencia
+                            </button>
+                        )}
+                    </div>
+
                     <div className="atlas-nav-group"><div className="atlas-group-header">💎 A — ASSURE</div></div>
                     <div className="atlas-nav-group"><div className="atlas-group-header">🌱 S — SUSTAIN</div></div>
                 </nav>
@@ -395,6 +437,7 @@ export const Dashboard = ({ onLogout }) => {
                             </div>
                         </div>
 
+                        {/* AQUÍ ESTÁ TU CARD DE CALIFICACIONES INTACTA */}
                         <div className="info-card wide-card">
                             <h3>📊 Mis Calificaciones Consolidadas</h3>
                             <div className="user-scroll-list" style={{maxHeight:'320px', overflowY:'auto'}}>
@@ -464,6 +507,18 @@ export const Dashboard = ({ onLogout }) => {
                 {activeTab === "formularios" && <Formularios userData={userData} isSyncing={isSyncing} setIsSyncing={setIsSyncing} API_URL={API_URL} />}
                 {activeTab === "explorador" && <ResponderFormularios userData={userData} isSyncing={isSyncing} setIsSyncing={setIsSyncing} API_URL={API_URL} />}
                 {activeTab === "analisis" && <Analisis userData={userData} API_URL={API_URL} />}
+                
+                {/* NUEVO RENDERIZADO FILTRADO POR FASE */}
+                {activeTab === "responder_fase" && (
+                    <ResponderFormularios 
+                        userData={userData} 
+                        isSyncing={isSyncing} 
+                        setIsSyncing={setIsSyncing} 
+                        API_URL={API_URL} 
+                        filterPhase={filterPhase} 
+                    />
+                )}
+
                 {activeTab === "retos" && (
                     <section className="dashboard-grid">
                         <div className="info-card wide-card">

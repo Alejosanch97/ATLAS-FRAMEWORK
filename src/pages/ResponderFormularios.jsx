@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../Styles/responderFormularios.css'; 
 
-export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncing }) => {
+export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncing, filterPhase }) => {
     const [availableForms, setAvailableForms] = useState([]);
     const [userAnswers, setUserAnswers] = useState([]);
     const [selectedForm, setSelectedForm] = useState(null);
@@ -10,7 +10,7 @@ export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncin
 
     useEffect(() => {
         fetchInitialData();
-    }, []);
+    }, [filterPhase]); // Recargar si cambia la fase seleccionada
 
     const fetchInitialData = async () => {
         setIsSyncing(true);
@@ -19,7 +19,19 @@ export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncin
             const forms = await resForms.json();
             const resAnswers = await fetch(`${API_URL}?sheet=Respuestas_Usuarios&user_key=${userData?.Teacher_Key}`);
             const answers = await resAnswers.json();
-            if (Array.isArray(forms)) setAvailableForms(forms);
+            
+            if (Array.isArray(forms)) {
+                // LÓGICA DE FILTRADO CORREGIDA
+                if (filterPhase) {
+                    // Si hay una fase activa (A, T o L), filtramos los formularios
+                    const filtered = forms.filter(f => f.Fase_ATLAS === filterPhase);
+                    setAvailableForms(filtered);
+                } else {
+                    // Si no hay fase (ADMIN en Explorador), mostramos todos
+                    setAvailableForms(forms);
+                }
+            }
+            
             if (Array.isArray(answers)) setUserAnswers(answers);
         } catch (e) {
             console.error("Error cargando datos:", e);
@@ -29,6 +41,8 @@ export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncin
     };
 
     const isFormAnswered = (formId) => userAnswers.some(ans => ans.ID_Form === formId);
+    
+    // Estos arrays ahora dependen de availableForms ya filtrado por fase
     const pendingForms = availableForms.filter(f => !isFormAnswered(f.ID_Form));
     const completedForms = availableForms.filter(f => isFormAnswered(f.ID_Form));
 
@@ -149,22 +163,29 @@ export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncin
             </div>
 
             <div className="forms-grid-responder">
-                {(activeTab === 'pending' ? pendingForms : completedForms).map(form => (
-                    <div key={form.ID_Form} className={`form-card-answerable ${activeTab === 'completed' ? 'card-done' : 'card-pending'}`}>
-                        <div className="card-accent" />
-                        <span className="phase-badge">{form.Fase_ATLAS}</span>
-                        <h3>{form.Titulo_Form}</h3>
-                        <p>{form.Descripcion}</p>
-                        <div className="card-footer">
-                            <span className="pts-tag">{form.Puntos_Maximos} Pts Máx</span>
-                            {activeTab === 'pending' ? (
-                                <button className="btn-respond" onClick={() => handleOpenForm(form)}>Responder Ahora ✍️</button>
-                            ) : (
-                                <span className="status-done-pill">✅ Completado</span>
-                            )}
-                        </div>
+                {/* Si no hay formularios en esta fase, mostrar un mensaje amigable */}
+                {(activeTab === 'pending' ? pendingForms : completedForms).length === 0 ? (
+                    <div className="no-forms-message">
+                        <p>No hay instrumentos disponibles en la Fase {filterPhase || ''} por ahora.</p>
                     </div>
-                ))}
+                ) : (
+                    (activeTab === 'pending' ? pendingForms : completedForms).map(form => (
+                        <div key={form.ID_Form} className={`form-card-answerable ${activeTab === 'completed' ? 'card-done' : 'card-pending'}`}>
+                            <div className="card-accent" />
+                            <span className="phase-badge">{form.Fase_ATLAS}</span>
+                            <h3>{form.Titulo_Form}</h3>
+                            <p>{form.Descripcion}</p>
+                            <div className="card-footer">
+                                <span className="pts-tag">{form.Puntos_Maximos} Pts Máx</span>
+                                {activeTab === 'pending' ? (
+                                    <button className="btn-respond" onClick={() => handleOpenForm(form)}>Responder Ahora ✍️</button>
+                                ) : (
+                                    <span className="status-done-pill">✅ Completado</span>
+                                )}
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
 
             {selectedForm && (
