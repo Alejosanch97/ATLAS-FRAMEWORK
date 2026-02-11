@@ -4,6 +4,7 @@ import "../Styles/dashboard.css";
 import { Formularios } from "./Formularios";
 import { ResponderFormularios } from "./ResponderFormularios";
 import { Analisis } from "./Analisis";
+import { FaseAuditar } from "./FaseAuditar"; // Importante: Asegúrate de que el archivo existe
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbxcqIbNhC3H7za-GsBF9iuTU___o8OBCF8URGNxwdQm5q8pUd1vpgthbYyrBRkGXJ5Y8Q/exec';
 
@@ -192,13 +193,11 @@ export const Dashboard = ({ onLogout }) => {
         navigate("/");
     };
 
-    // --- MODIFICADO: AHORA SOPORTA FASES ---
    const switchTab = (tab, phase = "") => {
         setActiveTab(tab);
         setFilterPhase(phase);
         setIsMobileMenuOpen(false);
 
-        // Si el usuario vuelve al Panel de Control, se sincroniza automáticamente
         if (tab === "overview") {
             handleManualRefresh();
         }
@@ -211,6 +210,7 @@ export const Dashboard = ({ onLogout }) => {
             case "explorador": return { title: "Explorador de Evidencias", subtitle: "T - Transformar: Centro de Respuesta" };
             case "analisis": return { title: "Análisis Estratégico", subtitle: "T - Transformar: Data e Insights" };
             case "retos": return { title: "Mis Retos Estratégicos", subtitle: "L - Liderar: Seguimiento de Objetivos" };
+            case "fase_auditar": return { title: "Fase: Auditar", subtitle: "Gobernanza y Sentido Crítico de la IA" };
             case "responder_fase": 
                 const faseTxt = filterPhase === "A" ? "AUDITAR" : filterPhase === "T" ? "TRANSFORM" : "LEAD";
                 return { title: `Fase ${faseTxt}`, subtitle: `Instrumentos de la Etapa ${filterPhase}` };
@@ -311,11 +311,18 @@ export const Dashboard = ({ onLogout }) => {
                     <div className="atlas-nav-group">
                         <div className="atlas-group-header">🛡️ A — AUDIT</div>
                         {userData.Rol === "DOCENTE" && (
-                            <button 
-                                className={activeTab === "responder_fase" && filterPhase === "A" ? "active-phase" : "phase-btn"} 
-                                onClick={() => switchTab("responder_fase", "A")}>
-                                Bitácora de Diagnóstico
-                            </button>
+                            <>
+                                <button 
+                                    className={activeTab === "fase_auditar" ? "active-phase" : "phase-btn"} 
+                                    onClick={() => switchTab("fase_auditar")}>
+                                    Fase: Auditar
+                                </button>
+                                <button 
+                                    className={activeTab === "responder_fase" && filterPhase === "A" ? "active-phase" : "phase-btn"} 
+                                    onClick={() => switchTab("responder_fase", "A")}>
+                                    Bitácora de Diagnóstico
+                                </button>
+                            </>
                         )}
                     </div>
 
@@ -442,7 +449,6 @@ export const Dashboard = ({ onLogout }) => {
                             </div>
                         </div>
 
-                        {/* AQUÍ ESTÁ TU CARD DE CALIFICACIONES INTACTA */}
                         <div className="info-card wide-card">
                             <h3>📊 Mis Calificaciones Consolidadas</h3>
                             <div className="user-scroll-list" style={{maxHeight:'320px', overflowY:'auto'}}>
@@ -513,7 +519,15 @@ export const Dashboard = ({ onLogout }) => {
                 {activeTab === "explorador" && <ResponderFormularios userData={userData} isSyncing={isSyncing} setIsSyncing={setIsSyncing} API_URL={API_URL} />}
                 {activeTab === "analisis" && <Analisis userData={userData} API_URL={API_URL} />}
                 
-                {/* NUEVO RENDERIZADO FILTRADO POR FASE */}
+                {/* RENDERIZADO DE LA NUEVA FASE AUDITAR */}
+                {activeTab === "fase_auditar" && (
+                    <FaseAuditar
+                        userData={userData}
+                        API_URL={API_URL}
+                        onNavigate={switchTab} // Pasamos la función que ya creaste
+                    />
+                )}
+
                 {activeTab === "responder_fase" && (
                     <ResponderFormularios 
                         userData={userData} 
@@ -549,28 +563,6 @@ export const Dashboard = ({ onLogout }) => {
                     </section>
                 )}
             </main>
-
-            {showUserModal && (
-                <div className="atlas-modal-overlay">
-                    <div className="atlas-modal">
-                        <h2>{editingUser ? "Editar Talento" : "Nuevo Talento"}</h2>
-                        <form onSubmit={handleCreateUser} className="modal-form">
-                            <input name="tkey" placeholder="Teacher Key" defaultValue={editingUser?.Teacher_Key} readOnly={!!editingUser} required />
-                            <input name="nombre" placeholder="Nombre Completo" defaultValue={editingUser?.Nombre_Completo} required />
-                            <input name="email" type="email" placeholder="Correo" defaultValue={editingUser?.Email} required />
-                            <input name="pass" type="password" placeholder="Contraseña" required={!editingUser} />
-                            <select name="rol" defaultValue={editingUser?.Rol || "DOCENTE"}>
-                                <option value="DOCENTE">DOCENTE</option>
-                                <option value="ADMIN">ADMIN</option>
-                            </select>
-                            <div className="modal-btns">
-                                <button type="submit" className="btn-save-reto">Guardar</button>
-                                <button type="button" onClick={() => setShowUserModal(false)} className="btn-exit">Cerrar</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
