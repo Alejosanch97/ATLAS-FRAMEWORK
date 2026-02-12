@@ -489,14 +489,28 @@ export const Dashboard = ({ onLogout }) => {
                         <div className="info-card wide-card">
                             <div className="card-header-flex">
                                 <h3>Base de Talentos ATLAS</h3>
-                                <div style={{display:'flex', gap:'10px'}}>
-                                    <input type="text" placeholder="Buscar docente..." className="search-input-small" onChange={(e)=>setUserSearchTerm(e.target.value)} />
-                                    <button className="btn-add-reto" onClick={() => { setEditingUser(null); setShowUserModal(true); }}>➕ Nuevo Talento</button>
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar docente..."
+                                        className="search-input-small"
+                                        onChange={(e) => setUserSearchTerm(e.target.value)}
+                                    />
+                                    <button className="btn-add-reto" onClick={() => { setEditingUser(null); setShowUserModal(true); }}>
+                                        ➕ Nuevo Talento
+                                    </button>
                                 </div>
                             </div>
-                            <div className="user-scroll-list" style={{maxHeight:'500px', overflowY:'auto'}}>
+                            <div className="user-scroll-list" style={{ maxHeight: '500px', overflowY: 'auto' }}>
                                 <table className="atlas-table">
-                                    <thead><tr><th>Key</th><th>Nombre</th><th>Rol</th><th>Acciones</th></tr></thead>
+                                    <thead>
+                                        <tr>
+                                            <th>Key</th>
+                                            <th>Nombre</th>
+                                            <th>Rol</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
                                     <tbody>
                                         {filteredUsers.map(u => (
                                             <tr key={u.Teacher_Key}>
@@ -513,6 +527,65 @@ export const Dashboard = ({ onLogout }) => {
                                 </table>
                             </div>
                         </div>
+
+                        {/* MODAL DE USUARIO - CORREGIDO E INTEGRADO */}
+                        {showUserModal && (
+                            <div className="modal-overlay-atlas">
+                                <div className="modal-content-glass" style={{ maxWidth: '500px' }}>
+                                    <div className="modal-atlas-header">
+                                        <div className="header-info">
+                                            <h2>{editingUser ? "Editar Talento" : "Nuevo Talento"}</h2>
+                                            <p className="modal-subtitle">Gestión de Acceso ATLAS</p>
+                                        </div>
+                                        <button className="close-btn-circle" onClick={() => setShowUserModal(false)}>✕</button>
+                                    </div>
+
+                                    <form onSubmit={handleCreateUser} className="modal-atlas-body">
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                            <div>
+                                                <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748b' }}>TEACHER KEY (ID)</label>
+                                                <input
+                                                    type="text" name="tkey" className="atlas-textarea" style={{ minHeight: '45px' }}
+                                                    defaultValue={editingUser?.Teacher_Key} required disabled={!!editingUser}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748b' }}>NOMBRE COMPLETO</label>
+                                                <input
+                                                    type="text" name="nombre" className="atlas-textarea" style={{ minHeight: '45px' }}
+                                                    defaultValue={editingUser?.Nombre_Completo} required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748b' }}>CORREO ELECTRÓNICO</label>
+                                                <input
+                                                    type="email" name="email" className="atlas-textarea" style={{ minHeight: '45px' }}
+                                                    defaultValue={editingUser?.Email} required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748b' }}>ROL DE USUARIO</label>
+                                                <select name="rol" className="atlas-textarea" style={{ minHeight: '45px' }} defaultValue={editingUser?.Rol || "DOCENTE"}>
+                                                    <option value="DOCENTE">DOCENTE</option>
+                                                    <option value="ADMIN">ADMINISTRADOR</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748b' }}>CONTRASEÑA {editingUser && "(Dejar vacío para no cambiar)"}</label>
+                                                <input
+                                                    type="password" name="pass" className="atlas-textarea" style={{ minHeight: '45px' }}
+                                                    required={!editingUser}
+                                                />
+                                            </div>
+
+                                            <button type="submit" className="btn-submit-atlas" style={{ marginTop: '10px' }}>
+                                                {editingUser ? "Actualizar Talento" : "Crear Nuevo Talento"}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        )}
                     </section>
                 )}
 
