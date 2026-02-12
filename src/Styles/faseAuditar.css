@@ -527,13 +527,6 @@
    SISTEMA DE RESPONSIVIDAD INTEGRAL - FASE AUDITAR
    ======================================================= */
 
-/* --- 1. AJUSTES PARA PANTALLAS GRANDES (3 COLUMNAS) --- */
-@media (min-width: 1025px) {
-    .auditar-layers-grid {
-        grid-template-columns: repeat(3, 1fr); /* Capa 1, 2 y 2.5 alineadas */
-        align-items: stretch;
-    }
-}
 
 /* --- 2. AJUSTES PARA TABLETS (IPADS / LAPTOPS PEQUEÑAS) --- */
 @media (max-width: 1024px) {
