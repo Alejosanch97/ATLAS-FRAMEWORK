@@ -5,6 +5,7 @@ import { Formularios } from "./Formularios";
 import { ResponderFormularios } from "./ResponderFormularios";
 import { Analisis } from "./Analisis";
 import { FaseAuditar } from "./FaseAuditar"; // Importante: Asegúrate de que el archivo existe
+import { MicromodulosPage } from "./MicromodulosPage";
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbxcqIbNhC3H7za-GsBF9iuTU___o8OBCF8URGNxwdQm5q8pUd1vpgthbYyrBRkGXJ5Y8Q/exec';
 
@@ -207,8 +208,8 @@ export const Dashboard = ({ onLogout }) => {
         switch (activeTab) {
             case "talentos": return { title: "Gestión de Talentos", subtitle: "L - Liderar: Administración de Usuarios" };
             case "formularios": return { title: "Arquitecto de Instrumentos", subtitle: "A - Auditar: Gestión de Formularios" };
-            case "explorador": return { title: "Explorador de Evidencias", subtitle: "T - Transformar: Centro de Respuesta" };
-            case "analisis": return { title: "Análisis Estratégico", subtitle: "T - Transformar: Data e Insights" };
+            case "explorador": return { title: "Explorador de Evidencias", subtitle: "Centro de Respuesta" };
+            case "analisis": return { title: "Análisis Estratégico", subtitle: "Data e Insights" };
             case "retos": return { title: "Mis Retos Estratégicos", subtitle: "L - Liderar: Seguimiento de Objetivos" };
             case "fase_auditar": return { title: "Fase: Auditar", subtitle: "Gobernanza y Sentido Crítico de la IA" };
             case "responder_fase": 
@@ -525,6 +526,14 @@ export const Dashboard = ({ onLogout }) => {
                         userData={userData}
                         API_URL={API_URL}
                         onNavigate={switchTab} // Pasamos la función que ya creaste
+                    />
+                )}
+                {/* [AÑADE ESTO AQUÍ] RENDERIZADO DE MICROMÓDULOS */}
+                {activeTab === "micromodulos_fase" && (
+                    <MicromodulosPage
+                        userData={userData}
+                        API_URL={API_URL}
+                        onNavigate={() => switchTab("fase_auditar")} // Al volver, regresa a la Fase Auditar
                     />
                 )}
 

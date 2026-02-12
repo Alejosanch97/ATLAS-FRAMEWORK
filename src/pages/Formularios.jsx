@@ -227,8 +227,12 @@ export const Formularios = ({ userData, isSyncing, setIsSyncing, API_URL }) => {
                             <div className="row-split">
                                 <div className="group-modern">
                                     <label>Fase ATLAS</label>
-                                    <select value={formConfig.Fase_ATLAS} onChange={(e) => setFormConfig({...formConfig, Fase_ATLAS: e.target.value})}>
+                                    <select
+                                        value={formConfig.Fase_ATLAS}
+                                        onChange={(e) => setFormConfig({ ...formConfig, Fase_ATLAS: e.target.value })}
+                                    >
                                         <option value="A">A - Auditar</option>
+                                        <option value="AE">AE - Academia Evaluación (Módulos)</option> {/* Nueva opción */}
                                         <option value="T">T - Transformar</option>
                                         <option value="L">L - Liderar</option>
                                     </select>
@@ -365,19 +369,24 @@ export const Formularios = ({ userData, isSyncing, setIsSyncing, API_URL }) => {
                 <div className="card-header-minimal">
                     <div className="header-left-group">
                         <h3>Mis Instrumentos Creados</h3>
+                        {/* Opcional: Un contador para saber cuántos hay en total */}
+                        <span className="count-badge">{formsList.length}</span>
                     </div>
                 </div>
                 <div className="forms-grid">
                     {formsList.length > 0 ? formsList.map((f) => (
                         <div key={f.ID_Form} className="form-item-card animate-fade-in">
                             <div className="form-info">
-                                <span className="phase-pill">{f.Fase_ATLAS}</span>
+                                {/* Clase dinámica: pill-a, pill-ae, pill-t, etc. */}
+                                <span className={`phase-pill pill-${f.Fase_ATLAS.toLowerCase()}`}>
+                                    {f.Fase_ATLAS === "AE" ? "Academia" : f.Fase_ATLAS}
+                                </span>
                                 <h4>{f.Titulo_Form}</h4>
                                 <small>{f.Puntos_Maximos} pts</small>
                             </div>
                             <div className="form-actions">
-                                <button className="btn-edit-small" onClick={() => handleEditForm(f)}>✏️</button>
-                                <button className="btn-delete-small" onClick={() => handleDeleteForm(f.ID_Form)}>🗑️</button>
+                                <button type="button" className="btn-edit-small" onClick={() => handleEditForm(f)} title="Editar">✏️</button>
+                                <button type="button" className="btn-delete-small" onClick={() => handleDeleteForm(f.ID_Form)} title="Eliminar">🗑️</button>
                             </div>
                         </div>
                     )) : <p className="empty-msg">No has creado instrumentos todavía.</p>}

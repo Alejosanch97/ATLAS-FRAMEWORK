@@ -469,25 +469,174 @@
     transition: all 0.3s;
 }
 
-/* =========================================
-   RESPONSIVE
-   ========================================= */
-@media (max-width: 768px) {
-    .scale-labels-top {
-        flex-direction: column;
-        gap: 4px;
-        text-align: center;
+/* =======================================================
+   SISTEMA DE RESPONSIVIDAD INTEGRAL - ATLAS RESPONDER
+   ======================================================= */
+
+/* --- 1. AJUSTES PARA TABLETS Y LAPTOPS (1024px) --- */
+@media (max-width: 1024px) {
+    .forms-grid-responder {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
     }
-    
+
+    .modal-content-glass {
+        max-width: 90%;
+        max-height: 90vh;
+    }
+}
+
+/* --- 2. AJUSTES PARA MÓVILES (768px) --- */
+@media (max-width: 768px) {
+    .atlas-responder-container {
+        padding: 1rem 15px;
+    }
+
+    /* Fila de controles: Apilada en móvil */
+    .responder-controls-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-bottom: none;
+    }
+
+    /* Tabs scrollables lateralmente */
+    .tab-container-modern {
+        overflow-x: auto;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+        border-bottom: 2px solid #f1f5f9;
+        margin: 0 -15px; /* Rompe el padding para scroll infinito */
+        padding-left: 15px;
+    }
+
+    .tab-btn {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+        white-space: nowrap; /* Evita que el texto se rompa */
+    }
+
+    /* Sincronización fija abajo a la derecha */
+    .sync-status-pill {
+        align-self: flex-start;
+        font-size: 0.75rem;
+    }
+
+    /* Grid de tarjetas a una sola columna */
+    .forms-grid-responder {
+        grid-template-columns: 1fr;
+    }
+
+    .form-card-answerable {
+        padding: 1.5rem;
+    }
+
+    /* Modal adaptado a pantalla completa */
+    .modal-overlay-atlas {
+        padding: 0;
+    }
+
+    .modal-content-glass {
+        height: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .modal-atlas-header {
+        padding: 1.2rem 1.5rem;
+    }
+
+    .header-info h2 {
+        font-size: 1.3rem;
+    }
+
+    .modal-atlas-body {
+        padding: 1.5rem;
+    }
+
+    /* Tarjeta de pregunta en móvil */
+    .question-card-minimal {
+        flex-direction: column;
+        gap: 12px;
+        padding: 1.2rem;
+    }
+
+    .q-text {
+        font-size: 1rem;
+    }
+
+    /* Escala Experta en Grilla para móviles */
+    .scale-container-expert {
+        padding: 1rem;
+    }
+
+    .scale-labels-top {
+        flex-direction: row; /* Mantener etiquetas en los extremos */
+        font-size: 0.7rem;
+        margin-bottom: 0.8rem;
+    }
+
     .atlas-scale-row {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
-        gap: 6px;
+        gap: 8px;
     }
 
     .scale-pill {
-        padding: 10px 0;
-        font-size: 0.95rem;
+        padding: 12px 0;
+        font-size: 1rem;
+        border-radius: 10px;
+    }
+}
+
+/* --- 3. AJUSTES PARA PANTALLAS PEQUEÑAS (480px) --- */
+@media (max-width: 480px) {
+    .header-info h2 {
+        font-size: 1.1rem;
+    }
+
+    .modal-subtitle {
+        font-size: 0.7rem;
+    }
+
+    .card-footer {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .btn-respond {
+        width: 100%;
+        text-align: center;
+    }
+
+    .custom-radio-row {
+        padding: 12px 15px;
+        gap: 10px;
+    }
+
+    .radio-label-text {
+        font-size: 0.9rem;
+    }
+
+    .modal-footer-sticky {
+        padding: 1rem 1.5rem;
+    }
+}
+
+/* --- 4. SOPORTE LANDSCAPE (HORIZONTAL) --- */
+@media (max-height: 500px) and (orientation: landscape) {
+    .modal-atlas-header {
+        padding: 0.8rem 1.5rem;
+    }
+    
+    .question-card-minimal {
+        margin-bottom: 1rem;
+    }
+
+    .modal-footer-sticky {
+        padding: 0.8rem;
     }
 }
 

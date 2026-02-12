@@ -1,0 +1,587 @@
+/* Micromodulos.css - Estilo Premium ATLAS - FULL UNIFIED VERSION */
+:root {
+    --gold-atlas: #c5a059;
+    --gold-dark: #8a6d3b;
+    --success-green: #10b981;
+    --success-bg: #f0fdf4;
+    --bg-light: #f8fafc;
+    --text-dark: #1e293b;
+    --glass-bg: rgba(255, 255, 255, 0.9);
+}
+
+.micro-page-wrapper {
+    background: var(--bg-light);
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--text-dark);
+    padding-bottom: 50px;
+}
+
+/* --- HEADER Y NAVEGACIÓN --- */
+.micro-nav-header-static {
+    background: #ffffff;
+    padding: 1rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.brand-center { text-align: center; }
+.brand-tag { font-size: 0.65rem; font-weight: 800; letter-spacing: 2px; color: var(--gold-atlas); display: block; }
+.brand-center h1 { margin: 0; font-size: 1.2rem; font-weight: 900; color: #0f172a; }
+
+.btn-back-atlas {
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.btn-back-atlas:hover { background: #f1f5f9; border-color: var(--gold-atlas); }
+
+.user-badge-mini {
+    background: #f1f5f9;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+/* --- ROADMAP SUPERIOR (CON LÍNEA CONECTORA) --- */
+.micro-roadmap-top {
+    display: flex;
+    justify-content: center;
+    padding: 2.5rem 5%;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.roadmap-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: 0.3s;
+    position: relative;
+    flex: 1;
+    max-width: 150px;
+}
+
+/* Línea Gris Base */
+.roadmap-node:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 22.5px; /* Mitad del círculo de 45px */
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background: #e2e8f0;
+    z-index: 1;
+}
+
+/* Línea Verde cuando se completa */
+.roadmap-node.done:not(:last-child)::after {
+    background: #22c55e;
+}
+
+.node-circle {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    border: 2px solid #e2e8f0;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 2; /* Por encima de la línea */
+    flex-shrink: 0;
+    transition: 0.3s;
+}
+
+.roadmap-node.active .node-circle {
+    border-color: var(--gold-atlas);
+    background: var(--gold-atlas);
+    color: white;
+    box-shadow: 0 0 0 5px rgba(197, 160, 89, 0.2);
+}
+
+.roadmap-node.done .node-circle {
+    background: #dcfce7;
+    border-color: #22c55e;
+    color: #166534;
+}
+
+.node-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+}
+
+/* --- SECCIÓN HÉROE --- */
+.mod-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    padding: 3rem;
+    border-radius: 24px;
+    color: white;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.mod-hero h2 { font-size: 2rem; margin-bottom: 1rem; color: var(--gold-atlas); }
+.hero-goals { 
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 1.5rem;
+}
+.goal-tag { 
+    background: rgba(255,255,255,0.05); 
+    padding: 12px 16px; border-radius: 12px; font-size: 0.85rem; 
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* --- GRID Y CONTENEDORES --- */
+.micro-content-container { max-width: 1400px; margin: 0 auto; padding: 2rem 20px; }
+.main-grid-layout { display: grid; grid-template-columns: 1fr 420px; gap: 40px; }
+
+.glass-card, .action-card {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 30px;
+}
+
+/* --- CARD EXAMEN --- */
+.form-card-answerable-modern {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 24px;
+    border: 1px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    min-height: 320px; 
+}
+
+.card-accent-blue {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 8px;
+    background: var(--gold-atlas);
+}
+
+.phase-badge {
+    font-size: 0.7rem;
+    font-weight: 850;
+    color: #475569;
+    background: #f1f5f9;
+    padding: 6px 12px;
+    border-radius: 8px;
+    margin-bottom: 1.2rem;
+    display: inline-block;
+    width: fit-content;
+}
+
+.form-card-answerable-modern h3 { font-size: 1.4rem; font-weight: 800; margin-bottom: 1rem; }
+.form-card-answerable-modern p { color: #64748b; line-height: 1.6; flex-grow: 1; margin-bottom: 2rem; }
+
+.card-footer-layout {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid #f1f5f9;
+    margin-top: auto;
+}
+
+.pts-tag {
+    font-weight: 700;
+    color: var(--gold-atlas);
+    background: #fffbeb;
+    padding: 6px 14px;
+    border-radius: 20px;
+}
+
+.btn-respond-modern {
+    background: #0f172a;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.btn-respond-modern:hover:not(:disabled) { background: var(--gold-atlas); transform: translateY(-2px); }
+
+.badge-success-atlas {
+    background: #ecfdf5;
+    color: #059669;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 800;
+    border: 1px solid #d1fae5;
+}
+
+/* --- POPUP / MODAL EXAMEN (CÍRCULOS CORREGIDOS) --- */
+.modal-overlay-atlas {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+}
+
+.modal-content-glass {
+    background: #ffffff;
+    width: 90%;
+    max-width: 850px;
+    max-height: 85vh;
+    border-radius: 30px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+    overflow: hidden;
+    animation: modalAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalAppear {
+    from { opacity: 0; transform: translateY(40px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-atlas-header {
+    padding: 2rem 2.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-atlas-header h2 { font-size: 1.6rem; font-weight: 800; color: #0f172a; margin: 0; }
+.modal-subtitle { font-size: 0.85rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+.modal-atlas-body {
+    padding: 2.5rem;
+    overflow-y: auto;
+    background: #f8fafc;
+    flex: 1;
+}
+
+.question-card-minimal {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    gap: 20px;
+}
+
+.q-number {
+    background: var(--gold-atlas);
+    color: white;
+    width: 35px; height: 35px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; flex-shrink: 0;
+}
+
+.q-content { width: 100%; }
+.q-text { font-size: 1.15rem; font-weight: 700; color: #1e293b; line-height: 1.5; margin-bottom: 1.5rem; display: block; }
+
+.options-vertical { display: flex; flex-direction: column; gap: 12px; }
+
+.custom-radio-row {
+    display: flex; align-items: center;
+    padding: 18px 22px; background: white;
+    border: 2px solid #e2e8f0; border-radius: 16px;
+    cursor: pointer; transition: 0.2s;
+}
+
+.custom-radio-row:hover { border-color: var(--gold-atlas); background: #fffbeb; }
+.custom-radio-row:has(input:checked) { border-color: var(--gold-atlas); background: #fffbeb; box-shadow: 0 4px 12px rgba(197, 160, 89, 0.15); }
+
+/* CORRECCIÓN: flex-shrink: 0 para que los círculos no se deformen nunca */
+.custom-radio-row input[type="radio"],
+.custom-radio-row input[type="checkbox"] {
+    width: 20px !important; 
+    height: 20px !important; 
+    accent-color: var(--gold-atlas); 
+    margin-right: 15px;
+    cursor: pointer;
+    flex-shrink: 0 !important; /* Esto evita que se vuelvan ovalados o pequeños */
+}
+
+.radio-label-text { font-size: 1.05rem; font-weight: 600; color: #334155; }
+
+/* Escala y Textarea Premium Examen */
+.atlas-textarea {
+    width: 100%; min-height: 120px; padding: 15px; border-radius: 12px;
+    border: 1px solid #cbd5e1; background: #ffffff; font-family: inherit;
+    resize: vertical; box-sizing: border-box; transition: 0.3s;
+}
+.atlas-textarea:focus { border-color: var(--gold-atlas); outline: none; background: white; }
+
+.scale-container-expert {
+    background: #f1f5f9; padding: 1.5rem; border-radius: 20px; border: 1px solid #e2e8f0; margin-top: 10px;
+}
+.scale-labels-top { display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 0.85rem; font-weight: 700; color: #64748b; }
+.atlas-scale-row { display: flex; gap: 12px; justify-content: space-between; }
+.scale-pill {
+    flex: 1; padding: 14px; border-radius: 14px; border: 2px solid #cbd5e1; background: white;
+    font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
+}
+.scale-pill:hover { border-color: var(--gold-atlas); color: var(--gold-atlas); }
+.scale-pill.active { background: var(--gold-atlas); color: white; border-color: var(--gold-atlas); }
+
+/* Footer Modal */
+.modal-footer-sticky {
+    padding: 1.5rem 2.5rem;
+    background: white;
+    border-top: 1px solid #f1f5f9;
+}
+
+.btn-submit-atlas {
+    width: 100%; padding: 20px; background: var(--gold-atlas); color: white;
+    border: none; border-radius: 16px; font-weight: 800; font-size: 1.1rem;
+    cursor: pointer; transition: 0.3s;
+}
+.btn-submit-atlas:hover:not(:disabled) { background: var(--gold-dark); box-shadow: 0 8px 25px rgba(197, 160, 89, 0.3); }
+
+/* --- OTROS ELEMENTOS --- */
+.video-main-container {
+    aspect-ratio: 16/9; background: #000; border-radius: 18px;
+    overflow: hidden; margin: 20px 0; box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+.video-main-container iframe { width: 100%; height: 100%; border: none; }
+
+.close-btn-circle {
+    background: #f1f5f9; border: none; width: 40px; height: 40px;
+    border-radius: 50%; font-size: 1.4rem; cursor: pointer; color: #64748b;
+    display: flex; align-items: center; justify-content: center; transition: 0.2s;
+}
+.close-btn-circle:hover { background: #fee2e2; color: #ef4444; transform: rotate(90deg); }
+
+/* Textareas para Foro y Actividad (Genéricas) */
+textarea {
+    width: 100%; min-height: 120px; padding: 15px; border-radius: 12px;
+    border: 1px solid #cbd5e1; background: #f8fafc; font-family: inherit;
+    resize: vertical; box-sizing: border-box; transition: 0.3s;
+}
+textarea:focus { border-color: var(--gold-atlas); outline: none; background: white; }
+
+.btn-save-mini {
+    width: 100%; padding: 14px; background: #0f172a; color: white;
+    border: none; border-radius: 10px; font-weight: 700; margin-top: 15px; cursor: pointer;
+}
+.btn-save-mini:hover { background: var(--gold-atlas); }
+
+/* =======================================================
+   SISTEMA DE RESPONSIVIDAD - MICROMÓDULOS ATLAS
+   ======================================================= */
+
+/* --- 1. AJUSTES PARA TABLETS (1024px) --- */
+@media (max-width: 1024px) {
+    .micro-content-container {
+        padding: 1.5rem 15px;
+    }
+
+    .main-grid-layout {
+        grid-template-columns: 1fr; /* Una sola columna */
+        gap: 30px;
+    }
+
+    .mod-hero {
+        padding: 2rem;
+    }
+
+    .mod-hero h2 {
+        font-size: 1.7rem;
+    }
+}
+
+/* --- 2. AJUSTES PARA MÓVILES (768px) --- */
+@media (max-width: 768px) {
+    /* Header y Navegación */
+    .micro-nav-header-static {
+        padding: 0.8rem 15px;
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    .brand-center h1 {
+        font-size: 1rem;
+    }
+
+    .btn-back-atlas {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+
+    .user-badge-mini {
+        display: none; /* Ocultar en móvil para ganar espacio */
+    }
+
+    /* Roadmap Vertical */
+    .micro-roadmap-top {
+        padding: 1.5rem 20px;
+        justify-content: flex-start;
+        overflow-x: hidden;
+    }
+
+    .roadmap-node {
+        flex-direction: row;
+        max-width: 100%;
+        flex: none;
+        width: 100%;
+        gap: 15px;
+        padding-bottom: 25px; /* Espacio para la línea vertical */
+    }
+
+    .roadmap-node:not(:last-child)::after {
+        top: 45px; /* Debajo del círculo */
+        left: 22.5px; /* Centro del círculo */
+        width: 2px;
+        height: calc(100% - 35px);
+    }
+
+    .node-circle {
+        width: 38px;
+        height: 38px;
+        margin-bottom: 0;
+        font-size: 0.9rem;
+    }
+
+    .node-label {
+        font-size: 0.85rem;
+        text-align: left;
+    }
+
+    /* Hero Section */
+    .mod-hero {
+        border-radius: 0; /* Full width en móviles */
+        margin: -1.5rem -15px 1.5rem -15px;
+        padding: 1.5rem;
+    }
+
+    .hero-goals {
+        grid-template-columns: 1fr;
+    }
+
+    /* Cards de Contenido */
+    .glass-card, .action-card, .form-card-answerable-modern {
+        padding: 1.5rem;
+        border-radius: 16px;
+    }
+
+    .card-footer-layout {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    .btn-respond-modern {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Modal de Examen Responsivo */
+    .modal-content-glass {
+        width: 100%;
+        height: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .modal-atlas-header {
+        padding: 1.2rem;
+    }
+
+    .modal-atlas-body {
+        padding: 1.2rem;
+    }
+
+    .question-card-minimal {
+        flex-direction: column;
+        gap: 12px;
+        padding: 1.2rem;
+    }
+
+    .q-text {
+        font-size: 1rem;
+    }
+
+    .custom-radio-row {
+        padding: 14px 16px;
+    }
+
+    .radio-label-text {
+        font-size: 0.95rem;
+    }
+
+    /* Escalas de 1-5 en móvil */
+    .atlas-scale-row {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 5px;
+    }
+
+    .scale-pill {
+        padding: 10px 5px;
+        font-size: 0.9rem;
+    }
+
+    .scale-labels-top {
+        font-size: 0.7rem;
+    }
+}
+
+/* --- 3. AJUSTES EXTREMOS (480px o menos) --- */
+@media (max-width: 480px) {
+    .modal-atlas-header h2 {
+        font-size: 1.2rem;
+    }
+
+    .mod-hero h2 {
+        font-size: 1.4rem;
+    }
+
+    .btn-submit-atlas {
+        padding: 16px;
+        font-size: 1rem;
+    }
+
+    /* Ajuste de videos */
+    .video-main-container {
+        margin: 10px -5px;
+        border-radius: 10px;
+    }
+}
+
+/* --- 4. OPTIMIZACIÓN LANDSCAPE (HORIZONTAL) --- */
+@media (max-height: 500px) and (orientation: landscape) {
+    .modal-content-glass {
+        height: 100vh;
+    }
+    
+    .micro-roadmap-top {
+        display: none; /* Ocultar para dar prioridad al contenido */
+    }
+
+    .mod-hero {
+        padding: 1rem;
+    }
+}

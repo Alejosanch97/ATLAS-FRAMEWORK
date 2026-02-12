@@ -8,19 +8,25 @@ export const FaseAuditar = ({ userData, API_URL, onNavigate }) => {
     const [reflexion, setReflexion] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     
-    // Estados para la validación de formularios de la Fase A (Auditar)
     const [formulariosFase, setFormulariosFase] = useState([]);
     const [respuestasUsuario, setRespuestasUsuario] = useState([]);
+    
+    const [micromodulosProgreso, setMicromodulosProgreso] = useState([]);
+
+    // Mapeo de IDs de formularios para el cálculo de notas (Igual al de MicromodulosPage)
+    const FORM_IDS_MAP = {
+        1: "FORM-1770840416708",
+        2: "FORM-1770840694625",
+        3: "FORM-1770840767445"
+    };
 
     useEffect(() => {
         fetchInitialData();
     }, []);
 
     const fetchInitialData = async () => {
-        // Solo mostramos loading total la primera vez si no hay datos
         if (!progreso) setLoading(true);
         try {
-            // 1. Obtener progreso de las fases para este usuario
             const resProgreso = await fetch(`${API_URL}?sheet=Progreso_Fases_ATLAS&user_key=${userData.Teacher_Key}`);
             const dataProgreso = await resProgreso.json();
             const registroFase = Array.isArray(dataProgreso) ? dataProgreso.find(item => item.Fase === "AUDITAR") : null;
@@ -30,16 +36,18 @@ export const FaseAuditar = ({ userData, API_URL, onNavigate }) => {
                 setReflexion(registroFase.Capa_3_Hito_Texto || "");
             }
 
-            // 2. Traer configuración de formularios para filtrar los de Fase A
             const resForms = await fetch(`${API_URL}?sheet=Config_Formularios`);
             const allForms = await resForms.json();
             const formsFaseA = Array.isArray(allForms) ? allForms.filter(f => f.Fase_ATLAS === "A") : [];
             setFormulariosFase(formsFaseA);
 
-            // 3. Traer las respuestas del usuario para verificar completitud
             const resAnswers = await fetch(`${API_URL}?sheet=Respuestas_Usuarios&user_key=${userData.Teacher_Key}`);
             const allAnswers = await resAnswers.json();
             setRespuestasUsuario(Array.isArray(allAnswers) ? allAnswers : []);
+
+            const resMicros = await fetch(`${API_URL}?sheet=Progreso_Micromodulos&user_key=${userData.Teacher_Key}`);
+            const allMicros = await resMicros.json();
+            setMicromodulosProgreso(Array.isArray(allMicros) ? allMicros : []);
 
         } catch (e) {
             console.error("Error al cargar datos ATLAS:", e);
@@ -48,18 +56,50 @@ export const FaseAuditar = ({ userData, API_URL, onNavigate }) => {
         }
     };
 
-    // Lógica para determinar si la Capa 2 está completa
+    // --- NUEVA FUNCIÓN: CÁLCULO DE NOTA REAL (REGLA DE TRES) ---
+    const calcularNotaReal = (moduloId) => {
+        const idFormBuscado = FORM_IDS_MAP[moduloId];
+        
+        // 1. Filtrar respuestas del examen para este módulo
+        const respuestasDelModulo = respuestasUsuario.filter(r => r.ID_Form === idFormBuscado);
+
+        // Calcular mejor intento del examen (Base 100 -> Ponderado 50%)
+        const intentosMap = {};
+        respuestasDelModulo.forEach(r => {
+            const intentoKey = r.ID_Respuesta_Global;
+            if (!intentosMap[intentoKey]) intentosMap[intentoKey] = 0;
+            intentosMap[intentoKey] += (parseFloat(r.Puntos_Ganados) || 0);
+        });
+        const ptsBrutosExamen = Object.values(intentosMap).length > 0 ? Math.max(...Object.values(intentosMap)) : 0;
+        const ptsExamenPonderado = (ptsBrutosExamen / 100) * 50;
+
+        // 2. Foro y Actividad (25% cada uno -> Mínimo 10 caracteres)
+        const actualDB = micromodulosProgreso.find(m => m.Modulo_ID.toString() === moduloId.toString());
+        const ptsForo = (actualDB?.Foro_Aporte?.trim().length >= 10) ? 25 : 0;
+        const ptsActividad = (actualDB?.Actividad_Texto?.trim().length >= 10) ? 25 : 0;
+
+        return Math.min(100, ptsExamenPonderado + ptsForo + ptsActividad);
+    };
+
     const checkFormulariosCompletos = () => {
         if (formulariosFase.length === 0) return false;
-        // Verifica que para cada formulario de la Fase A exista al menos una respuesta del usuario
         return formulariosFase.every(form => 
             respuestasUsuario.some(resp => resp.ID_Form === form.ID_Form)
         );
     };
 
+    const checkMicromodulosCompletos = () => {
+        // Ahora validamos con la nota real calculada aquí
+        const m1 = calcularNotaReal(1);
+        const m2 = calcularNotaReal(2);
+        const m3 = calcularNotaReal(3);
+        return m1 >= 80 && m2 >= 80 && m3 >= 80;
+    };
+
     const formsCompletos = checkFormulariosCompletos();
-    const canUnlockCapa3 = progreso?.Capa_1_Sentido === 'COMPLETADO' && formsCompletos;
-    // El proceso se considera cerrado si ya existe texto guardado en la Capa 3
+    const microsCompletos = checkMicromodulosCompletos();
+    
+    const canUnlockCapa3 = progreso?.Capa_1_Sentido === 'COMPLETADO' && formsCompletos && microsCompletos;
     const isProcessComplete = canUnlockCapa3 && progreso?.Capa_3_Hito_Texto?.length >= 100;
 
     const handleAceptarMarco = async () => {
@@ -101,13 +141,7 @@ export const FaseAuditar = ({ userData, API_URL, onNavigate }) => {
             Swal.fire("Rigor Académico", "La evidencia requiere una profundidad analítica mayor (mínimo 100 caracteres).", "warning");
             return;
         }
-
         setIsSaving(true);
-        
-        // Actualizamos el estado local inmediatamente para que la UI responda (Envío Optimista)
-        const updatedProgreso = { ...progreso, Capa_3_Hito_Texto: reflexion };
-        setProgreso(updatedProgreso);
-
         const dataPayload = {
             action: "update",
             sheet: "Progreso_Fases_ATLAS",
@@ -119,32 +153,27 @@ export const FaseAuditar = ({ userData, API_URL, onNavigate }) => {
                 Fecha_Actualizacion: new Date().toISOString()
             }
         };
-
-        // Mostramos el mensaje de éxito de una vez
-        Swal.fire({
-            title: "Hito Sincronizado",
-            text: "Su Mapa de Riesgos ha sido enviado a revisión institucional. La nube se actualizará en segundo plano.",
-            icon: "success",
-            confirmButtonColor: "#c5a059"
-        });
-
+        
         try {
-            // Ejecutamos la petición sin bloquear al usuario con el await del mensaje
-            fetch(API_URL, { method: "POST", body: JSON.stringify(dataPayload) })
-                .then(() => fetchInitialData()) // Refresca los datos reales cuando termine
-                .finally(() => setIsSaving(false));
-            
+            await fetch(API_URL, { method: "POST", body: JSON.stringify(dataPayload) });
+            await fetchInitialData();
+            Swal.fire({
+                title: "Hito Sincronizado",
+                text: "Su Mapa de Riesgos ha sido enviado a revisión institucional.",
+                icon: "success",
+                confirmButtonColor: "#c5a059"
+            });
         } catch (e) {
             console.error(e);
+            Swal.fire("Error", "No se pudo guardar la evidencia.", "error");
+        } finally {
             setIsSaving(false);
-            Swal.fire("Error", "Hubo un problema al subir la evidencia, pero su progreso local se mantiene.", "error");
         }
     };
 
     return (
         <div className="auditar-container animate-fade-in">
             
-            {/* PÍLDORA DE CARGA SUPERIOR */}
             {(loading || isSaving) && (
                 <div className="sync-status-pill-floating">
                     <span className="sync-icon">🔄</span>
@@ -152,7 +181,6 @@ export const FaseAuditar = ({ userData, API_URL, onNavigate }) => {
                 </div>
             )}
 
-            {/* RUTA VISUAL HACIA LA CERTIFICACIÓN */}
             <div className="atlas-roadmap-container">
                 <h2 className="roadmap-title">📍 Ruta de finalización de Auditoria ATLAS</h2>
                 <div className="roadmap-steps">
@@ -164,62 +192,41 @@ export const FaseAuditar = ({ userData, API_URL, onNavigate }) => {
                         <span className="step-num">{formsCompletos ? "✓" : "2"}</span>
                         <p>Diagnóstico</p>
                     </div>
+                    <div className={`step-item ${microsCompletos ? 'done' : (formsCompletos ? 'active' : '')}`}>
+                        <span className="step-num">{microsCompletos ? "✓" : "2.5"}</span>
+                        <p>Micromódulos</p>
+                    </div>
                     <div className={`step-item ${isProcessComplete ? 'done' : (canUnlockCapa3 ? 'active' : '')}`}>
                         <span className="step-num">{isProcessComplete ? "✓" : "3"}</span>
                         <p>Evidencias</p>
-                    </div>
-                    <div className={`step-item last ${isProcessComplete ? 'done' : ''}`}>
-                        <span className="step-num">{isProcessComplete ? "🏆" : "⏳"}</span>
-                        <p>{isProcessComplete ? "Cierre" : "Pendiente"}</p>
                     </div>
                 </div>
             </div>
 
             <div className="auditar-layers-grid">
                 
-                {/* CAPA 1: EL SENTIDO */}
                 <div className={`layer-card main-entry ${progreso?.Capa_1_Sentido === 'COMPLETADO' ? 'completed' : 'pending'}`}>
                     <div className="layer-badge">A1</div>
                     <div className="layer-content">
                         <h3>Capa 1: El Sentido (Gobernanza)</h3>
                         <p className="intro-p">
                             ATLAS no es una capacitación técnica sobre herramientas de IA. Es un proceso de 
-                            <strong> Auditoría Pedagógica</strong> para garantizar el uso con criterio profesional y responsabilidad ética.
+                            <strong> Auditoría Pedagógica</strong>.
                         </p>
-                        
-                        <div className="manifesto-highlights">
-                            <h4>En esta etapa fundamental usted reconocerá:</h4>
-                            <ul>
-                                <li>Soberanía de datos y ética en entornos educativos.</li>
-                                <li>Detección de sesgos algorítmicos y riesgos cognitivos.</li>
-                                <li>Preservación de la autonomía intelectual del estudiante.</li>
-                            </ul>
-                        </div>
-
-                        <div className="impact-box-formal">
-                            <strong>Impacto Institucional:</strong>
-                            <p>Esta etapa habilita su proceso. Establece el compromiso profesional necesario para la certificación.</p>
-                        </div>
-
                         <button 
                             onClick={handleAceptarMarco} 
                             disabled={progreso?.Capa_1_Sentido === 'COMPLETADO' || isSaving}
                             className={`btn-formal-action ${progreso?.Capa_1_Sentido === 'COMPLETADO' ? 'btn-done' : ''}`}
                         >
-                            {progreso?.Capa_1_Sentido === 'COMPLETADO' 
-                                ? "✓ Compromiso Profesional Declarado" 
-                                : "Declaro Compromiso con el Proceso ATLAS"}
+                            {progreso?.Capa_1_Sentido === 'COMPLETADO' ? "✓ Compromiso Declarado" : "Declaro Compromiso ATLAS"}
                         </button>
                     </div>
                 </div>
 
-                {/* CAPA 2: EL DIAGNÓSTICO (DATA-DRIVEN) */}
                 <div className={`layer-card side-entry ${progreso?.Capa_1_Sentido !== 'COMPLETADO' ? 'locked' : ''}`}>
                     <div className="layer-badge">A2</div>
                     <div className="layer-content">
                         <h3>Capa 2: El Diagnóstico (Data-Driven)</h3>
-                        <p>Identificación de brechas entre los lineamientos institucionales y la práctica real.</p>
-                        
                         <div className="forms-status-list">
                             {formulariosFase.map(f => {
                                 const respondido = respuestasUsuario.some(r => r.ID_Form === f.ID_Form);
@@ -231,28 +238,50 @@ export const FaseAuditar = ({ userData, API_URL, onNavigate }) => {
                                 );
                             })}
                         </div>
-
                         <div className="status-indicator-box">
-                            {progreso?.Capa_1_Sentido === 'COMPLETADO' 
-                                ? (
-                                    formsCompletos 
-                                    ? <span className="status-tag success">✅ Diagnóstico Completo</span>
-                                    : <button 
-                                        className="btn-go-diagnostic"
-                                        onClick={() => onNavigate('responder_fase', 'A')}
-                                      >
-                                        Ir a Bitácora de Diagnóstico
-                                      </button>
-                                )
-                                : <span className="status-tag locked">🔒 Bloqueado: Requiere Capa 1</span>
-                            }
+                            {progreso?.Capa_1_Sentido === 'COMPLETADO' ? (
+                                formsCompletos ? <span className="status-tag success">✅ Completo</span> :
+                                <button className="btn-go-diagnostic" onClick={() => onNavigate('responder_fase', 'A')}>Ir a Bitácora</button>
+                            ) : <span className="status-tag locked">🔒 Bloqueado</span>}
                         </div>
                     </div>
                 </div>
 
+                <div className={`layer-card micro-entry ${!formsCompletos ? 'locked' : ''}`}>
+                    <div className="layer-badge">A2.5</div>
+                    <div className="layer-content">
+                        <h3>Capa 2.5: Micromódulos de Profundización</h3>
+                        <p>Formación especializada en ética y auditoría algorítmica.</p>
+                        
+                        <div className="micros-progress-grid">
+                            {[1, 2, 3].map(id => {
+                                // LLAMADA A LA FUNCIÓN DE CÁLCULO REAL
+                                const notaReal = calcularNotaReal(id);
+                                return (
+                                    <div key={id} className={`micro-pill ${notaReal >= 80 ? 'passed' : 'pending'}`}>
+                                        <span className="m-label">M{id}</span>
+                                        <span className="m-score">{notaReal.toFixed(1)}%</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        <div className="status-indicator-box">
+                            {!formsCompletos ? (
+                                <span className="status-tag locked">🔒 Bloqueado: Finalice Diagnóstico</span>
+                            ) : (
+                                <button 
+                                    className={`btn-go-micros ${microsCompletos ? 'btn-done' : ''}`}
+                                    onClick={() => onNavigate('micromodulos_fase', 'A')}
+                                >
+                                    {microsCompletos ? "✓ Módulos Completados" : "Ir a Estudiar Micromódulos"}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            {/* SECCIÓN DEL RETO - CAPA 3: DISEÑO EXPANDIDO */}
             {canUnlockCapa3 ? (
                 <section className="reto-section animate-slide-up">
                     <div className="reto-card-full">
@@ -260,44 +289,25 @@ export const FaseAuditar = ({ userData, API_URL, onNavigate }) => {
                             <div className="icon-box-gold">🎓</div>
                             <div>
                                 <h2>Hito de Evidencia: Mapa de Riesgos Pedagógicos</h2>
-                                <p className="reto-subtitle">Fase Auditar - Consolidación de Criterio Profesional</p>
+                                <p className="reto-subtitle">Consolidación de Criterio Profesional</p>
                             </div>
                         </div>
-                        
                         <div className="reto-body">
-                            <div className="reto-instrucciones-formal">
-                                <p>Para completar la Fase Auditar, realice un ejercicio de <strong>Metacognición Curricular</strong>:</p>
-                                <ol>
-                                    <li>Identifique una unidad de aprendizaje vulnerable a la automatización acrítica.</li>
-                                    <li>Describa su estrategia para verificar la autoría humana y el juicio crítico.</li>
-                                </ol>
-                            </div>
-
-                            <div className="textarea-container">
-                                <textarea 
-                                    className="reto-textarea-premium"
-                                    placeholder="Escriba aquí su análisis detallado y propuesta de mitigación..."
-                                    value={reflexion}
-                                    onChange={(e) => setReflexion(e.target.value)}
-                                ></textarea>
-                                <div className="char-count">
-                                    {reflexion.length} / 100 caracteres mínimos (Rigor Académico)
-                                </div>
-                            </div>
-
-                            <button 
-                                className="btn-save-reto-atlas-full" 
-                                onClick={handleGuardarReto} 
-                                disabled={isSaving}
-                            >
-                                {isSaving ? "Sincronizando con ATLAS..." : "Enviar Hito a Auditoría Institucional"}
+                            <textarea 
+                                className="reto-textarea-premium"
+                                placeholder="Escriba aquí su análisis detallado..."
+                                value={reflexion}
+                                onChange={(e) => setReflexion(e.target.value)}
+                            ></textarea>
+                            <button className="btn-save-reto-atlas-full" onClick={handleGuardarReto} disabled={isSaving}>
+                                {isSaving ? "Sincronizando..." : "Enviar Hito a Auditoría Institucional"}
                             </button>
                         </div>
                     </div>
                 </section>
             ) : (
                 <div className="locked-section-notice">
-                    <p>🔒 El <strong>Hito de Evidencia (Capa 3)</strong> se habilitará cuando completes el Compromiso Ético y el Diagnóstico de la Fase A.</p>
+                    <p>🔒 El <strong>Hito de Evidencia (Capa 3)</strong> se habilitará tras completar el Diagnóstico y los Micromódulos con nota superior a 80%.</p>
                 </div>
             )}
         </div>

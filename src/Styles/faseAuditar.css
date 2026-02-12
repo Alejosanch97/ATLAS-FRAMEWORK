@@ -433,18 +433,109 @@
     to { opacity: 1; }
 }
 
-/* RESPONSIVIDAD */
-@media (max-width: 1024px) {
-    .auditar-layers-grid { grid-template-columns: 1fr; }
-    .reto-card-full { padding: 30px; }
-    .roadmap-steps { padding: 0 10px; }
-    .sync-status-pill-floating { top: 10px; right: 10px; padding: 8px 15px; }
-}
-
 /* =========================================
-   OPTIMIZACIÓN RESPONSIVE - FASE AUDITAR
+   ESTILOS ESPECÍFICOS CAPA 2.5 (MICROMÓDULOS)
    ========================================= */
 
+.layer-card.micro-entry {
+    border-top: 6px solid #6366f1; /* Un color índigo para diferenciarlo del diagnóstico */
+    background: linear-gradient(to bottom right, #ffffff, #f9faff);
+}
+
+/* Contenedor de las pastillas de progreso */
+.micros-progress-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+}
+
+/* Estilo de cada pastilla de módulo */
+.micro-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 8px;
+    border-radius: 16px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.micro-pill .m-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.micro-pill .m-score {
+    font-size: 1rem;
+    font-weight: 900;
+    color: var(--atlas-blue-dark);
+}
+
+/* Estado: Módulo Aprobado (>= 80) */
+.micro-pill.passed {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.08);
+}
+
+.micro-pill.passed .m-label {
+    color: #16a34a;
+}
+
+.micro-pill.passed .m-score {
+    color: #15803d;
+}
+
+/* Botón específico para Micromódulos */
+.btn-go-micros {
+    width: 100%;
+    padding: 18px;
+    background: #6366f1; /* Color índigo */
+    color: white;
+    border: none;
+    border-radius: 18px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 15px;
+}
+
+.btn-go-micros:hover:not(:disabled) {
+    background: #4f46e5;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+}
+
+.btn-go-micros.btn-done {
+    background: var(--atlas-success);
+    cursor: default;
+}
+
+/* Ajuste para el estado bloqueado de la Capa 2.5 */
+.layer-card.micro-entry.locked {
+    filter: grayscale(1) opacity(0.6);
+}
+
+/* =======================================================
+   SISTEMA DE RESPONSIVIDAD INTEGRAL - FASE AUDITAR
+   ======================================================= */
+
+/* --- 1. AJUSTES PARA PANTALLAS GRANDES (3 COLUMNAS) --- */
+@media (min-width: 1025px) {
+    .auditar-layers-grid {
+        grid-template-columns: repeat(3, 1fr); /* Capa 1, 2 y 2.5 alineadas */
+        align-items: stretch;
+    }
+}
+
+/* --- 2. AJUSTES PARA TABLETS (IPADS / LAPTOPS PEQUEÑAS) --- */
 @media (max-width: 1024px) {
     .auditar-container {
         padding: 15px;
@@ -454,27 +545,45 @@
         font-size: 2rem;
     }
 
+    /* Grid de 2 columnas: Capa 1 y 2 arriba, Micromódulos abajo ancho completo */
     .auditar-layers-grid {
-        grid-template-columns: 1fr; /* Una columna en iPads */
+        grid-template-columns: 1fr 1fr;
         gap: 20px;
+    }
+
+    .layer-card.micro-entry {
+        grid-column: span 2;
+    }
+
+    .reto-card-full {
+        padding: 30px;
     }
 
     .roadmap-steps {
         max-width: 100%;
+        padding: 0 10px;
+    }
+
+    .sync-status-pill-floating {
+        top: 15px;
+        right: 15px;
+        padding: 8px 15px;
+        font-size: 0.8rem;
     }
 }
 
+/* --- 3. AJUSTES PARA MÓVILES (SMARTPHONES) --- */
 @media (max-width: 768px) {
-    /* Ajuste de la Píldora Flotante */
+    /* Píldora flotante pasa abajo para no estorbar el título */
     .sync-status-pill-floating {
         top: auto;
         bottom: 20px;
         right: 20px;
-        padding: 8px 16px;
-        font-size: 0.75rem;
+        padding: 10px 18px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.3);
     }
 
-    /* Roadmap Vertical para Celulares */
+    /* Roadmap se vuelve una lista vertical */
     .atlas-roadmap-container {
         padding: 25px 15px;
         border-radius: 20px;
@@ -484,15 +593,16 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 25px;
-        padding-left: 20px;
+        padding-left: 15px;
     }
 
+    /* Línea conector vertical ajustada */
     .roadmap-steps::before {
-        left: 42px; /* Alineado con los círculos */
-        top: 10%;
-        bottom: 10%;
+        left: 31px; 
+        top: 10px;
+        bottom: 10px;
         width: 2px;
-        height: 80%;
+        height: 85%;
     }
 
     .step-item {
@@ -505,16 +615,26 @@
     .step-num {
         width: 35px;
         height: 35px;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         flex-shrink: 0;
+        border-width: 3px;
     }
 
     .step-item p {
         text-align: left;
         font-size: 0.9rem;
+        margin: 0;
     }
 
-    /* Ajuste de Capas */
+    /* Cards a una sola columna */
+    .auditar-layers-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .layer-card.micro-entry {
+        grid-column: span 1;
+    }
+
     .layer-card {
         padding: 25px;
         border-radius: 20px;
@@ -522,11 +642,12 @@
 
     .layer-badge {
         right: 20px;
+        top: -12px;
         padding: 6px 14px;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
     }
 
-    /* Ajuste del Reto (Capa 3) */
+    /* Sección del Reto Final */
     .reto-card-full {
         padding: 25px 20px;
         border-radius: 25px;
@@ -547,32 +668,35 @@
     .reto-textarea-premium {
         padding: 20px;
         font-size: 1rem;
-        min-height: 200px;
+        min-height: 220px;
     }
 
     .btn-save-reto-atlas-full {
         padding: 18px;
         font-size: 0.95rem;
-        letter-spacing: 1px;
     }
 }
 
+/* --- 4. AJUSTES EXTREMOS (PANTALLAS MUY PEQUEÑAS) --- */
 @media (max-width: 480px) {
     .fase-header-section h1 {
         font-size: 1.6rem;
     }
 
-    .roadmap-title {
-        font-size: 0.75rem;
-        margin-bottom: 25px;
+    /* Cuadrícula de notas de micromódulos a lista vertical */
+    .micros-progress-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
     }
 
-    .layer-card h3 {
-        font-size: 1.2rem;
+    .micro-pill {
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 12px 20px;
     }
 
-    .intro-p {
-        font-size: 0.9rem;
+    .micro-pill .m-label {
+        margin-bottom: 0;
     }
 
     .form-mini-status {
@@ -580,20 +704,26 @@
         font-size: 0.85rem;
     }
 
-    /* Botones más fáciles de tocar */
-    .btn-formal-action, .btn-go-diagnostic {
+    .btn-formal-action, .btn-go-diagnostic, .btn-go-micros {
         padding: 16px;
         font-size: 0.9rem;
     }
 }
 
-/* Soporte para modo Landscape en móviles */
+/* --- 5. SOPORTE LANDSCAPE (CELULAR HORIZONTAL) --- */
 @media (max-height: 500px) and (orientation: landscape) {
     .sync-status-pill-floating {
-        display: none; /* Ocultar para ganar espacio */
+        display: none; /* Ocultar para maximizar espacio de lectura */
     }
     
     .roadmap-steps {
-        flex-direction: row; /* Volver a horizontal si hay espacio ancho */
+        flex-direction: row; /* Volver a horizontal para aprovechar el ancho */
+    }
+
+    .roadmap-steps::before {
+        top: 17px;
+        left: 10%;
+        width: 80%;
+        height: 2px;
     }
 }
