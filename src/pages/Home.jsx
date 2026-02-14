@@ -10,11 +10,20 @@ export const Home = ({ onLoginSuccess }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [activeFaq, setActiveFaq] = useState(null);
+    const [isScrolled, setIsScrolled] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [view]);
+
+    useEffect(() => {
+    const handleScroll = () => {
+        setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+}, []);
 
     const handleInputChange = (e) => {
         setCredentials({ ...credentials, [e.target.name]: e.target.value });
@@ -144,11 +153,15 @@ export const Home = ({ onLoginSuccess }) => {
 
     return (
         <div className="landing-wrapper">
-            {/* NAVBAR MEJORADO */}
-            <nav className="atlas-navbar landing-nav">
+            {/* NAVBAR CON LÓGICA DE TRANSPARENCIA */}
+            <nav className={`atlas-navbar landing-nav ${isScrolled ? 'scrolled' : 'transparent'}`}>
                 <div className="nav-container">
                     <div className="nav-logo-large">
-                        <img src="https://i.pinimg.com/736x/f1/d7/b9/f1d7b925820b3e01749d2a567ba9cedc.jpg" alt="Logo ATLAS" />
+                        {/* El src cambia dinámicamente aquí */}
+                        <img
+                            src={isScrolled ? "/logo1.png" : "/logo.png"}
+                            alt="Logo ATLAS"
+                        />
                     </div>
                     <div className="nav-links-centered">
                         <a href="#porque">¿Por qué ATLAS?</a>
@@ -162,24 +175,39 @@ export const Home = ({ onLoginSuccess }) => {
                 </div>
             </nav>
 
-            {/* HERO (FONDO ORIGINAL OSCURO) */}
+            {/* HERO CON VIDEO DE FONDO */}
             <header className="hero-section hero-original-dark">
+                <video autoPlay muted loop playsInline className="hero-video-bg">
+                    <source src="https://res.cloudinary.com/deafueoco/video/upload/v1/12336965-hd_1920_1028_60fps_pxhxm0" type="video/mp4" />
+                    Tu navegador no soporta videos.
+                </video>
+
                 <div className="hero-overlay-dark"></div>
+
+                {/* Contenedor central (Dueño del centro de la pantalla) */}
                 <div className="hero-content">
                     <h1 className="hero-title">ATLAS</h1>
-                    <p className="hero-subtitle">Acompañamos a instituciones educativas y equipos directivos en la adopción de la IA con claridad, ética y visión de largo plazo.</p>
+                    <p className="hero-subtitle">
+                        Acompañamos a instituciones educativas y equipos directivos en la adopción de la IA con claridad, ética y visión de largo plazo.
+                    </p>
+
                     <div className="hero-actions-layout">
-                        <button className="btn-primary-large" onClick={() => document.getElementById('que-es').scrollIntoView()}>Explorar ATLAS</button>
-                        <button className="btn-secondary-large" onClick={() => document.getElementById('porque').scrollIntoView()}>Conocer el marco</button>
+                        <button className="btn-primary-large" onClick={() => document.getElementById('que-es').scrollIntoView({ behavior: 'smooth' })}>
+                            Explorar ATLAS
+                        </button>
+                        <button className="btn-secondary-large" onClick={() => document.getElementById('porque').scrollIntoView({ behavior: 'smooth' })}>
+                            Conocer el marco
+                        </button>
                     </div>
-                    <div
-                        className="hero-discover-more"
-                        onClick={() => document.getElementById('porque')?.scrollIntoView({ behavior: 'smooth' })}
-                        style={{ cursor: 'pointer' }}
-                    >
-                        <p>Descubre más</p>
-                        <span className="arrow-down-anim">↓</span>
-                    </div>
+                </div>
+
+                {/* Capa independiente (No afecta el centrado del texto) */}
+                <div
+                    className="hero-discover-more-fixed"
+                    onClick={() => document.getElementById('porque')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                    <p>Descubre más</p>
+                    <span className="arrow-down-anim">↓</span>
                 </div>
             </header>
 
