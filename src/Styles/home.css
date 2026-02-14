@@ -1,12 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
 
 :root {
     --atlas-blue: #102a43;
     --atlas-blue-light: #243b53;
     --atlas-gold: #c5a059;
-    --atlas-white: #ffffff; /* Ajustado para que el logo flote sin bordes */
+    --atlas-white: #ffffff; 
     --atlas-text: #334e68;
+    --atlas-bg-light: #f8fafc;
+    --glass-bg: rgba(255, 255, 255, 0.98);
 }
+
+/* ==========================================================================
+   ATLAS LOGIN (MANTENIDO Y REFORZADO)
+   ========================================================================== */
 
 .atlas-main-container {
     height: 100vh;
@@ -15,9 +21,10 @@
     align-items: center;
     background: radial-gradient(circle at top right, #243b53, #102a43);
     font-family: 'Inter', sans-serif;
+    position: relative;
+    z-index: 5000;
 }
 
-/* El contenedor principal con efecto de elevación */
 .atlas-card-glass {
     display: flex;
     width: 950px;
@@ -28,7 +35,6 @@
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
-/* Panel Izquierdo */
 .atlas-side-visual {
     flex: 1;
     background: var(--atlas-blue);
@@ -41,7 +47,6 @@
     padding: 40px;
 }
 
-/* Efecto de luz interna para que no sea azul plano */
 .visual-overlay {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -83,13 +88,12 @@
     text-transform: uppercase;
 }
 
-/* Panel Derecho */
 .atlas-auth-panel {
     flex: 1.1;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: var(--atlas-white); /* Coincidencia total con tu logo */
+    background-color: var(--atlas-white);
 }
 
 .form-wrapper {
@@ -106,7 +110,6 @@
 .institute-logo {
     width: 110px;
     margin-bottom: 20px;
-    /* Eliminamos cualquier sombra agresiva para que se integre al fondo blanco */
 }
 
 .brand-header h2 {
@@ -121,7 +124,6 @@
     font-size: 0.95rem;
 }
 
-/* Campos de entrada con diseño moderno */
 .input-field {
     margin-bottom: 25px;
 }
@@ -165,7 +167,6 @@
     border: 1px solid #ffbcbc;
 }
 
-/* Botón con degradado institucional */
 .btn-atlas-grad {
     width: 100%;
     padding: 16px;
@@ -185,146 +186,1426 @@
     box-shadow: 0 15px 30px rgba(16, 42, 67, 0.3);
 }
 
-.btn-atlas-grad:active {
-    transform: translateY(0);
+.btn-back-landing {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 10px 18px;
+    border-radius: 50px; /* Estilo píldora */
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    z-index: 6000;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+.btn-back-landing svg {
+    width: 16px;
+    height: 16px;
 }
 
-/* =========================================
-   RESPONSIVE: ATLAS LOGIN (Auth)
-   ========================================= */
+.btn-back-landing:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--atlas-white);
+    transform: translateX(-5px); /* Pequeño rebote hacia la izquierda */
+    border-color: var(--atlas-gold);
+}
 
-/* 1. Tablets y Laptops Pequeñas (hasta 1024px) */
+/* Ajuste para el botón de login cuando está cargando */
+.btn-atlas-grad.loading {
+    opacity: 0.8;
+    cursor: not-allowed;
+    position: relative;
+}
+
+/* ==========================================================================
+   LANDING PAGE: NAVBAR & HERO (DISEÑO PREMIUM)
+   ========================================================================== */
+
+.landing-wrapper {
+    background: #ffffff;
+    font-family: 'Inter', sans-serif;
+}
+
+/* NAVBAR BLANCO PARA MIMETIZAR LOGO */
+.atlas-navbar.landing-nav {
+    position: fixed;
+    top: 0; 
+    width: 100%; 
+    z-index: 2000;
+    background: var(--atlas-white);
+    /* Navbar más delgado */
+    height: 70px; 
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(16, 42, 67, 0.08);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+}
+
+.nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;
+    /* Asegura que los elementos hijos se alineen al centro del navbar delgado */
+    height: 100%; 
+}
+
+.nav-logo-large {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    height: 100%;
+    position: relative;
+}
+
+.nav-logo-large img {
+    /* El logo ahora es más grande pero no empuja el navbar */
+    height: 70px; 
+    width: auto;
+    object-fit: contain;
+    position: absolute; /* Clave para no afectar el grosor del navbar */
+    top: 50%;
+    transform: translateY(-50%);
+    /* Eliminamos el fondo azul/filtros para ver el color original */
+    mix-blend-mode: normal; 
+    filter: none;
+}
+
+.nav-logo-large span {
+    font-weight: 800;
+    letter-spacing: 4px;
+    font-size: 1.6rem;
+    color: var(--atlas-blue);
+    /* Margen para no chocar con el logo absoluto */
+    margin-left: 120px; 
+}
+
+.nav-links-centered {
+    display: flex;
+    gap: 45px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    /* Centrado vertical perfecto */
+    height: 100%;
+    align-items: center;
+}
+
+.nav-links-centered a {
+    text-decoration: none;
+    color: var(--atlas-text);
+    font-weight: 600;
+    font-size: 0.95rem; /* Un poco más pequeño para elegancia */
+    transition: 0.3s;
+}
+
+.nav-links-centered a:hover { 
+    color: var(--atlas-gold); 
+}
+
+.btn-nav-login {
+    background: var(--atlas-blue);
+    color: white;
+    border: none;
+    padding: 10px 28px; /* Padding ajustado al nuevo grosor */
+    border-radius: 50px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* HERO CON FONDO ORIGINAL Y CONTRASTE OSCURO */
+.hero-section.hero-original-dark {
+    min-height: 100vh;
+    display: flex;
+    align-items: center; /* Centra el contenido verticalmente */
+    justify-content: center;
+    background-image: url('https://i.pinimg.com/736x/f4/6c/7d/f46c7d041a21d2fc58b60b517c581a24.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    position: relative;
+    /* Eliminamos cualquier padding-top excesivo para que no empuje el texto hacia arriba */
+    padding: 0; 
+}
+
+.hero-overlay-dark {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(rgba(16, 42, 67, 0.75), rgba(16, 42, 67, 0.95));
+}
+
+.hero-content { 
+    width: 90%;
+    max-width: 1200px; 
+    text-align: center; 
+    color: white; 
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Estilo Monumental para ATLAS */
+.hero-title {
+    font-size: clamp(5rem, 15vw, 12rem); /* Gigante y responsivo */
+    font-weight: 500;
+    letter-spacing: 0.3em; /* Espaciado ultra elegante */
+    margin: 0;
+    line-height: 0.9;
+    text-transform: uppercase;
+    /* Efecto premium: texto con brillo sutil */
+   
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+}
+
+/* Subtítulo: Ordenado y con aire */
+.hero-subtitle {
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    max-width: 750px;
+    margin: 40px auto; /* Más espacio arriba y abajo */
+    line-height: 1.8;
+    font-weight: 300;
+    letter-spacing: 1px;
+    opacity: 0.9;
+    border-top: 1px solid rgba(197, 160, 89, 0.5); /* Línea decorativa arriba */
+    border-bottom: 1px solid rgba(197, 160, 89, 0.5); /* Línea decorativa abajo */
+    padding: 20px 0;
+}
+
+/* Botones: Más abajo y con mejor diseño */
+.hero-actions-layout { 
+    display: flex; 
+    gap: 30px; 
+    justify-content: center;
+    margin-top: 40px; /* Los separa del texto significativamente */
+}
+
+.btn-primary-large {
+    background: var(--atlas-gold);
+    color: #102a43; /* Texto oscuro para contraste */
+    padding: 22px 50px;
+    border-radius: 4px; /* Cuadrado sutil es más profesional que redondo total */
+    font-weight: 800;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    box-shadow: 0 10px 30px rgba(197, 160, 89, 0.3);
+}
+
+.btn-primary-large:hover {
+    transform: translateY(-5px);
+    background: white;
+    box-shadow: 0 15px 40px rgba(255,255,255,0.2);
+}
+
+.btn-secondary-large {
+    background: transparent;
+    color: white;
+    padding: 22px 50px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border: 2px solid white;
+    cursor: pointer;
+    transition: all 0.4s ease;
+}
+
+.btn-secondary-large:hover {
+    background: white;
+    color: #102a43;
+}
+
+/* Descubrir más: Totalmente al fondo */
+.hero-discover-more {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    text-align: center;
+}
+
+.hero-discover-more p {
+    font-size: 0.7rem;
+    letter-spacing: 5px;
+    margin-bottom: 10px;
+}
+
+.arrow-down-anim {
+    font-size: 1.5rem;
+    color: var(--atlas-gold);
+    animation: bounce 2s infinite;
+}
+
+/* Animación de la flecha */
+.arrow-down-anim {
+    font-size: 1.5rem;
+    color: var(--atlas-gold);
+    display: inline-block;
+    cursor: pointer;
+    animation: bounceVertical 2s infinite; /* Referencia a la animación de abajo */
+    transition: color 0.3s ease;
+}
+
+.arrow-down-anim:hover {
+    color: white;
+}
+
+@keyframes bounceVertical {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+/* Estilo adicional para el contenedor de "Descubre más" */
+.hero-discover-more {
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: white;
+    text-transform: uppercase;
+}
+
+/* --- SECCIÓN ¿POR QUÉ ATLAS? (REFINED & HORIZONTAL) --- */
+
+.section-white.section-spacious {
+    /* Espacio equilibrado al inicio y al final */
+    padding: 80px 0 120px 0; 
+    background-color: #ffffff;
+}
+
+.section-header-content {
+    text-align: center;
+    max-width: 1100px;
+    margin: 0 auto 60px auto;
+}
+
+.section-tag-gold {
+    color: #c5a059;
+    font-weight: 800;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.section-title-large {
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    color: #102a43;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 30px;
+}
+
+/* Texto introductorio en dos columnas */
+.section-intro-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    text-align: left;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 40px;
+    margin-top: 20px;
+}
+
+.intro-text-column p {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #475a6b;
+    margin: 0;
+}
+
+/* ============================================================
+   GRID DE TARJETAS: UNA AL LADO DE LA OTRA
+   ============================================================ */
+.grid-features-animated {
+    display: grid;
+    /* Forzamos 4 columnas iguales para alineación horizontal */
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 20px; 
+    margin-top: 60px;
+    align-items: stretch; /* Todas las cards tendrán la misma altura */
+}
+
+.feature-card-premium {
+    background: #ffffff;
+    padding: 40px 25px; /* Padding ajustado para formato vertical */
+    border-radius: 20px;
+    border: 1px solid #edf2f7;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-shadow: 0 10px 30px rgba(16, 42, 67, 0.02); 
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-card-premium:hover {
+    transform: translateY(-10px);
+    border-color: #c5a059;
+    box-shadow: 0 20px 40px rgba(16, 42, 67, 0.08);
+}
+
+.feature-icon-wrapper {
+    width: 45px;
+    height: 45px;
+    color: #c5a059;
+    margin-bottom: 20px;
+    transition: transform 0.4s ease;
+}
+
+.feature-icon-wrapper svg {
+    width: 100%;
+    height: 100%;
+}
+
+.feature-card-content h3 {
+    font-size: 1.25rem; /* Tamaño optimizado para 4 columnas */
+    color: #102a43;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.feature-card-content p {
+    font-size: 0.95rem;
+    color: #627d98;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Detalle decorativo refinado */
+.card-corner-accent {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid #c5a059;
+    border-bottom: 2px solid #c5a059;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.feature-card-premium:hover .card-corner-accent {
+    opacity: 0.6;
+    transform: translate(3px, 3px);
+}
+
+/* --- SECCIÓN DIFERENCIAL ÚNICA --- */
+.atlas-diff-section {
+    background-color: #0a1929; /* Un azul muy oscuro, casi grafito, más elegante */
+    padding: 100px 0;
+    position: relative;
+    overflow: hidden;
+    color: white;
+}
+
+/* Efecto de luz sutil en el fondo para que no se vea plano */
+.diff-background-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at 80% 20%, rgba(197, 160, 89, 0.05) 0%, transparent 40%);
+    pointer-events: none;
+}
+
+.diff-flex-layout {
+    display: flex;
+    align-items: center;
+    gap: 60px;
+    margin-bottom: 80px;
+}
+
+.diff-text-content { flex: 1.2; }
+
+.diff-tag {
+    color: var(--atlas-gold);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.diff-main-title {
+    font-size: 2.8rem;
+    line-height: 1.2;
+    margin: 20px 0;
+    font-weight: 600;
+}
+
+.diff-accent-line {
+    width: 60px;
+    height: 3px;
+    background: var(--atlas-gold);
+    margin-bottom: 30px;
+}
+
+.diff-description {
+    font-size: 1.2rem;
+    opacity: 0.8;
+    line-height: 1.6;
+}
+
+/* LA CARD: Aquí eliminamos la saturación */
+.diff-highlight-card {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.03); /* Fondo casi invisible */
+    backdrop-filter: blur(10px); /* Desenfoque tipo cristal */
+    border: 1px solid rgba(197, 160, 89, 0.3); /* Borde dorado suave */
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.diff-card-subtitle {
+    color: var(--atlas-gold);
+    font-weight: 600;
+    margin: 15px 0;
+}
+
+.diff-pill {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px 20px;
+    border-radius: 50px;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.diff-pill span { color: var(--atlas-gold); font-weight: bold; }
+
+/* GRID DE PILARES ABAJO */
+.diff-pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+}
+
+.diff-pillar-card {
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.diff-pillar-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-5px);
+}
+
+.pillar-hover-line {
+    position: absolute;
+    bottom: 0; left: 0; width: 0; height: 2px;
+    background: var(--atlas-gold);
+    transition: width 0.3s ease;
+}
+
+.diff-pillar-card:hover .pillar-hover-line { width: 100%; }
+
+.diff-pillar-card h4 {
+    color: var(--atlas-gold);
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.diff-pillar-card p {
+    font-size: 0.95rem;
+    opacity: 0.7;
+}
+
+/* --- SECCIÓN MARCO ATLAS (REFORZADA CON CONTRASTE) --- */
+.atlas-framework-section {
+    padding: 120px 0;
+    background-color: #ffffff;
+    overflow: visible;
+}
+
+.framework-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 80px;
+    align-items: start;
+}
+
+/* Columna Izquierda Fija */
+.framework-sticky-info {
+    position: sticky;
+    top: 150px;
+    height: fit-content;
+}
+
+.framework-title {
+    font-size: 3rem;
+    color: #0a1929;
+    margin: 20px 0;
+    line-height: 1.1;
+    font-weight: 700;
+}
+
+.framework-description {
+    font-size: 1.15rem;
+    color: #4a5568;
+    line-height: 1.7;
+    margin-bottom: 30px;
+}
+
+.framework-badge {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #f1f5f9; /* Un poco más oscuro que antes */
+    border-left: 4px solid var(--atlas-gold);
+    font-weight: 700;
+    color: #0a1929;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Columna Derecha de Pasos */
+.framework-steps-scroll {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.atlas-step-card {
+    position: relative;
+    padding: 45px;
+    /* Fondo ligeramente gris para que destaque sobre el blanco puro del fondo general */
+    background: #d7dde3; 
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    display: flex;
+    gap: 35px;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    z-index: 1;
+}
+
+.atlas-step-card:hover {
+    background: #ffffff; /* Al hacer hover, se vuelve blanca y "brilla" */
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
+    border-color: var(--atlas-gold);
+    transform: translateX(15px);
+}
+
+/* Letras Gigantes: Mayor contraste */
+.step-letter-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+}
+
+.letter-bg {
+    font-size: 5.5rem;
+    font-weight: 900;
+    /* Color mucho más visible que antes */
+    color: #494b4e; 
+    line-height: 0.9;
+    transition: all 0.4s ease;
+}
+
+.atlas-step-card:hover .letter-bg {
+    color: var(--atlas-gold);
+    opacity: 0.15;
+}
+
+.step-number {
+    font-weight: 800;
+    color: var(--atlas-gold);
+    font-size: 1rem;
+    margin-top: -5px;
+    background: #ffffff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Contenido de cada paso */
+.step-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.step-content h3 {
+    font-size: 1.6rem;
+    color: #0a1929;
+    margin-bottom: 12px;
+    font-weight: 700;
+}
+
+.step-content p {
+    color: #4a5568; /* Texto un poco más oscuro para legibilidad */
+    line-height: 1.6;
+    font-size: 1.05rem;
+}
+
+/* Conector visual entre tarjetas (Línea punteada premium) */
+.step-connector {
+    position: absolute;
+    left: 85px;
+    bottom: -35px;
+    width: 2px;
+    height: 35px;
+    background: repeating-linear-gradient(
+        to bottom,
+        #cbd5e1,
+        #cbd5e1 4px,
+        transparent 4px,
+        transparent 8px
+    );
+    z-index: -1;
+}
+
+.atlas-step-card:last-child .step-connector {
+    display: none;
+}
+
+/* --- SECCIÓN AUDIENCIA ATLAS --- */
+.atlas-audience-section {
+    padding: 100px 0;
+    background-color: #fffdfa; /* Crema muy suave, elegancia pura */
+    border-top: 1px solid #f3e8d2;
+    border-bottom: 1px solid #f3e8d2;
+}
+
+.audience-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.audience-main-title {
+    font-size: 2.8rem;
+    color: #0a1929;
+    margin: 15px 0 30px;
+    font-weight: 700;
+}
+
+/* Nube de Tags */
+.audience-tags-cloud {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.tag-item {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4a5568;
+    transition: all 0.3s ease;
+}
+
+.tag-item:hover {
+    border-color: var(--atlas-gold);
+    color: var(--atlas-gold);
+    transform: translateY(-2px);
+}
+
+/* Grid de Tarjetas */
+.audience-grid-layout {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 columnas para que respiren */
+    gap: 30px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.audience-card {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 25px;
+    border: 1px solid rgba(0,0,0,0.03);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+}
+
+.audience-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 20px 40px rgba(197, 160, 89, 0.1);
+    border-color: rgba(197, 160, 89, 0.2);
+}
+
+.audience-icon {
+    font-size: 2.5rem;
+    background: #fdfaf3;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    flex-shrink: 0;
+}
+
+.audience-info h4 {
+    font-size: 1.3rem;
+    color: #0a1929;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.audience-info p {
+    color: #718096;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+/* --- ESTILO DE ICONOS SVG ATLAS --- */
+.audience-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: #ffffff; /* Fondo blanco para destacar del crema */
+    border: 1px solid rgba(197, 160, 89, 0.3); /* Borde dorado tenue */
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--atlas-gold); /* El SVG hereda este color */
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+
+.audience-icon-wrapper svg {
+    width: 30px;
+    height: 30px;
+}
+
+/* Efecto al pasar el mouse por la tarjeta */
+.audience-card:hover .audience-icon-wrapper {
+    background: var(--atlas-gold);
+    color: #ffffff; /* El icono se vuelve blanco al hover */
+    transform: rotate(-5deg) scale(1.1);
+    box-shadow: 0 8px 20px rgba(197, 160, 89, 0.2);
+}
+
+.audience-card {
+    background: #ffffff;
+    padding: 35px;
+    border-radius: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    border: 1px solid transparent;
+    transition: all 0.4s ease;
+}
+
+.audience-card:hover {
+    border-color: rgba(197, 160, 89, 0.2);
+    transform: translateY(-5px);
+}
+
+/* --- SECCIÓN IMPLEMENTACIÓN --- */
+.atlas-impl-section {
+    padding: 120px 0;
+    background: #ffffff;
+}
+
+.impl-header { text-align: center; margin-bottom: 80px; }
+.impl-main-title { font-size: 3rem; color: #0a1929; font-weight: 800; margin-top: 10px; }
+
+.impl-timeline-wrapper {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    position: relative;
+}
+
+/* Línea conectora de fondo */
+.impl-timeline-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 30px; left: 50px; right: 50px;
+    height: 2px;
+    background: #edf2f7;
+    z-index: 0;
+}
+
+.impl-step-card {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 20px;
+}
+
+.impl-number-badge {
+    width: 60px; height: 60px;
+    background: #ffffff;
+    border: 2px solid var(--atlas-gold);
+    color: var(--atlas-gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 1.2rem;
+    margin: 0 auto 25px;
+    box-shadow: 0 0 0 8px #ffffff;
+    transition: all 0.3s ease;
+}
+
+.impl-step-card:hover .impl-number-badge {
+    background: var(--atlas-gold);
+    color: white;
+    transform: scale(1.1);
+}
+
+.impl-content h3 { font-size: 1.4rem; color: #0a1929; margin-bottom: 15px; }
+.impl-content p { font-size: 0.95rem; color: #64748b; line-height: 1.6; }
+
+/* --- SECCIÓN CERTIFICACIÓN --- */
+.atlas-cert-section {
+    padding: 100px 0;
+    background: #0a1929; /* Fondo oscuro elegante */
+    color: white;
+}
+
+.cert-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 60px;
+    align-items: center;
+}
+
+.cert-title { font-size: 2.8rem; margin: 20px 0; color: white; }
+.cert-lead { font-size: 1.1rem; opacity: 0.8; margin-bottom: 30px; }
+
+.cert-badge-note {
+    padding: 15px;
+    background: rgba(197, 160, 89, 0.1);
+    border-left: 3px solid var(--atlas-gold);
+    font-size: 0.85rem;
+}
+
+.cert-cards-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.cert-card-tier {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 30px;
+    border-radius: 20px;
+    transition: all 0.4s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.cert-card-tier:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: var(--atlas-gold);
+    transform: translateY(-10px);
+}
+
+.lvl-tag {
+    color: var(--atlas-gold);
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.cert-card-tier h3 { margin: 10px 0; font-size: 1.4rem; }
+.cert-tier-desc { font-size: 0.85rem; opacity: 0.7; margin-bottom: 20px; min-height: 40px; }
+
+.cert-points-list {
+    list-style: none; padding: 0; margin: 0 0 30px 0;
+    flex-grow: 1;
+}
+
+.cert-points-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.cert-points-list svg {
+    width: 14px; height: 14px;
+    color: var(--atlas-gold);
+    flex-shrink: 0;
+}
+
+.cert-tier-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 20px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 700;
+    opacity: 0.5;
+}
+/* --- SECCIÓN FAQ ATLAS --- */
+.atlas-faq-section {
+    padding: 120px 0;
+    background-color: #ffffff;
+}
+
+.narrow-container {
+    max-width: 900px; /* Un poco más estrecho para facilitar la lectura */
+    margin: 0 auto;
+}
+
+.faq-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.faq-title {
+    font-size: 2.8rem;
+    color: #0a1929;
+    margin: 15px 0 25px;
+    font-weight: 700;
+}
+
+.faq-accent-line {
+    width: 50px;
+    height: 3px;
+    background: var(--atlas-gold);
+    margin: 0 auto;
+}
+
+/* El Acordeón */
+.faq-accordion-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.faq-item-premium {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.faq-item-premium:hover {
+    border-color: rgba(197, 160, 89, 0.5);
+    background: #ffffff;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+}
+
+/* Estado Abierto */
+.faq-item-premium.faq-open {
+    background: #ffffff;
+    border-color: var(--atlas-gold);
+    box-shadow: 0 15px 35px rgba(10, 25, 41, 0.05);
+}
+
+.faq-trigger {
+    width: 100%;
+    padding: 25px 35px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+}
+
+.faq-question-text {
+    font-size: 1.15rem;
+    color: #0a1929;
+    font-weight: 600;
+    padding-right: 20px;
+    transition: color 0.3s ease;
+}
+
+.faq-open .faq-question-text {
+    color: var(--atlas-gold);
+}
+
+/* Icono Personalizado (+ / -) */
+.faq-icon-status {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.line-h, .line-v {
+    position: absolute;
+    background: #0a1929;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.line-h {
+    width: 100%;
+    height: 2px;
+    top: 9px;
+    left: 0;
+}
+
+.line-v {
+    width: 2px;
+    height: 100%;
+    left: 9px;
+    top: 0;
+}
+
+.line-v.rotated {
+    transform: rotate(90deg);
+    opacity: 0; /* Desaparece para formar el signo menos */
+}
+
+.faq-open .line-h {
+    background: var(--atlas-gold);
+}
+
+/* Contenido de la Respuesta con Animación */
+.faq-response-wrapper {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.faq-open .faq-response-wrapper {
+    max-height: 500px; /* Suficiente para el texto largo */
+}
+
+.faq-response-content {
+    padding: 0 35px 30px 35px;
+}
+
+.faq-response-content p {
+    color: #4a5568;
+    line-height: 1.8;
+    font-size: 1.05rem;
+}
+
+/* Footer FAQ */
+.faq-footer-help {
+    text-align: center;
+    margin-top: 50px;
+    font-size: 0.95rem;
+    color: #718096;
+}
+
+.faq-footer-help a {
+    color: var(--atlas-gold);
+    font-weight: 700;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.faq-footer-help a:hover {
+    border-bottom-color: var(--atlas-gold);
+}
+
+/* --- SECCIÓN CONTACTO PREMIUM --- */
+.atlas-contact-section {
+    padding: 120px 0;
+    background-color: #0a1929;
+    position: relative;
+    overflow: hidden;
+    color: white;
+}
+
+/* Decoración de fondo */
+.contact-bg-decoration {
+    position: absolute;
+    top: -10%; right: -10%;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(197, 160, 89, 0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.contact-flex-layout {
+    display: flex;
+    align-items: center;
+    gap: 80px;
+}
+
+/* Panel de Texto */
+.contact-text-panel { flex: 1; }
+
+.contact-main-title {
+    font-size: 3.2rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin: 20px 0 30px;
+    color: #ffffff;
+}
+
+.contact-subtitle {
+    font-size: 1.15rem;
+    opacity: 0.8;
+    line-height: 1.7;
+    margin-bottom: 40px;
+}
+
+.contact-cards-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.contact-mini-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mini-icon {
+    width: 45px; height: 45px;
+    background: rgba(197, 160, 89, 0.1);
+    color: var(--atlas-gold);
+    border-radius: 10px;
+    display: flex;
+    align-items: center; justify-content: center;
+}
+
+.mini-icon svg { width: 22px; height: 22px; }
+
+.contact-mini-card span { font-size: 0.75rem; text-transform: uppercase; color: var(--atlas-gold); font-weight: 700; letter-spacing: 1px; }
+.contact-mini-card p { font-size: 1rem; margin: 0; font-weight: 500; }
+
+/* Formulario Glassmorphism */
+.contact-form-container {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    padding: 50px;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.4);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.input-group { margin-bottom: 20px; }
+
+.atlas-premium-form input, 
+.atlas-premium-form textarea {
+    width: 100%;
+    padding: 18px 25px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.atlas-premium-form input:focus, 
+.atlas-premium-form textarea:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--atlas-gold);
+    box-shadow: 0 0 20px rgba(197, 160, 89, 0.15);
+}
+
+.btn-form-submit {
+    width: 100%;
+    padding: 20px;
+    background: var(--atlas-gold);
+    color: #0a1929;
+    border: none;
+    border-radius: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center; justify-content: center;
+    gap: 12px;
+    transition: all 0.4s ease;
+}
+
+.btn-form-submit:hover {
+    background: #ffffff;
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(255, 255, 255, 0.1);
+}
+
+.btn-icon { width: 20px; height: 20px; transition: transform 0.3s ease; }
+.btn-form-submit:hover .btn-icon { transform: translateX(5px); }
+
+/* ==========================================================================
+   ATLAS RESPONSIVE DESIGN (iPad & Mobile Optimization)
+   ========================================================================== */
+
+/* 1. TABLETS (iPad Pro, iPad Air, iPad Mini - 1024px hacia abajo) */
 @media (max-width: 1024px) {
+    /* Navbar */
+    .nav-links-centered {
+        gap: 25px;
+    }
+    .nav-logo-large span {
+        margin-left: 90px;
+        font-size: 1.3rem;
+    }
+
+    /* Hero */
+    .hero-title { font-size: 6rem; }
+    
+    /* Layouts de dos columnas a una */
+    .framework-grid, 
+    .cert-grid-layout, 
+    .contact-flex-layout,
+    .diff-flex-layout {
+        grid-template-columns: 1fr;
+        gap: 50px;
+    }
+
+    /* Grids de tarjetas */
+    .grid-features-animated {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .impl-timeline-wrapper {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .impl-timeline-wrapper::before { display: none; } /* Quitamos la línea que cruza */
+
+    /* Framework Sticky */
+    .framework-sticky-info {
+        position: relative;
+        top: 0;
+        text-align: center;
+    }
+    
+    /* Login Card */
     .atlas-card-glass {
         width: 90%;
-        height: auto; /* Permitimos que crezca según contenido */
-        max-width: 800px;
-    }
-
-    .logo-typography {
-        font-size: 2.5rem;
-        letter-spacing: 10px;
+        height: auto;
+        min-height: 500px;
     }
 }
 
-/* 2. Tablets Verticales e iPads (hasta 768px) */
+/* 2. SMARTPHONES GRANDES Y TABLETS VERTICALES (768px hacia abajo) */
 @media (max-width: 768px) {
-    .atlas-main-container {
-        height: auto;
-        min-height: 100vh;
-        padding: 40px 0;
-        align-items: flex-start; /* Evita que flote en medio si el teclado sale */
+    /* Navbar Mobile (Ajuste simple) */
+    .nav-links-centered { display: none; } /* Recomendado: Usar menú hamburguesa o esconder */
+    
+    /* Hero */
+    .hero-title { font-size: 4rem; letter-spacing: 10px; }
+    .hero-subtitle { font-size: 1rem; padding: 15px; }
+    .hero-actions-layout { flex-direction: column; width: 100%; padding: 0 20px; }
+    .btn-primary-large, .btn-secondary-large { width: 100%; text-align: center; }
+
+    /* Secciones */
+    .section-intro-group { grid-template-columns: 1fr; gap: 20px; }
+    .grid-features-animated { grid-template-columns: 1fr; }
+    .audience-grid-layout { grid-template-columns: 1fr; }
+    
+    /* Certificación */
+    .cert-cards-container {
+        grid-template-columns: 1fr;
     }
 
+    /* Framework Steps */
+    .atlas-step-card {
+        flex-direction: column;
+        padding: 30px;
+        gap: 20px;
+        text-align: center;
+    }
+    .step-letter-container { min-width: auto; }
+    .step-connector { display: none; }
+    .atlas-step-card:hover { transform: translateY(-5px); }
+
+    /* Login Mobile */
     .atlas-card-glass {
-        flex-direction: column; /* Apilado vertical */
-        width: 92%;
-        height: auto;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-    }
-
-    .atlas-side-visual {
-        padding: 60px 20px;
-        order: 1; /* El logo/visual arriba */
-    }
-
-    .atlas-auth-panel {
-        padding: 50px 20px;
-        order: 2; /* Formulario abajo */
-    }
-
-    .logo-typography {
-        font-size: 2.2rem;
-    }
-
-    .phase-footer {
-        position: relative;
-        bottom: 0;
-        margin-top: 20px;
-    }
-}
-
-/* 3. Celulares (hasta 480px) */
-@media (max-width: 480px) {
-    .atlas-main-container {
-        background: var(--atlas-white); /* Fondo sólido para mimetizarse con el panel */
-        padding: 0;
-    }
-
-    .atlas-card-glass {
+        flex-direction: column;
         width: 100%;
-        border-radius: 0; /* Pantalla completa sin bordes */
-        box-shadow: none;
+        height: 100vh;
+        border-radius: 0;
     }
-
-    /* En celulares muy pequeños, simplificamos el panel visual */
     .atlas-side-visual {
         padding: 40px 20px;
-        min-height: 180px;
+        flex: 0.4;
     }
-
-    .logo-typography {
-        font-size: 1.8rem;
-        letter-spacing: 8px;
-    }
-
-    .accent-line {
-        margin: 15px 0;
-        width: 60px;
-    }
-
-    .tagline {
-        font-size: 0.75rem;
-        letter-spacing: 2px;
-    }
-
-    /* Ajustes del Formulario */
-    .form-wrapper {
-        max-width: 100%;
-        padding: 0 10px;
-    }
-
-    .brand-header {
-        margin-bottom: 30px;
-    }
-
-    .brand-header h2 {
-        font-size: 1.5rem;
-    }
-
-    .input-field {
-        margin-bottom: 20px;
-    }
-
-    .input-field input {
-        padding: 16px; /* Más grande para facilitar el toque */
-        font-size: 16px !important; /* Evita zoom automático en iPhone */
-    }
-
-    .btn-atlas-grad {
-        padding: 18px;
-        font-size: 1.1rem;
-        border-radius: 12px;
-    }
+    .logo-typography { font-size: 2.5rem; }
+    .atlas-auth-panel { padding: 40px 20px; }
+    .btn-back-landing { top: 20px; left: 20px; padding: 8px 15px; }
 }
 
-/* 4. Ajuste para teclados virtuales (Landscape en móvil) */
-@media (max-height: 500px) and (orientation: landscape) {
-    .atlas-main-container {
-        height: auto;
-        padding: 20px;
+/* 3. SMARTPHONES PEQUEÑOS (480px hacia abajo) */
+@media (max-width: 480px) {
+    .hero-title { font-size: 3rem; }
+    
+    .section-title-large, 
+    .diff-main-title, 
+    .framework-title, 
+    .contact-main-title {
+        font-size: 2rem;
+    }
+
+    .impl-timeline-wrapper { grid-template-columns: 1fr; }
+    
+    .contact-form-container {
+        padding: 25px 20px;
     }
     
+    .form-row { grid-template-columns: 1fr; }
+
+    /* Ajuste de tarjetas de audiencia */
+    .audience-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .faq-trigger { padding: 20px; }
+    .faq-question-text { font-size: 1rem; }
+}
+
+/* 4. OPTIMIZACIÓN DE ALTURA PARA IPAD (LANDSCAPE) */
+@media (max-height: 700px) and (min-width: 1024px) {
     .atlas-card-glass {
-        flex-direction: row;
+        height: 90vh;
     }
-    
-    .atlas-side-visual {
-        display: none; /* Escondemos visual para dar espacio al input */
-    }
+    .brand-header { margin-bottom: 20px; }
+    .institute-logo { width: 80px; }
 }
