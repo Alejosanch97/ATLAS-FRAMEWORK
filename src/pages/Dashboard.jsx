@@ -36,6 +36,12 @@ export const Dashboard = ({ onLogout }) => {
 
     const navigate = useNavigate();
 
+    // Agrega esto junto a tus otros estados (arriba del todo)
+    const [isCompassInfoExpanded, setIsCompassInfoExpanded] = useState(false);
+    const [infoSeccion, setInfoSeccion] = useState('evalua');
+    const [showImprovement, setShowImprovement] = useState(false);
+
+
     useEffect(() => {
         const savedUser = localStorage.getItem("userATLAS");
         if (!savedUser) {
@@ -72,22 +78,45 @@ export const Dashboard = ({ onLogout }) => {
 
     useEffect(() => {
         const calcularHuella = () => {
-            if (allFormsInfo.length === 0) return;
-            let maxPuntosConfigurados = 0;
-            allFormsInfo.forEach(f => {
-                maxPuntosConfigurados += parseFloat(f.Puntos_Maximos || 0);
-            });
-            if (maxPuntosConfigurados === 0) maxPuntosConfigurados = 100;
-            const sumaNotasObtenidas = userResponses.reduce((sum, r) => sum + parseFloat(r.Puntos_Ganados || 0), 0);
-            const porcentajeForms = (sumaNotasObtenidas / maxPuntosConfigurados) * 92;
+            // --- 1. LÓGICA DE FORMULARIOS (FASE A = 40%) ---
+            const formulariosFaseA = allFormsInfo.filter(f => f.Fase_ATLAS === 'A');
+
+            let porcentajeForms = 0;
+            if (formulariosFaseA.length > 0) {
+                // Calcular máximo posible de la Fase A
+                let maxPuntosFaseA = 0;
+                formulariosFaseA.forEach(f => {
+                    maxPuntosFaseA += parseFloat(f.Puntos_Maximos || 0);
+                });
+
+                if (maxPuntosFaseA === 0) maxPuntosFaseA = 100;
+
+                // Sumar puntos obtenidos solo de formularios Fase A
+                const idsFaseA = formulariosFaseA.map(f => f.ID_Form);
+                const sumaNotasFaseA = userResponses
+                    .filter(r => idsFaseA.includes(r.ID_Form))
+                    .reduce((sum, r) => sum + parseFloat(r.Puntos_Ganados || 0), 0);
+
+                // Calcular peso sobre el 40%
+                porcentajeForms = (sumaNotasFaseA / maxPuntosFaseA) * 40;
+            }
+
+            // --- 2. LÓGICA DE RETOS (8%) ---
             const totalRetos = misRetos.length;
             const retosCompletados = misRetos.filter(r => r.Status === 'completed').length;
+
+            // Si no hay retos creados, el porcentaje es 0
             const porcentajeRetos = totalRetos > 0 ? (retosCompletados / totalRetos) * 8 : 0;
-            const total = Math.min(porcentajeForms + porcentajeRetos, 100);
-            setHuellaPuntaje(Math.round(total));
+
+            // --- 3. SUMA FINAL ---
+            // Máximo alcanzable ahora: 48%
+            const totalFinal = Math.min(porcentajeForms + porcentajeRetos, 100);
+
+            setHuellaPuntaje(Math.round(totalFinal));
         };
+
         calcularHuella();
-    }, [userResponses, misRetos, allFormsInfo]);
+    }, [userResponses, allFormsInfo, misRetos]); // Reincorporamos misRetos como dependencia
 
     useEffect(() => {
         if (huellaPuntaje >= 90) setCompassTab(4);
@@ -232,39 +261,86 @@ export const Dashboard = ({ onLogout }) => {
     const getCompassData = () => {
         const info = [
             {
-                range: "0-39%",
+                range: "0–39%",
                 title: "Exploración inicial",
-                body: "Tu COMPASS indica que estás comenzando a tomar conciencia de cómo la inteligencia artificial puede aparecer en la práctica educativa. Tal vez aún no la usas, o lo haces de forma intuitiva, pero eso es un punto de partida valioso: la reflexión precede a cualquier decisión pedagógica sólida. ATLAS está aquí para acompañarte paso a paso.",
-                next: "Iniciar un recorrido guiado que te ayude a leer tu práctica con nuevos lentes."
+                subtitle: "Nivel actual basado en evidencia documentada en la plataforma.",
+                body: `Tu COMPASS de IA muestra el nivel de evidencia que has documentado sobre el uso pedagógico de la inteligencia artificial. Actualmente estás en una etapa inicial de exploración, lo que indica que aún no has registrado suficiente evidencia sobre cómo la integras o regulas en el aula. ATLAS no mide entusiasmo ni formación, sino decisiones pedagógicas demostradas. A medida que documentes diagnósticos, planeaciones o reflexiones, tu nivel avanzará.`,
+                footer: "El objetivo no es usar más IA. Es usarla con criterio, ética y coherencia pedagógica. ATLAS está aquí para acompañarte paso a paso.",
+                howToImprove: [
+                    "Completa tu diagnóstico inicial + declara tu postura y criterios de uso responsable de IA. (AUDIT).",
+                    "Realiza retos pedagógicos (TRANSFORM).",
+                    "Diseña experiencia de aprendizaje con IA responsable (ASSURE).",
+                    "Comparte evidencias pedagógicas reales (SUSTAIN)."
+                ],
+                extraNote: "Tu compass está alineado con marcos internacionales de uso responsable de IA en educación y evalúa evidencia en las cinco fases del Marco ATLAS."
             },
             {
-                range: "40-59%",
+                range: "40–59%",
                 title: "Uso emergente",
-                body: "Tu COMPASS muestra que ya has experimentado con la IA de forma ocasional y que estás empezando a desarrollar criterio sobre cuándo y para qué usarla. Aparecen preguntas importantes, ajustes por hacer y decisiones que aún se están afinando. Este perfil refleja curiosidad profesional.",
-                next: "Transformar algunas prácticas concretas y asumir pequeños retos que fortalezcan tu intención pedagógica."
+                subtitle: "Nivel basado en evidencia pedagógica documentada.",
+                body: `Tu COMPASS de IA indica que has comenzado a integrar la inteligencia artificial en tu práctica de manera más consciente. 
+            Ya no se trata solo de exploración: has documentado decisiones pedagógicas, planeaciones o evidencias donde la IA cumple un propósito educativo claro. Esto muestra criterio en construcción. 
+            En esta etapa, el desafío no es usar más herramientas, sino profundizar en la coherencia pedagógica.`,
+                footer: "Tu práctica muestra intención. Ahora el siguiente paso es consolidar consistencia.",
+                howToImprove: [
+                    "Fortalece la evidencia en evaluación y retroalimentación (ASSURE).",
+                    "Documenta explícitamente tus criterios éticos y pedagógicos de uso de IA.",
+                    "Asegura que tus decisiones estén alineadas con marcos de referencia institucionales.",
+                    "Reflexiona sobre riesgos, sesgos y supervisión humana en tus actividades."
+                ],
+                extraNote: "Estás pasando de un uso ocasional a una práctica con criterio. La madurez no está en la frecuencia de uso, sino en la claridad de tus decisiones."
             },
             {
-                range: "60-74%",
+                range: "60–74%",
                 title: "Práctica consciente",
-                body: "Tu COMPASS indica un uso intencional de la IA, con evidencias claras de reflexión pedagógica. No se trata solo de usar tecnología, sino de decidir con sentido, cuidando el aprendizaje y el rol docente. En este punto, la IA empieza a convertirse en una aliada pensada.",
-                next: "Consolidar evidencias de impacto y asegurar que lo que haces realmente mejora los procesos formativos."
+                subtitle: "Nivel basado en evidencia pedagógica validada en el Marco ATLAS.",
+                body: `Tu COMPASS de IA muestra que has desarrollado una práctica intencional y documentada en el uso pedagógico de la inteligencia artificial. 
+            La IA en tu aula ya no es intuitiva ni ocasional. Has demostrado planeaciones con propósito, criterios explícitos y evidencias de evaluación mediadas con supervisión docente. 
+            En esta etapa, la clave es coherencia y profundidad.`,
+                footer: "Tu práctica es consistente. El siguiente paso es integrarla de manera transversal y sostenible.",
+                howToImprove: [
+                    "Asegura evidencia en las cinco fases ATLAS (incluyendo LEAD y SUSTAIN).",
+                    "Documenta cómo tus decisiones se alínean con marcos y lineamientos institucionales.",
+                    "Incorpora análisis de riesgos o sesgos cuando la IA interviene en evaluación.",
+                    "Demuestra impacto observable en el aprendizaje."
+                ],
+                extraNote: "Has pasado de experimentar con IA a gobernarla en tu práctica. Ahora el reto es consolidar coherencia sistémica y liderazgo pedagógico."
             },
             {
-                range: "75-89%",
+                range: "75–89%",
                 title: "Práctica alineada",
-                body: "Tu COMPASS refleja una práctica altamente coherente con marcos pedagógicos y éticos internacionales. Usas la IA con criterio, documentas decisiones y puedes explicar por qué haces lo que haces. Este perfil muestra madurez profesional y capacidad de modelaje.",
-                next: "Ejercer liderazgo pedagógico, compartir aprendizajes y pulir los últimos ajustes antes de la certificación."
+                subtitle: "Nivel avanzado de coherencia pedagógica en el uso de IA.",
+                body: `Tu COMPASS de IA indica que has alcanzado un nivel de práctica alineada y consistente. 
+            La integración de la inteligencia artificial en tu aula demuestra coherencia entre objetivos, actividades y evaluación bajo supervisión humana explícita. 
+            En esta etapa, tu práctica no solo es consciente, sino estructurada. La IA actúa como herramienta mediada por criterio profesional.`,
+                footer: "El siguiente paso es integrar de manera transversal las cinco fases ATLAS y consolidar evidencia sólida.",
+                howToImprove: [
+                    "Evidencia validada en las cinco fases ATLAS.",
+                    "Documentación consistente de impacto en aprendizaje.",
+                    "Integración de criterios éticos y de privacidad en tus decisiones.",
+                    "Claridad institucional o de liderazgo frente al uso de IA."
+                ],
+                extraNote: "Tu práctica muestra madurez profesional frente a la IA. El reto ahora no es hacer más, sino demostrar consistencia y profundidad."
             },
             {
-                range: "90-100%",
+                range: "90–100%",
                 title: "Capacidad ATLAS demostrada",
-                body: "Tu COMPASS muestra capacidad profesional demostrada para integrar la IA de forma pedagógica, ética y sostenible. Has generado evidencia en todas las fases ATLAS y mantiene un alto nivel de autorregulación y coherencia. Es un reconocimiento a tu trayectoria.",
-                next: "Optar por la certificación ATLAS y contribuir como referente, mentor o diseñador."
+                subtitle: "Elegible para proceso de certificación ATLAS.",
+                body: `Tu COMPASS de IA indica que has alcanzado un nivel de integración pedagógica avanzada y coherente. 
+            Has demostrado evidencia sólida en las cinco fases: AUDIT, TRANSFORM, LEAD, ASSURE y SUSTAIN. 
+            La inteligencia artificial en tu práctica está mediada por criterio profesional, alineada con estándares de calidad y documentada.`,
+                footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de validación de coherencia e impacto.",
+                howToImprove: [
+                    "Evidencia transversal en las cinco fases.",
+                    "Coherencia entre práctica declarada y práctica observada.",
+                    "Supervisión humana efectiva.",
+                    "Impacto pedagógico verificable."
+                ],
+                extraNote: "La certificación ATLAS reconoce competencia profesional demostrada, no trayectoria recorrida."
             }
         ];
         return info[compassTab] || info[0];
     };
-
     if (!userData) return <div className="atlas-loader">Iniciando Sesión...</div>;
 
     return (
@@ -303,8 +379,6 @@ export const Dashboard = ({ onLogout }) => {
                             <button className={activeTab === "explorador" ? "active" : ""} onClick={() => switchTab("explorador")}>🔎 Explorador de Evidencias</button>
                         </>
                     )}
-                    
-                    <button className={activeTab === "retos" ? "active" : ""} onClick={() => switchTab("retos")}>🎯 Mis Retos Estratégicos</button>
 
                     <div className="nav-section">MARCO ATLAS</div>
                     
@@ -318,11 +392,6 @@ export const Dashboard = ({ onLogout }) => {
                                     onClick={() => switchTab("fase_auditar")}>
                                     Fase: Auditar
                                 </button>
-                                <button 
-                                    className={activeTab === "responder_fase" && filterPhase === "A" ? "active-phase" : "phase-btn"} 
-                                    onClick={() => switchTab("responder_fase", "A")}>
-                                    Bitácora de Diagnóstico
-                                </button>
                             </>
                         )}
                     </div>
@@ -330,9 +399,19 @@ export const Dashboard = ({ onLogout }) => {
                     {/* SECCIÓN T - TRANSFORM */}
                     <div className="atlas-nav-group">
                         <div className="atlas-group-header">⚙️ T — TRANSFORM</div>
+
+                        {/* Botón visible para ADMIN y DOCENTE */}
+                        <button
+                            className={activeTab === "retos" ? "active" : "phase-btn"}
+                            onClick={() => switchTab("retos")}
+                        >
+                            🎯 Mis Retos Estratégicos
+                        </button>
+
+                        {/* Botón visible SOLO para DOCENTE */}
                         {userData.Rol === "DOCENTE" && (
-                            <button 
-                                className={activeTab === "responder_fase" && filterPhase === "T" ? "active-phase" : "phase-btn"} 
+                            <button
+                                className={activeTab === "responder_fase" && filterPhase === "T" ? "active-phase" : "phase-btn"}
                                 onClick={() => switchTab("responder_fase", "T")}>
                                 Taller de Co-Creación
                             </button>
@@ -363,19 +442,126 @@ export const Dashboard = ({ onLogout }) => {
 
             <main className="atlas-main-content">
                 <header className="main-header">
+                    {/* Grupo de la izquierda: Título y Subtítulo */}
                     <div className="header-title-group">
-                        <div className="header-left-content">
-                            <h1>{headerContent.title}</h1>
-                            <p className="header-subtitle">{headerContent.subtitle}</p>
-                        </div>
-                        <button className="btn-refresh-data" onClick={handleManualRefresh}>
-                            🔄 <span>Sincronizar</span>
-                        </button>
+                        <h1>{headerContent.title}</h1>
+                        <p className="header-subtitle">{headerContent.subtitle}</p>
                     </div>
+
+                    {/* El botón ahora es un elemento independiente a la derecha */}
+                    <button className="btn-refresh-data" onClick={handleManualRefresh}>
+                        🔄 <span>Sincronizar</span>
+                    </button>
                 </header>
 
                 {activeTab === "overview" && (
                     <section className="dashboard-grid">
+                        {/* NUEVA CARD: ¿QUÉ ES EL COMPASS DE IA? */}
+                        <div className={`info-card wide-card compass-explainer-card ${!isCompassInfoExpanded ? 'collapsed' : ''}`}>
+                            <div
+                                className="compass-header-unique"
+                                onClick={() => setIsCompassInfoExpanded(!isCompassInfoExpanded)}
+                            >
+                                <div className="compass-title-group-unique">
+                                    <span className="compass-icon-unique">🧭</span>
+                                    <div className="compass-text-stack-unique">
+                                        <h2 className="compass-h2-unique">¿Qué es el COMPASS de IA?</h2>
+                                        {!isCompassInfoExpanded && <p className="compass-tap-unique">Instrumento de madurez pedagógica ATLAS</p>}
+                                    </div>
+                                </div>
+                                <div className={`compass-toggle-unique ${isCompassInfoExpanded ? 'active' : ''}`}>
+                                    {isCompassInfoExpanded ? "▲" : "▼"}
+                                </div>
+                            </div>
+
+                            {isCompassInfoExpanded && (
+                                <div className="compass-body-interactive">
+                                    <div className="compass-full-intro">
+                                        <p>
+                                            El <strong>COMPASS de IA</strong> es el instrumento de madurez pedagógica del Marco ATLAS.
+                                            No mide cuánto usas la inteligencia artificial; mide cómo la <strong>integras, la regulas y la documentas</strong> en tu práctica educativa.
+                                        </p>
+                                        <p>
+                                            Funciona como una brújula profesional: te orienta sobre el nivel de coherencia, evidencia y criterio con el que estás tomando decisiones frente a la IA en el aula.
+                                            Cada avance se basa en <strong>evidencia demostrada</strong>, no en tiempo invertido ni en cantidad de herramientas utilizadas.
+                                        </p>
+                                    </div>
+
+                                    {/* BOTONES DE SECCIÓN */}
+                                    <div className="compass-nav-pills">
+                                        <button
+                                            type="button"
+                                            className={infoSeccion === 'evalua' ? 'active' : ''}
+                                            onClick={(e) => { e.stopPropagation(); setInfoSeccion('evalua'); }}
+                                        >
+                                            ¿Qué evalúa?
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={infoSeccion === 'no-es' ? 'active' : ''}
+                                            onClick={(e) => { e.stopPropagation(); setInfoSeccion('no-es'); }}
+                                        >
+                                            ¿Qué NO es?
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={infoSeccion === 'sirve' ? 'active' : ''}
+                                            onClick={(e) => { e.stopPropagation(); setInfoSeccion('sirve'); }}
+                                        >
+                                            ¿Para qué sirve?
+                                        </button>
+                                    </div>
+
+                                    {/* CONTENIDO DINÁMICO COMPLETO */}
+                                    <div className="compass-dynamic-content fade-in">
+                                        {infoSeccion === 'evalua' && (
+                                            <div className="section-content">
+                                                <p className="section-intro-text">El COMPASS analiza tu práctica en cinco dimensiones del Marco ATLAS:</p>
+                                                <ul className="compass-list-clean">
+                                                    <li><strong>• AUDIT</strong> – Diagnóstico y conciencia crítica.</li>
+                                                    <li><strong>• TRANSFORM</strong> – Rediseño pedagógico intencional.</li>
+                                                    <li><strong>• LEAD</strong> – Gobernanza y toma de decisiones explícitas.</li>
+                                                    <li><strong>• ASSURE</strong> – Evaluación y evidencia de impacto.</li>
+                                                    <li><strong>• SUSTAIN</strong> – Sostenibilidad, ética y mejora continua.</li>
+                                                </ul>
+                                                <div className="highlight-note-box">
+                                                    Tu porcentaje refleja el nivel de evidencia documentada en estas dimensiones.
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {infoSeccion === 'no-es' && (
+                                            <div className="section-content">
+                                                <ul className="compass-list-clean">
+                                                    <li>• No es una calificación.</li>
+                                                    <li>• No es una evaluación de desempeño laboral.</li>
+                                                    <li>• No mide entusiasmo tecnológico.</li>
+                                                    <li>• No premia el uso frecuente de herramientas.</li>
+                                                </ul>
+                                                <div className="highlight-note-box gold">
+                                                    El COMPASS reconoce madurez profesional frente a la IA.
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {infoSeccion === 'sirve' && (
+                                            <div className="section-content">
+                                                <p className="section-intro-text">El COMPASS te permite:</p>
+                                                <ul className="compass-list-clean">
+                                                    <li>• Identificar tu punto de partida.</li>
+                                                    <li>• Fortalecer tu práctica con criterios claros.</li>
+                                                    <li>• Documentar decisiones pedagógicas con respaldo.</li>
+                                                    <li>• Prepararte para procesos de validación o auditoría ATLAS.</li>
+                                                </ul>
+                                                <div className="accompaniment-badge">
+                                                    Es una herramienta de acompañamiento, no de control.
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                         <div className="info-card huella-card">
                             <h3>Compass de IA</h3>
                             <div className="atlas-a-container">
@@ -403,14 +589,54 @@ export const Dashboard = ({ onLogout }) => {
 
                         <div className="info-card prompt-card professional-upgrade">
                             <div className="card-header-flex">
-                                <h3>🧭 COMPASS: {getCompassData().title} ({getCompassData().range})</h3>
+                                <div className="title-group-main">
+                                    <h3>🧭 COMPASS: {getCompassData().title} ({getCompassData().range})</h3>
+                                    <p className="subtitle-compass-mini">{getCompassData().subtitle}</p>
+                                </div>
                             </div>
+
                             <div className="prompt-content-rich">
-                                <p className="intro-text-dark">{getCompassData().body}</p>
-                                <span className="next-step-text-on-dark"><strong>Siguiente paso:</strong> {getCompassData().next}</span>
+                                <div className="main-compass-text-body">
+                                    <p className="intro-text-dark">{getCompassData().body}</p>
+                                    <p className="footer-text-highlight">{getCompassData().footer}</p>
+                                </div>
+
+                                {/* BOTÓN DINÁMICO "¿CÓMO SUBIR MI COMPASS?" */}
+                                <div className="improvement-action-container">
+                                    <button
+                                        className={`btn-how-to-improve ${showImprovement ? 'active' : ''}`}
+                                        onClick={() => setShowImprovement(!showImprovement)}
+                                    >
+                                        {compassTab === 4 ? "💎 ¿Qué te acerca a la certificación?" : "🚀 ¿Cómo subir mi COMPASS?"}
+                                        <span>{showImprovement ? "▲" : "▼"}</span>
+                                    </button>
+
+                                    {showImprovement && (
+                                        <div className="improvement-dropdown fade-in">
+                                            <h4>{compassTab === 4 ? "Requisitos para Certificación:" : "¿Cómo aumentar tu nivel?"}</h4>
+                                            <ul className="improvement-list">
+                                                {getCompassData().howToImprove.map((step, i) => (
+                                                    <li key={i}><span>→</span> {step}</li>
+                                                ))}
+                                            </ul>
+                                            <div className="improvement-note">
+                                                {getCompassData().extraNote}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
                                 <div className="method-grid">
                                     {["0-39%", "40-59%", "60-74%", "75-89%", "90-100%"].map((label, idx) => (
-                                        <div key={idx} className={`method-item ${compassTab === idx ? 'active' : ''}`} onClick={() => setCompassTab(idx)} style={{ cursor: 'pointer' }}>
+                                        <div
+                                            key={idx}
+                                            className={`method-item ${compassTab === idx ? 'active' : ''}`}
+                                            onClick={() => {
+                                                setCompassTab(idx);
+                                                setShowImprovement(false); // Reinicia el desplegable al cambiar de nivel
+                                            }}
+                                            style={{ cursor: 'pointer' }}
+                                        >
                                             <strong>{label.split('-')[0]}</strong><span>{label.split('-')[1]}</span>
                                         </div>
                                     ))}
@@ -419,42 +645,10 @@ export const Dashboard = ({ onLogout }) => {
                         </div>
 
                         <div className="info-card wide-card">
-                            <div className="card-header-flex">
-                                <h3>Retos Estratégicos Mensuales</h3>
-                                <button className="btn-add-reto" onClick={() => { setShowRetoForm(!showRetoForm); setEditingReto(null); }}>
-                                    {showRetoForm ? "✖ Cancelar" : "➕ Nuevo Reto"}
-                                </button>
-                            </div>
-                            {showRetoForm && (
-                                <form className="form-nuevo-reto" onSubmit={handleSubmitReto}>
-                                    <input type="text" placeholder="Descripción del reto..." name="Challenge_Description" defaultValue={editingReto?.Challenge_Description} required />
-                                    <div className="form-row">
-                                        <input type="date" name="Start_Date" defaultValue={editingReto ? editingReto.Start_Date?.split('T')[0] : new Date().toISOString().split('T')[0]} />
-                                        <input type="number" placeholder="Días" name="Days_Active" defaultValue={editingReto?.Days_Active} required />
-                                        <button type="submit" className="btn-save-reto">{editingReto ? "Actualizar" : "Guardar"}</button>
-                                    </div>
-                                </form>
-                            )}
-                            <div className="challenges-grid-modern">
-                                {misRetos.map(reto => (
-                                    <div key={reto.ID_Challenge} className={`challenge-card-item ${reto.Status === 'completed' ? 'done' : ''}`}>
-                                        <div className="challenge-main-info" onClick={() => handleToggleRetoStatus(reto)} style={{cursor:'pointer'}}>
-                                            <input type="checkbox" checked={reto.Status === 'completed'} readOnly />
-                                            <label>{reto.Challenge_Description}</label>
-                                        </div>
-                                        <div className="challenge-meta">
-                                            <span className="reto-tag">{reto.Status}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="info-card wide-card">
                             <h3>📊 Mis Calificaciones Consolidadas</h3>
-                            <div className="user-scroll-list" style={{maxHeight:'320px', overflowY:'auto'}}>
+                            <div className="user-scroll-list" style={{ maxHeight: '320px', overflowY: 'auto' }}>
                                 <table className="atlas-table">
-                                    <thead style={{position:'sticky', top:0, backgroundColor:'#f8fafc', zIndex:5}}>
+                                    <thead style={{ position: 'sticky', top: 0, backgroundColor: '#f8fafc', zIndex: 5 }}>
                                         <tr><th>Instrumento</th><th>Fecha</th><th>Tu Nota</th></tr>
                                     </thead>
                                     <tbody>
@@ -468,14 +662,21 @@ export const Dashboard = ({ onLogout }) => {
                                                 acc[id].puntos += parseFloat(curr.Puntos_Ganados || 0);
                                                 return acc;
                                             }, {});
+
                                             const lista = Object.values(consolidado);
+
                                             return lista.length > 0 ? lista.reverse().map((item, i) => (
                                                 <tr key={i}>
                                                     <td><strong>{item.titulo}</strong></td>
                                                     <td>{new Date(item.fecha).toLocaleDateString()}</td>
-                                                    <td><span className="user-key-tag" style={{ background: '#c5a059', color: 'white' }}>{item.puntos} pts</span></td>
+                                                    <td>
+                                                        <span className="user-key-tag" style={{ background: '#c5a059', color: 'white' }}>
+                                                            {/* USAMOS Math.round PARA EVITAR DECIMALES LARGOS */}
+                                                            {Math.round(item.puntos)} pts
+                                                        </span>
+                                                    </td>
                                                 </tr>
-                                            )) : <tr><td colSpan="3" style={{textAlign:'center', padding:'20px'}}>No hay registros.</td></tr>;
+                                            )) : <tr><td colSpan="3" style={{ textAlign: 'center', padding: '20px' }}>No hay registros.</td></tr>;
                                         })()}
                                     </tbody>
                                 </table>
@@ -611,23 +812,68 @@ export const Dashboard = ({ onLogout }) => {
                 )}
 
                 {activeTab === "responder_fase" && (
-                    <ResponderFormularios 
-                        userData={userData} 
-                        isSyncing={isSyncing} 
-                        setIsSyncing={setIsSyncing} 
-                        API_URL={API_URL} 
-                        filterPhase={filterPhase} 
+                    <ResponderFormularios
+                        userData={userData}
+                        isSyncing={isSyncing}
+                        setIsSyncing={setIsSyncing}
+                        API_URL={API_URL}
+                        filterPhase={filterPhase}
+                        onNavigate={switchTab}  /* <--- AGREGA ESTA LÍNEA */
                     />
                 )}
 
                 {activeTab === "retos" && (
                     <section className="dashboard-grid">
                         <div className="info-card wide-card">
-                            <h3>Listado Completo de Retos</h3>
+                            {/* CABECERA CON BOTÓN INTEGRADO */}
+                            <div className="card-header-flex">
+                                <h3>Listado Completo de Retos</h3>
+                                <button
+                                    className="btn-add-reto"
+                                    onClick={() => {
+                                        setShowRetoForm(!showRetoForm);
+                                        setEditingReto(null);
+                                    }}
+                                >
+                                    {showRetoForm ? "✖ Cancelar" : "➕ Nuevo Reto"}
+                                </button>
+                            </div>
+
+                            {/* FORMULARIO DESPLEGABLE (Misma lógica que la sección anterior) */}
+                            {showRetoForm && (
+                                <form className="form-nuevo-reto" onSubmit={handleSubmitReto}>
+                                    <input
+                                        type="text"
+                                        placeholder="Descripción del reto..."
+                                        name="Challenge_Description"
+                                        defaultValue={editingReto?.Challenge_Description}
+                                        required
+                                    />
+                                    <div className="form-row">
+                                        <input
+                                            type="date"
+                                            name="Start_Date"
+                                            defaultValue={editingReto ? editingReto.Start_Date?.split('T')[0] : new Date().toISOString().split('T')[0]}
+                                        />
+                                        <input
+                                            type="number"
+                                            placeholder="Días"
+                                            name="Days_Active"
+                                            defaultValue={editingReto?.Days_Active}
+                                            required
+                                        />
+                                        <button type="submit" className="btn-save-reto">
+                                            {editingReto ? "Actualizar" : "Guardar"}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+
+                            {/* LISTADO DE RETOS */}
                             <div className="challenges-grid-modern">
                                 {misRetos.map(reto => (
                                     <div key={reto.ID_Challenge} className={`challenge-card-item ${reto.Status === 'completed' ? 'done' : ''}`}>
-                                        <div className="challenge-main-info" onClick={() => handleToggleRetoStatus(reto)} style={{cursor:'pointer'}}>
+                                        <div className="challenge-main-info" onClick={() => handleToggleRetoStatus(reto)} style={{ cursor: 'pointer' }}>
                                             <input type="checkbox" checked={reto.Status === 'completed'} readOnly />
                                             <label>{reto.Challenge_Description}</label>
                                         </div>

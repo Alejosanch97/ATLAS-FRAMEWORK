@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import '../Styles/responderFormularios.css'; 
 
-export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncing, filterPhase }) => {
+// Se agrega onNavigate a las props
+export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncing, filterPhase, onNavigate }) => {
     const [availableForms, setAvailableForms] = useState([]);
     const [userAnswers, setUserAnswers] = useState([]);
     const [selectedForm, setSelectedForm] = useState(null);
@@ -147,6 +148,35 @@ export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncin
 
     return (
         <div className="atlas-responder-container animate-fade-in">
+            
+            {/* --- NUEVO BOTÓN DE REGRESAR --- */}
+            <div className="nav-back-container" style={{ marginBottom: '20px' }}>
+                <button 
+                    className="btn-back-minimal" 
+                    onClick={() => {
+                        if (filterPhase === 'A') {
+                            onNavigate('fase_auditar');
+                        } else {
+                            onNavigate('overview');
+                        }
+                    }}
+                    style={{
+                        padding: '10px 15px',
+                        backgroundColor: '#fff',
+                        border: '1px solid #c5a059',
+                        borderRadius: '8px',
+                        color: '#c5a059',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}
+                >
+                    ⬅ Volver
+                </button>
+            </div>
+
             <div className="responder-controls-row">
                 <div className="tab-container-modern">
                     <button className={`tab-btn ${activeTab === 'pending' ? 'active' : ''}`} onClick={() => setActiveTab('pending')}>

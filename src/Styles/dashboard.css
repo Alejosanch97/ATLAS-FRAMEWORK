@@ -183,6 +183,327 @@
 /* =========================================
    CONTENIDO PRINCIPAL Y CABECERA
    ========================================= */
+
+/* =========================================
+   COMPASS EXPLAINER CARD - PREMIUM ATLAS
+   ========================================= */
+
+.compass-explainer-card {
+    background: #ffffff;
+    border-radius: 24px;
+    border: 1px solid #e2e8f0;
+    border-left: 6px solid var(--atlas-gold);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    margin-bottom: 25px;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    overflow: hidden;
+}
+
+.compass-header {
+    padding: 20px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px; /* Espacio entre el grupo de título y la flecha */
+}
+
+.compass-header:hover {
+    background: #fcfdfe;
+}
+
+.header-title-group {
+    display: flex;
+    flex-direction: column; /* Apila título arriba y subtítulo abajo */
+    align-items: flex-start;
+}
+
+/* Esto SOLO afectará a la card del Compass */
+.compass-explainer-card .header-title-group {
+    display: flex;
+    flex-direction: column; /* Apila título y subtítulo */
+    align-items: flex-start;
+    gap: 4px; /* Espacio pequeño entre h2 y subtítulo */
+}
+
+/* Asegúrate de que el H2 dentro de la card no tenga márgenes que estorben */
+.compass-explainer-card .title-text-wrapper h2 {
+    margin: 0;
+    line-height: 1.2;
+}
+
+/* Esto mantiene el diseño de la cabecera principal intacto */
+.main-header .header-title-group {
+    display: block; /* O el valor que tenías antes de que se dañara */
+}
+
+.header-icon {
+    font-size: 2rem;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.title-text-wrapper h2 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--atlas-blue-dark, #1e293b);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.tap-to-open {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin: 4px 0 0 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.main-toggle-icon {
+    color: var(--atlas-gold);
+    font-size: 0.8rem;
+    background: #fff8eb;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    border: 1px solid #fef3c7;
+}
+
+.main-toggle-icon.active {
+    background: var(--atlas-gold);
+    color: white;
+    transform: rotate(180deg);
+}
+
+/* CUERPO INTERACTIVO */
+.compass-body-interactive {
+    padding: 0 25px 30px 25px;
+    animation: slideDown 0.4s ease-out;
+}
+
+.compass-full-intro {
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 16px;
+    margin-bottom: 25px;
+    border: 1px solid #f1f5f9;
+}
+
+.compass-full-intro p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #334155;
+    margin-bottom: 12px;
+}
+
+.compass-full-intro p:last-child {
+    margin-bottom: 0;
+}
+
+/* BOTONES TIPO PILLS */
+.compass-nav-pills {
+    display: flex;
+    gap: 8px;
+    background: #f1f5f9;
+    padding: 6px;
+    border-radius: 14px;
+    margin-bottom: 25px;
+}
+
+.compass-nav-pills button {
+    flex: 1;
+    border: none;
+    padding: 12px 10px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #64748b;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.compass-nav-pills button.active {
+    background: #ffffff;
+    color: var(--atlas-blue-dark);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* CONTENIDO DINÁMICO */
+.section-intro-text {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 18px;
+}
+
+.compass-list-clean {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.compass-list-clean li {
+    padding: 12px 15px;
+    font-size: 0.95rem;
+    color: #1e293b;
+    background: white;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    border: 1px solid #f1f5f9;
+    transition: transform 0.2s ease;
+}
+
+.compass-list-clean li:hover {
+    transform: translateX(5px);
+    border-color: #e2e8f0;
+}
+
+.compass-list-clean li strong {
+    color: var(--atlas-gold);
+    font-weight: 800;
+}
+
+/* NOTAS Y BADGES FINALES */
+.highlight-note-box {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f0f9ff;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    color: #0369a1;
+    font-weight: 600;
+    border-left: 4px solid #0ea5e9;
+    line-height: 1.4;
+}
+
+.highlight-note-box.gold {
+    background: #fffbeb;
+    color: #92400e;
+    border-left-color: var(--atlas-gold);
+}
+
+.accompaniment-badge {
+    margin-top: 25px;
+    background: var(--atlas-blue-dark);
+    color: white;
+    text-align: center;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 15px rgba(30, 41, 59, 0.2);
+}
+
+/* ANIMACIONES */
+.fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+    from { opacity: 0; max-height: 0; }
+    to { opacity: 1; max-height: 1000px; }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .compass-nav-pills {
+        flex-direction: column;
+    }
+    .header-title-group {
+        gap: 12px;
+    }
+    .title-text-wrapper h2 {
+        font-size: 1.1rem;
+    }
+}
+/* Asegurar que la card ocupe todo el ancho sin márgenes raros */
+.compass-explainer-card.wide-card {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Header Único: Corrige el orden del icono y el título */
+.compass-header-unique {
+    padding: 5px 3px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.compass-header-unique:hover {
+    background: #fcfdfe;
+}
+
+/* Alineación Horizontal: Icono al lado del bloque de texto */
+.compass-title-group-unique {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 18px;
+}
+
+.compass-icon-unique {
+    font-size: 2.2rem;
+    flex-shrink: 0;
+}
+
+.compass-text-stack-unique {
+    display: flex;
+    flex-direction: column;
+}
+
+.compass-h2-unique {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--atlas-blue-dark, #1e293b);
+    margin: 0 !important;
+    line-height: 1.2;
+}
+
+.compass-tap-unique {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin: 4px 0 0 0 !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+/* Icono de flecha (Toggle) */
+.compass-toggle-unique {
+    color: var(--atlas-gold);
+    font-size: 0.8rem;
+    background: #fff8eb;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    border: 1px solid #fef3c7;
+}
+
+.compass-toggle-unique.active {
+    background: var(--atlas-gold);
+    color: white;
+    transform: rotate(180deg);
+}
+
 .atlas-main-content {
     flex: 1;
     overflow-y: auto;
@@ -191,9 +512,10 @@
 
 .main-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: space-between; /* Esto empuja el título a la izq y el botón a la der */
+    align-items: center;           /* Centra verticalmente ambos elementos */
     margin-bottom: 45px;
+    width: 100%;                   /* Asegura que use todo el ancho */
 }
 
 .header-subtitle { color: var(--atlas-text-muted); margin-top: 5px; }
@@ -249,6 +571,15 @@
     gap: 12px;
 }
 
+/* Estilo para el subtítulo del Compass */
+.subtitle-compass-mini {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-top: -10px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
 /* 3. Bloque de contenido OSCURO (La clave de la legibilidad) */
 .prompt-content-rich {
     background: #1e293b; /* Un azul marino un poco más claro que el negro total ayuda a leer mejor */
@@ -276,7 +607,7 @@
 }
 
 /* 5. Texto de "Siguiente oportunidad" (Color tierra/dorado sobre el fondo oscuro) */
-.next-step-text-on-dark {
+.footer-text-highlight {
     font-size: 0.95rem;
     color: #f8a500; /* Amarillo/Dorado claro */
     font-weight: 700;
@@ -286,7 +617,90 @@
     padding-top: 15px;
 }
 
-/* 6. Grid de Botones (Estilo Pastilla) */
+/* =========================================
+   NUEVOS ESTILOS: ACCIÓN DE MEJORA (DROPDOWN)
+   ========================================= */
+
+.improvement-action-container {
+    margin: 20px 0;
+}
+
+.btn-how-to-improve {
+    width: 100%;
+    padding: 12px 20px;
+    background: #ffffff;
+    color: #1e293b;
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-how-to-improve:hover {
+    border-color: #f8a500;
+    background: #fffcf5;
+}
+
+.btn-how-to-improve.active {
+    background: #f8a500;
+    color: white;
+    border-color: #f8a500;
+    border-radius: 14px 14px 0 0;
+}
+
+.improvement-dropdown {
+    background: #ffffff;
+    border: 2px solid #f8a500;
+    border-top: none;
+    padding: 20px;
+    border-radius: 0 0 14px 14px;
+}
+
+.improvement-dropdown h4 {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 12px;
+}
+
+.improvement-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.improvement-list li {
+    font-size: 0.9rem;
+    color: #475569;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    gap: 10px;
+}
+
+.improvement-list li span {
+    color: #f8a500;
+    font-weight: 900;
+}
+
+.improvement-note {
+    margin-top: 15px;
+    background: #fffbeb;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    color: #92400e;
+    border-left: 4px solid #f8a500;
+}
+
+/* =========================================
+   6. Grid de Botones (Estilo Pastilla)
+   ========================================= */
 .professional-upgrade .method-grid {
     display: flex;
     justify-content: space-between;
@@ -323,7 +737,7 @@
     transform: translateY(-2px);
 }
 
-/* --- CORRECCIÓN: SECCIÓN PROMPT R-C-T-F (PARA QUE NO SE CORTE) --- */
+/* --- ESTILOS DE COMPATIBILIDAD R-C-T-F --- */
 .professional-upgrade {
     border-top: 4px solid var(--atlas-accent);
 }
@@ -337,10 +751,11 @@
     font-weight: 800;
 }
 
+/* Este grid se mantiene para los otros componentes que lo usen */
 .method-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px; /* Reducido para dar más espacio interno */
+    gap: 10px;
     margin: 20px 0;
 }
 
@@ -351,7 +766,6 @@
     text-align: center;
     border: 1px solid #e2e8f0;
     transition: transform 0.2s;
-    /* Flexbox para alinear letra y texto en una sola línea horizontal */
     display: flex;
     flex-direction: row; 
     align-items: baseline;
@@ -363,7 +777,7 @@
 .method-item:hover { transform: translateY(-3px); border-color: var(--atlas-accent); }
 
 .method-item strong {
-    display: inline; /* Cambiado de block a inline */
+    display: inline; 
     color: var(--atlas-accent);
     font-size: 1.3rem;
     font-weight: 900;
@@ -371,12 +785,12 @@
 }
 
 .method-item span {
-    display: inline; /* Cambiado de block a inline */
+    display: inline;
     font-size: 0.65rem;
     font-weight: 800;
     color: var(--atlas-text-muted);
     text-transform: uppercase;
-    white-space: nowrap; /* Evita que la palabra se rompa */
+    white-space: nowrap;
 }
 
 .example-box {
@@ -581,10 +995,15 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start; /* Ajustado para dar espacio al título arriba */
+    /* CAMBIO CLAVE: Cambiar flex-start por center */
+    justify-content: center; 
     background: linear-gradient(to bottom, #ffffff, #fdfbf7);
     padding: 30px;
     border-radius: 24px;
+    /* Aseguramos una altura mínima para que el centrado sea visible */
+    min-height: 500px; 
+    height: 100%;
+    position: relative;
 }
 
 /* 1. TÍTULO GRANDE Y PROFESIONAL */
@@ -593,15 +1012,23 @@
     font-weight: 800;
     color: #0f172a;
     margin-bottom: 20px;
-    align-self: flex-start; /* Alineado a la izquierda como en tu imagen */
+    align-self: flex-start;
+    /* Esto asegura que el título se quede arriba mientras lo demás se centra */
+    position: absolute; 
+    top: 30px;
+    left: 30px;
 }
 
 /* 2. "A" MUCHO MÁS GRANDE */
 .atlas-a-container {
     position: relative;
-    width: 320px;   /* Aumentado de 200px */
-    height: 340px;  /* Aumentado de 220px */
-    margin: 20px auto;
+    width: 320px;
+    height: 340px;
+    /* Eliminamos el 'margin: 20px auto' y dejamos que el flex del padre trabaje */
+    margin: 0; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
     
     /* 3. BORDE Y DEFINICIÓN PARA QUE NO SE PIERDA */
     /* Sombra exterior para relieve y un drop-shadow oscuro para definir el borde de la A */
@@ -900,19 +1327,30 @@
 }
 
 /* =========================================
-   CORRECCIÓN DE RESPONSIVIDAD (SIN SCROLL HORIZONTAL)
+   CORRECCIÓN DE RESPONSIVIDAD ATLAS (ACTUALIZADO 2026)
    ========================================= */
 
-/* 3. Media Query para Tablets (992px o menos) */
-@media (max-width: 992px) {
+/* 3. Media Query para Tablets y Laptops Pequeñas (1024px o menos) */
+@media (max-width: 1024px) {
     .atlas-main-content {
-        padding: 30px 20px;
+        padding: 30px 25px;
         width: 100%;
-        overflow-x: hidden;
+    }
+
+    .main-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .btn-refresh-data {
+        width: 100%;
+        justify-content: center;
+        padding: 12px;
     }
 
     .dashboard-grid {
-        grid-template-columns: 1fr; /* Colapso de columnas para evitar amontonamiento */
+        grid-template-columns: 1fr;
         gap: 25px;
     }
 
@@ -920,14 +1358,9 @@
         grid-column: span 1;
     }
 
-    /* Escalado intermedio de la A */
     .atlas-a-container {
         width: 280px;
         height: 300px;
-    }
-    
-    .huella-number {
-        font-size: 4.8rem;
     }
 }
 
@@ -937,7 +1370,6 @@
         display: flex; /* Botón hamburguesa visible */
     }
 
-    /* Sidebar - Ajuste de posición */
     .atlas-sidebar {
         position: fixed;
         left: -285px;
@@ -957,99 +1389,104 @@
     }
 
     .atlas-main-content {
-        padding: 85px 15px 30px;
+        padding: 95px 15px 30px;
         width: 100%;
         max-width: 100vw;
         overflow-x: hidden;
         box-sizing: border-box;
     }
 
-    /* Ajuste de la "A" para celular */
+    /* --- Ajustes de la Nueva Card Compass --- */
+    .compass-nav-pills {
+        flex-wrap: wrap; /* Para que los botones no se salgan */
+        gap: 5px;
+    }
+
+    .compass-nav-pills button {
+        flex: 1 1 45%; /* Dos botones por fila aproximadamente */
+        font-size: 0.8rem;
+        padding: 10px 5px;
+    }
+
+    .compass-header {
+        flex-direction: row;
+        align-items: center;
+        gap: 15px;
+    }
+
+    /* --- Ajuste de la "A" --- */
     .huella-card h3 {
         font-size: 1.6rem;
-        align-self: center; /* Centramos el título en móvil para mejor estética */
+        align-self: center;
     }
 
     .atlas-a-container {
-        width: 240px; /* Tamaño seguro para celulares */
-        height: 260px;
+        width: 260px;
+        height: 280px;
         margin: 15px auto;
-        /* Mantenemos las animaciones y sombras */
         filter: drop-shadow(0 10px 25px rgba(197, 160, 89, 0.3));
     }
 
     .huella-number {
-        font-size: 4.2rem;
+        font-size: 4.5rem;
     }
 
-    /* Grid de tarjetas */
-    .dashboard-grid {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        gap: 20px;
-    }
-
+    /* --- Elementos de Cuadrícula --- */
     .info-card {
-        padding: 20px;
-        width: 100%;
-        box-sizing: border-box;
+        padding: 22px;
         border-radius: 20px;
     }
 
-    /* Método ATLAS R-C-T-F (2 columnas) */
     .method-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
-        width: 100%;
     }
 
-    .method-item {
-        padding: 12px 5px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    /* Formulario de Retos (Pila vertical) */
+    /* Formulario de Retos */
     .form-row {
         grid-template-columns: 1fr;
-        gap: 10px;
+        gap: 12px;
     }
 
-    .btn-save-reto {
-        padding: 12px;
-    }
-
-    /* Tablas con scroll táctil */
     .user-scroll-list {
-        width: 100%;
         overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
     }
 }
 
 /* 5. Ajustes finales para Celulares Pequeños (480px o menos) */
 @media (max-width: 480px) {
     .atlas-main-content {
-        padding: 80px 10px 20px;
+        padding: 90px 12px 20px;
     }
 
-    /* La "A" en su tamaño mínimo pero funcional */
-    .atlas-a-container {
-        width: 190px;
-        height: 210px;
-    }
-
-    .huella-number {
-        font-size: 3.2rem;
-    }
-
-    .huella-card h3 {
+    .main-header h1 {
         font-size: 1.4rem;
     }
 
-    /* Botones R-C-T-F en 1 sola columna para que no se corte el texto */
+    /* La "A" en tamaño compacto */
+    .atlas-a-container {
+        width: 200px;
+        height: 220px;
+    }
+
+    .huella-number {
+        font-size: 3.5rem;
+    }
+
+    /* Compass Card en móvil extremo */
+    .compass-nav-pills button {
+        flex: 1 1 100%; /* Un botón por fila para facilitar el toque */
+    }
+
+    .header-icon {
+        font-size: 1.5rem;
+    }
+
+    .title-text-wrapper h2 {
+        font-size: 1.1rem;
+    }
+
+    /* Botones R-C-T-F */
     .method-grid {
         grid-template-columns: 1fr;
     }
@@ -1059,33 +1496,29 @@
         padding-left: 20px;
     }
 
-    .method-item span {
-        font-size: 0.75rem;
-    }
-
-    /* Ajuste de botones de acción para dedos */
-    .btn-action-icon {
-        width: 42px;
-        height: 42px;
-    }
-
+    /* Ajuste de Retos */
     .challenge-card-item {
         flex-direction: column;
         align-items: flex-start;
-        gap: 12px;
+        gap: 15px;
     }
 
     .challenge-meta {
         width: 100%;
-        justify-content: space-between;
-        border-top: 1px solid #eee;
-        padding-top: 10px;
+        justify-content: flex-end;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 12px;
+    }
+
+    .btn-action-icon {
+        width: 44px; /* Más grande para dedos */
+        height: 44px;
     }
 }
 
-/* 6. GARANTÍA DE ANIMACIONES (Siempre activas) */
+/* 6. GARANTÍA DE RENDIMIENTO Y ANIMACIÓN */
 .liquid-group, .wave, .atlas-a-container::after {
-    /* Forzamos que la aceleración por hardware esté activa en móvil */
     backface-visibility: hidden;
     perspective: 1000px;
+    will-change: transform, d;
 }
