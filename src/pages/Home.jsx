@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../Styles/home.css"; 
 import { useNavigate } from "react-router-dom";
 
+
 const API_URL = 'https://script.google.com/macros/s/AKfycbxcqIbNhC3H7za-GsBF9iuTU___o8OBCF8URGNxwdQm5q8pUd1vpgthbYyrBRkGXJ5Y8Q/exec';
 
 export const Home = ({ onLoginSuccess }) => {
@@ -159,7 +160,7 @@ export const Home = ({ onLoginSuccess }) => {
                     <div className="nav-logo-large">
                         {/* El src cambia dinámicamente aquí */}
                         <img
-                            src={isScrolled ? "/logo1.png" : "/logo.png"}
+                            src={isScrolled ? "./logo1.png" : "./logo.png"}
                             alt="Logo ATLAS"
                         />
                     </div>
