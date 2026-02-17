@@ -242,9 +242,9 @@ export const Dashboard = ({ onLogout }) => {
             case "retos": return { title: "Mis Retos Estratégicos", subtitle: "L - Liderar: Seguimiento de Objetivos" };
             case "fase_auditar": return { title: "Fase: Auditar", subtitle: "Gobernanza y Sentido Crítico de la IA" };
             case "responder_fase": 
-                const faseTxt = filterPhase === "A" ? "AUDITAR" : filterPhase === "T" ? "TRANSFORM" : "LEAD";
+                const faseTxt = filterPhase === "A" ? "AUDITAR" : filterPhase === "T" ? "TRANSFORMAR" : "LIDERAR";
                 return { title: `Fase ${faseTxt}`, subtitle: `Instrumentos de la Etapa ${filterPhase}` };
-            default: return { title: "Bienvenido al Marco ATLAS", subtitle: "Liderazgo y Transformación Digital" };
+            default: return { title: "Bienvenido al Marco ATLAS", subtitle: "Modelo de Madurez y Gobernanza en IA Educativa" };
         }
     };
 
@@ -267,10 +267,10 @@ export const Dashboard = ({ onLogout }) => {
                 body: `Tu COMPASS de IA muestra el nivel de evidencia que has documentado sobre el uso pedagógico de la inteligencia artificial. Actualmente estás en una etapa inicial de exploración, lo que indica que aún no has registrado suficiente evidencia sobre cómo la integras o regulas en el aula. ATLAS no mide entusiasmo ni formación, sino decisiones pedagógicas demostradas. A medida que documentes diagnósticos, planeaciones o reflexiones, tu nivel avanzará.`,
                 footer: "El objetivo no es usar más IA. Es usarla con criterio, ética y coherencia pedagógica. ATLAS está aquí para acompañarte paso a paso.",
                 howToImprove: [
-                    "Completa tu diagnóstico inicial + declara tu postura y criterios de uso responsable de IA. (AUDIT).",
-                    "Realiza retos pedagógicos (TRANSFORM).",
-                    "Diseña experiencia de aprendizaje con IA responsable (ASSURE).",
-                    "Comparte evidencias pedagógicas reales (SUSTAIN)."
+                    "Completa tu diagnóstico inicial + declara tu postura y criterios de uso responsable de IA. (AUDITAR).",
+                    "Realiza retos pedagógicos (TRANSFORMAR).",
+                    "Diseña experiencia de aprendizaje con IA responsable (ASEGURAR).",
+                    "Comparte evidencias pedagógicas reales (SOSTENER)."
                 ],
                 extraNote: "Tu compass está alineado con marcos internacionales de uso responsable de IA en educación y evalúa evidencia en las cinco fases del Marco ATLAS."
             },
@@ -283,7 +283,7 @@ export const Dashboard = ({ onLogout }) => {
             En esta etapa, el desafío no es usar más herramientas, sino profundizar en la coherencia pedagógica.`,
                 footer: "Tu práctica muestra intención. Ahora el siguiente paso es consolidar consistencia.",
                 howToImprove: [
-                    "Fortalece la evidencia en evaluación y retroalimentación (ASSURE).",
+                    "Fortalece la evidencia en evaluación y retroalimentación (ASEGURAR).",
                     "Documenta explícitamente tus criterios éticos y pedagógicos de uso de IA.",
                     "Asegura que tus decisiones estén alineadas con marcos de referencia institucionales.",
                     "Reflexiona sobre riesgos, sesgos y supervisión humana en tus actividades."
@@ -299,7 +299,7 @@ export const Dashboard = ({ onLogout }) => {
             En esta etapa, la clave es coherencia y profundidad.`,
                 footer: "Tu práctica es consistente. El siguiente paso es integrarla de manera transversal y sostenible.",
                 howToImprove: [
-                    "Asegura evidencia en las cinco fases ATLAS (incluyendo LEAD y SUSTAIN).",
+                    "Asegura evidencia en las cinco fases ATLAS (incluyendo LIDERAR y SOSTENER).",
                     "Documenta cómo tus decisiones se alínean con marcos y lineamientos institucionales.",
                     "Incorpora análisis de riesgos o sesgos cuando la IA interviene en evaluación.",
                     "Demuestra impacto observable en el aprendizaje."
@@ -327,7 +327,7 @@ export const Dashboard = ({ onLogout }) => {
                 title: "Capacidad ATLAS demostrada",
                 subtitle: "Elegible para proceso de certificación ATLAS.",
                 body: `Tu COMPASS de IA indica que has alcanzado un nivel de integración pedagógica avanzada y coherente. 
-            Has demostrado evidencia sólida en las cinco fases: AUDIT, TRANSFORM, LEAD, ASSURE y SUSTAIN. 
+            Has demostrado evidencia sólida en las cinco fases: AUDITAR, TRANSFORMAR, LEDERAR, ASEGURAR y SOSTENER. 
             La inteligencia artificial en tu práctica está mediada por criterio profesional, alineada con estándares de calidad y documentada.`,
                 footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de validación de coherencia e impacto.",
                 howToImprove: [
@@ -384,7 +384,7 @@ export const Dashboard = ({ onLogout }) => {
                     
                     {/* SECCIÓN A - AUDIT */}
                     <div className="atlas-nav-group">
-                        <div className="atlas-group-header">🛡️ A — AUDIT</div>
+                        <div className="atlas-group-header"> A — AUDITAR</div>
                         {userData.Rol === "DOCENTE" && (
                             <>
                                 <button 
@@ -398,7 +398,7 @@ export const Dashboard = ({ onLogout }) => {
 
                     {/* SECCIÓN T - TRANSFORM */}
                     <div className="atlas-nav-group">
-                        <div className="atlas-group-header">⚙️ T — TRANSFORM</div>
+                        <div className="atlas-group-header"> T — TRANSFORMAR</div>
 
                         {/* Botón visible para ADMIN y DOCENTE */}
                         <button
@@ -420,7 +420,7 @@ export const Dashboard = ({ onLogout }) => {
 
                     {/* SECCIÓN L - LEAD */}
                     <div className="atlas-nav-group">
-                        <div className="atlas-group-header">🚀 L — LEAD</div>
+                        <div className="atlas-group-header"> L — LIDERAR</div>
                         {userData.Rol === "DOCENTE" && (
                             <button 
                                 className={activeTab === "responder_fase" && filterPhase === "L" ? "active-phase" : "phase-btn"} 
@@ -430,8 +430,8 @@ export const Dashboard = ({ onLogout }) => {
                         )}
                     </div>
 
-                    <div className="atlas-nav-group"><div className="atlas-group-header">💎 A — ASSURE</div></div>
-                    <div className="atlas-nav-group"><div className="atlas-group-header">🌱 S — SUSTAIN</div></div>
+                    <div className="atlas-nav-group"><div className="atlas-group-header"> A — ASEGURAR</div></div>
+                    <div className="atlas-nav-group"><div className="atlas-group-header"> S — SOSTENER</div></div>
                 </nav>
                 <div className="sidebar-bottom">
                     <button className="btn-logout-minimal" onClick={handleLogoutAction}>
@@ -463,7 +463,6 @@ export const Dashboard = ({ onLogout }) => {
                                 onClick={() => setIsCompassInfoExpanded(!isCompassInfoExpanded)}
                             >
                                 <div className="compass-title-group-unique">
-                                    <span className="compass-icon-unique">🧭</span>
                                     <div className="compass-text-stack-unique">
                                         <h2 className="compass-h2-unique">¿Qué es el COMPASS de IA?</h2>
                                         {!isCompassInfoExpanded && <p className="compass-tap-unique">Instrumento de madurez pedagógica ATLAS</p>}
@@ -518,11 +517,11 @@ export const Dashboard = ({ onLogout }) => {
                                             <div className="section-content">
                                                 <p className="section-intro-text">El COMPASS analiza tu práctica en cinco dimensiones del Marco ATLAS:</p>
                                                 <ul className="compass-list-clean">
-                                                    <li><strong>• AUDIT</strong> – Diagnóstico y conciencia crítica.</li>
-                                                    <li><strong>• TRANSFORM</strong> – Rediseño pedagógico intencional.</li>
-                                                    <li><strong>• LEAD</strong> – Gobernanza y toma de decisiones explícitas.</li>
-                                                    <li><strong>• ASSURE</strong> – Evaluación y evidencia de impacto.</li>
-                                                    <li><strong>• SUSTAIN</strong> – Sostenibilidad, ética y mejora continua.</li>
+                                                    <li><strong>• AUDITAR</strong> – Diagnóstico y conciencia crítica.</li>
+                                                    <li><strong>• TRANSFORMAR</strong> – Rediseño pedagógico intencional.</li>
+                                                    <li><strong>• LIDERAR</strong> – Gobernanza y toma de decisiones explícitas.</li>
+                                                    <li><strong>• ASEGURAR</strong> – Evaluación y evidencia de impacto.</li>
+                                                    <li><strong>• SOSTENER</strong> – Sostenibilidad, ética y mejora continua.</li>
                                                 </ul>
                                                 <div className="highlight-note-box">
                                                     Tu porcentaje refleja el nivel de evidencia documentada en estas dimensiones.
@@ -590,7 +589,7 @@ export const Dashboard = ({ onLogout }) => {
                         <div className="info-card prompt-card professional-upgrade">
                             <div className="card-header-flex">
                                 <div className="title-group-main">
-                                    <h3>🧭 COMPASS: {getCompassData().title} ({getCompassData().range})</h3>
+                                    <h3> COMPASS: {getCompassData().title} ({getCompassData().range})</h3>
                                     <p className="subtitle-compass-mini">{getCompassData().subtitle}</p>
                                 </div>
                             </div>
@@ -607,7 +606,7 @@ export const Dashboard = ({ onLogout }) => {
                                         className={`btn-how-to-improve ${showImprovement ? 'active' : ''}`}
                                         onClick={() => setShowImprovement(!showImprovement)}
                                     >
-                                        {compassTab === 4 ? "💎 ¿Qué te acerca a la certificación?" : "🚀 ¿Cómo subir mi COMPASS?"}
+                                        {compassTab === 4 ? "💎 ¿Qué te acerca a la certificación?" : " ¿Cómo subir mi COMPASS?"}
                                         <span>{showImprovement ? "▲" : "▼"}</span>
                                     </button>
 
@@ -645,11 +644,11 @@ export const Dashboard = ({ onLogout }) => {
                         </div>
 
                         <div className="info-card wide-card">
-                            <h3>📊 Mis Calificaciones Consolidadas</h3>
+                            <h3>MI PROGRESO ATLAS</h3>
                             <div className="user-scroll-list" style={{ maxHeight: '320px', overflowY: 'auto' }}>
                                 <table className="atlas-table">
                                     <thead style={{ position: 'sticky', top: 0, backgroundColor: '#f8fafc', zIndex: 5 }}>
-                                        <tr><th>Instrumento</th><th>Fecha</th><th>Tu Nota</th></tr>
+                                        <tr><th>Instrumento</th><th>Fecha</th><th>Nivel de madurez</th></tr>
                                     </thead>
                                     <tbody>
                                         {(() => {

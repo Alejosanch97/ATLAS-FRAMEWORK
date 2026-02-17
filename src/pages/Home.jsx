@@ -301,9 +301,7 @@ export const Home = ({ onLoginSuccess }) => {
                             <h2 className="diff-main-title">ATLAS surge para aportar coherencia, responsabilidad y propósito</h2>
                             <div className="diff-accent-line"></div>
                             <p className="diff-description">
-                                No es una moda, es un sistema de apoyo que fortalece la toma de decisiones humanas,
-                                la calidad educativa, la equidad y la gobernanza institucional.
-                            </p>
+                                ATLAS no es una plataforma tecnológica ni un programa de capacitación. Es un modelo de gobernanza institucional diseñado para asegurar que la adopción de la IA responda a criterios pedagógicos, éticos y estratégicos consistentes con estándares internacionales.</p>
                         </div>
 
                         {/* Bloque Derecho: Tarjeta Flotante (Glassmorphism) */}
@@ -311,7 +309,7 @@ export const Home = ({ onLoginSuccess }) => {
                             <div className="diff-card-inner">
                                 <h3>¿Qué hace diferente a ATLAS?</h3>
                                 <p className="diff-card-subtitle">De lo reactivo a lo estratégico</p>
-                                <p className="diff-card-text">Pasamos de la improvisación a una estrategia institucional clara y compartida.</p>
+                                <p className="diff-card-text">Pasamos de la improvisación a una estrategia institucional clara y compartida fundamentada en los lineamientos internacionales que han establecido principios claros en materia de:</p>
 
                                 <div className="diff-pills-container">
                                     <div className="diff-pill">Innovación <span>↔</span> Ética</div>
@@ -353,22 +351,21 @@ export const Home = ({ onLoginSuccess }) => {
                             <h2 className="framework-title">Un marco estructurado y adaptable</h2>
                             <div className="diff-accent-line"></div>
                             <p className="framework-description">
-                                ATLAS guía la adopción responsable de la IA con trayectorias y mecanismos
-                                de certificación alineados con la calidad institucional.
+                                ATLAS se estructura en cinco fases interdependientes que conforman un ciclo continuo de madurez institucional:
                             </p>
                             <div className="framework-badge">
-                                Metodología de Ciclo Cerrado
+                                Estas fases no constituyen servicios independientes, sino dimensiones articuladas de un mismo sistema de gobernanza.
                             </div>
                         </div>
 
                         {/* LADO DERECHO: Flujo de Pasos (Scrollable) */}
                         <div className="framework-steps-scroll">
                             {[
-                                { l: 'A', t: 'Auditar', d: 'Comprender el estado actual del uso de IA, los riesgos y la preparación institucional.' },
-                                { l: 'T', t: 'Transformar', d: 'Rediseñar prácticas pedagógicas, procesos curriculares y políticas con la IA como aliada.' },
-                                { l: 'L', t: 'Liderar', d: 'Desarrollar liderazgo, cultura institucional y responsabilidad compartida.' },
-                                { l: 'A', t: 'Asegurar', d: 'Garantizar el uso ético, protección de datos, inclusión y calidad académica.' },
-                                { l: 'S', t: 'Sostener', d: 'Impacto a largo plazo mediante seguimiento y formación continua.' }
+                                { l: 'A', t: 'Auditar', d: 'Evaluación estructurada del estado actual, prácticas existentes y riesgos asociados al uso de la IA, en coherencia con estándares internacionales.' },
+                                { l: 'T', t: 'Transformar', d: 'Rediseño intencional de prácticas pedagógicas y procesos académicos para integrar la IA de manera alineada con el proyecto educativo institucional.' },
+                                { l: 'L', t: 'Liderar', d: 'Fortalecimiento del liderazgo académico y definición de responsabilidades institucionales para la toma de decisiones informadas y éticamente fundamentadas.' },
+                                { l: 'A', t: 'Asegurar', d: 'Establecimiento de criterios, estándares y mecanismos de evaluación que permitan verificar impacto, calidad y cumplimiento de principios éticos.' },
+                                { l: 'S', t: 'Sostener', d: 'Integración del modelo como práctica institucional permanente mediante monitoreo, evidencia y mejora continua.' }
                             ].map((step, i) => (
                                 <div className="atlas-step-card" key={i}>
                                     <div className="step-letter-container">
@@ -395,7 +392,7 @@ export const Home = ({ onLoginSuccess }) => {
 
                         <div className="audience-header">
                             <span className="diff-tag">Perfiles</span>
-                            <h2 className="audience-main-title">Diseñado para líderes educativos</h2>
+                            <h2 className="audience-main-title">Diseñado para comunidades educativas</h2>
                             <div className="audience-tags-cloud">
                                 <span className="tag-item">Directivos Escolares</span>
                                 <span className="tag-item">Rectores Universitarios.</span>
@@ -426,7 +423,7 @@ export const Home = ({ onLoginSuccess }) => {
                                     </svg>
                                 </div>
                                 <div className="audience-info">
-                                    <h4>Universidades escalando</h4>
+                                    <h4>Centros Educativos escalando</h4>
                                     <p>Instituciones que buscan escalar prácticas responsables a nivel organizacional con estándares globales.</p>
                                 </div>
                             </div>
@@ -452,8 +449,8 @@ export const Home = ({ onLoginSuccess }) => {
                                     </svg>
                                 </div>
                                 <div className="audience-info">
-                                    <h4>Líderes estratégicos</h4>
-                                    <p>Directivos que prefieren la estrategia antes que las herramientas, y la visión antes que las modas.</p>
+                                    <h4>Educadores estratégicos</h4>
+                                    <p>Directivos y docentes que prefieren la estrategia antes que las herramientas, y la visión antes que las modas.</p>
                                 </div>
                             </div>
                         </div>
