@@ -642,20 +642,20 @@
 }
 
 .btn-how-to-improve:hover {
-    border-color: #f8a500;
+    border-color: #c5a059;
     background: #fffcf5;
 }
 
 .btn-how-to-improve.active {
-    background: #f8a500;
+    background: #c5a059;
     color: white;
-    border-color: #f8a500;
+    border-color: #c5a059;
     border-radius: 14px 14px 0 0;
 }
 
 .improvement-dropdown {
     background: #ffffff;
-    border: 2px solid #f8a500;
+    border: 2px solid #c5a059;
     border-top: none;
     padding: 20px;
     border-radius: 0 0 14px 14px;
@@ -684,7 +684,7 @@
 }
 
 .improvement-list li span {
-    color: #f8a500;
+    color: #c5a059;
     font-weight: 900;
 }
 
@@ -695,7 +695,7 @@
     border-radius: 10px;
     font-size: 0.8rem;
     color: #92400e;
-    border-left: 4px solid #f8a500;
+    border-left: 4px solid #c5a059;
 }
 
 /* =========================================

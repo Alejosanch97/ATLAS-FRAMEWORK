@@ -369,7 +369,7 @@ export const Dashboard = ({ onLogout }) => {
                 <div className="sidebar-divider"></div>
                 <nav className="sidebar-nav">
                     <div className="nav-section">CONSOLA ESTRATÉGICA</div>
-                    <button className={activeTab === "overview" ? "active" : ""} onClick={() => switchTab("overview")}>🏠 Panel de Control</button>
+                    <button className={activeTab === "overview" ? "active" : ""} onClick={() => switchTab("overview")}> Panel de Control</button>
                     
                     {userData.Rol === "ADMIN" && (
                         <>
