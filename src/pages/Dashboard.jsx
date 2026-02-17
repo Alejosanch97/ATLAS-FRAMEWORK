@@ -405,7 +405,7 @@ export const Dashboard = ({ onLogout }) => {
                             className={activeTab === "retos" ? "active" : "phase-btn"}
                             onClick={() => switchTab("retos")}
                         >
-                            🎯 Mis Retos Estratégicos
+                            Mis Retos Estratégicos
                         </button>
 
                         {/* Botón visible SOLO para DOCENTE */}
