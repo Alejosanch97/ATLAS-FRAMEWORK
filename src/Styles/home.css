@@ -542,27 +542,66 @@ transform: scale(1.05);
     transform: translate(-50%, -50%);
 }
 
+/* Texto pequeño arriba del título */
+.hero-overline {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: var(--atlas-gold);
+    margin-bottom: 10px;
+    font-weight: 700;
+    opacity: 0.9;
+}
+
 .hero-title {
-    font-size: clamp(4rem, 12vw, 10rem);
+    font-size: clamp(4rem, 12vw, 9rem);
     font-weight: 500;
     letter-spacing: 0.3em;
     margin: 0;
-    line-height: 0.9;
+    line-height: 1;
     text-transform: uppercase;
     filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
 }
 
 .hero-subtitle {
-    font-size: clamp(1rem, 1.8vw, 1.3rem);
+    font-size: 1.2rem;
     max-width: 750px;
-    margin: 35px auto;
+    margin: 0;
     line-height: 1.6;
-    font-weight: 300;
+    font-weight: 400;
     letter-spacing: 1px;
     opacity: 0.9;
     border-top: 1px solid rgba(197, 160, 89, 0.4);
     border-bottom: 1px solid rgba(197, 160, 89, 0.4);
     padding: 15px 0;
+}
+
+/* Bloque contenedor de las descripciones */
+.hero-description-block {
+    max-width: 800px;
+    margin: 30px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espacio entre las dos frases */
+    position: relative;
+    padding: 20px 0;
+}
+
+* Decoración lateral para que no parezca solo una pared de texto */
+.hero-description-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%; transform: translateX(-50%);
+    width: 60px; height: 1px;
+    background: rgba(197, 160, 89, 0.4);
+}
+
+.hero-tagline {
+    font-size: 1rem;
+    line-height: 1.5;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.7); /* Menos peso visual para no saturar */
+    margin: 0;
 }
 
 .hero-actions-layout { 
@@ -683,13 +722,77 @@ transform: scale(1.05);
 
 /* Texto introductorio en dos columnas */
 .section-intro-group {
+    max-width: 1000px; /* Un poco más ancho para que las columnas respiren */
+    margin: 40px auto 0 auto;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.intro-full-width {
+    text-align: center;
+    max-width: 800px; /* Más estrecho que el contenedor padre para crear jerarquía */
+    margin-bottom: 50px;
+}
+
+.intro-full-width p {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: #475a6b;
+}
+
+.intro-columns-equidistant {
+    display: flex;
+    justify-content: space-between;
+    gap: 60px; /* Espacio generoso para que no se amontonen */
+    width: 100%;
+    margin-top: 20px;
+    align-items: stretch;
+}
+
+.column-item {
+    flex: 1; /* Ambas columnas miden lo mismo */
+    max-width: 450px; /* Evita que las líneas sean demasiado largas */
+}
+
+.column-item p {
+    font-size: 1.05rem;
+    line-height: 1.6; /* Espaciado entre líneas para descanso visual */
+    color: #475a6b;
+    text-align: left; /* NUNCA uses justify si las columnas son estrechas */
+    margin: 0;
+}
+
+.intro-text-compliance-refined {
+    padding-left: 20px;
+    border-left: 3px solid #c5a059;
+    color: #627d98 !important;
+    /* Evita que las palabras se corten de forma extraña */
+    word-spacing: normal; 
+    letter-spacing: normal;
+}
+
+.intro-text-compliance-refined strong {
+    color: #102a43;
+    white-space: nowrap; /* Evita que "Unión Europea" se parta en dos líneas */
+}
+
+/* El nuevo contenedor de las 2 columnas inferiores */
+.intro-columns-wrapper {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 50px;
-    text-align: left;
-    border-top: 1px solid #f1f5f9;
-    padding-top: 40px;
-    margin-top: 20px;
+    gap: 40px;
+    text-align: left; /* Volvemos a alineación izquierda para los detalles */
+    width: 100%;
+}
+
+.intro-column p {
+    font-size: 1rem;
+    color: #627d98;
+    line-height: 1.6;
+    margin: 0;
 }
 
 .intro-text-column p {
@@ -806,6 +909,21 @@ transform: scale(1.05);
     letter-spacing: 3px;
     font-size: 0.8rem;
     font-weight: 700;
+}
+
+.intro-text-compliance {
+    margin-top: 20px !important; /* Separación del párrafo anterior */
+    font-size: 0.95rem !important; /* Un poco más pequeño para jerarquía */
+    color: #627d98 !important; /* Un tono más suave que el principal */
+    line-height: 1.6;
+    padding-left: 15px;
+    border-left: 2px solid #c5a059; /* Detalle elegante en dorado */
+    font-style: italic; /* Opcional: para darle un toque de referencia legal/técnica */
+}
+
+.intro-text-compliance strong {
+    color: #102a43; /* Resaltamos las entidades en un tono más oscuro */
+    font-weight: 600;
 }
 
 .diff-main-title {
@@ -1189,62 +1307,139 @@ transform: scale(1.05);
     transform: translateY(-5px);
 }
 
-/* --- SECCIÓN IMPLEMENTACIÓN --- */
-.atlas-impl-section {
+/* --- SECCIÓN RUTAS DE NAVEGACIÓN --- */
+.atlas-routes-section {
     padding: 120px 0;
-    background: #ffffff;
+    background: #f8fafc; /* Un gris casi blanco para diferenciar de la sección anterior */
 }
 
-.impl-header { text-align: center; margin-bottom: 80px; }
-.impl-main-title { font-size: 3rem; color: #0a1929; font-weight: 800; margin-top: 10px; }
-
-.impl-timeline-wrapper {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    position: relative;
-}
-
-/* Línea conectora de fondo */
-.impl-timeline-wrapper::before {
-    content: '';
-    position: absolute;
-    top: 30px; left: 50px; right: 50px;
-    height: 2px;
-    background: #edf2f7;
-    z-index: 0;
-}
-
-.impl-step-card {
-    position: relative;
-    z-index: 1;
+.routes-header {
     text-align: center;
-    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto 60px;
 }
 
-.impl-number-badge {
-    width: 60px; height: 60px;
-    background: #ffffff;
-    border: 2px solid var(--atlas-gold);
-    color: var(--atlas-gold);
-    border-radius: 50%;
-    display: flex;
-    align-items: center; justify-content: center;
+.routes-main-title {
+    font-size: 3rem;
+    color: #0a1929;
     font-weight: 800;
-    font-size: 1.2rem;
-    margin: 0 auto 25px;
-    box-shadow: 0 0 0 8px #ffffff;
-    transition: all 0.3s ease;
+    margin: 15px 0 25px;
 }
 
-.impl-step-card:hover .impl-number-badge {
+.routes-intro-box {
+    padding: 20px;
+    border-top: 1px solid rgba(197, 160, 89, 0.3);
+    border-bottom: 1px solid rgba(197, 160, 89, 0.3);
+}
+
+.routes-intro-box p {
+    font-size: 1.1rem;
+    color: #475a6b;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Grid de Tarjetas de Rol */
+.routes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 80px;
+}
+
+.route-card {
+    background: white;
+    padding: 60px 40px;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(10, 25, 41, 0.03);
+    border: 1px solid #edf2f7;
+    transition: all 0.4s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.route-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--atlas-gold);
+    box-shadow: 0 25px 50px rgba(10, 25, 41, 0.08);
+}
+
+.route-icon {
+    width: 70px;
+    height: 70px;
+    color: var(--atlas-gold);
+    margin-bottom: 30px;
+}
+
+.route-card h3 {
+    font-size: 1.8rem;
+    color: #0a1929;
+    margin-bottom: 20px;
+}
+
+.route-card p {
+    font-size: 1.05rem;
+    color: #64748b;
+    line-height: 1.7;
+}
+
+.route-footer-line {
+    width: 40px;
+    height: 3px;
     background: var(--atlas-gold);
-    color: white;
-    transform: scale(1.1);
+    margin-top: 30px;
+    border-radius: 2px;
 }
 
-.impl-content h3 { font-size: 1.4rem; color: #0a1929; margin-bottom: 15px; }
-.impl-content p { font-size: 0.95rem; color: #64748b; line-height: 1.6; }
+/* Pie de Madurez */
+.maturity-levels-footer {
+    background: #0a1929;
+    padding: 50px;
+    border-radius: 30px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 60px;
+}
+
+.maturity-info h4 {
+    color: var(--atlas-gold);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+.levels-pills {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.levels-pills span:not(.arrow-sep) {
+    background: rgba(255,255,255,0.05);
+    padding: 8px 20px;
+    border-radius: 50px;
+    border: 1px solid rgba(255,255,255,0.1);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.arrow-sep {
+    color: var(--atlas-gold);
+    font-weight: bold;
+}
+
+.maturity-disclaimer {
+    flex: 1;
+    font-size: 1rem;
+    line-height: 1.6;
+    opacity: 0.9;
+    padding-left: 40px;
+    border-left: 1px solid rgba(255,255,255,0.1);
+}
 
 /* --- SECCIÓN CERTIFICACIÓN --- */
 .atlas-cert-section {

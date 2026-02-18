@@ -33,21 +33,42 @@
     background: var(--atlas-blue-mid);
     display: flex;
     flex-direction: column;
-    padding: 40px 0 20px 0;
+    padding: 10px 0 20px 0;
     box-shadow: 10px 0 30px rgba(0,0,0,0.05);
     z-index: 10;
 }
+/* Contenedor del Logo */
+.sidebar-brand {
+    padding: 10px 24px; /* Relleno mínimo arriba y abajo */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 5px; /* Casi pegado al siguiente bloque */
+    /* Línea divisoria opcional ultra-tenue */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03); 
+}
+
+.sidebar-logo-main {
+    max-width: 200px; /* Reducimos el ancho para que la altura baje automáticamente */
+    height: auto;
+    opacity: 0.9;
+    filter: drop-shadow(0 0 5px rgba(197, 160, 89, 0.1));
+}
+
+.sidebar-logo-main:hover {
+    transform: scale(1.02);
+}
 
 .sidebar-user-top {
-    padding: 0 25px 30px;
+    padding: 15px 25px; /* Reducido para que suba más */
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
 }
 
 .user-avatar-initial {
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
     background: var(--atlas-accent);
     border-radius: 14px;
     display: flex;
@@ -117,7 +138,7 @@
     font-weight: 800;
     text-transform: uppercase;
     color: #94a3b8;
-    margin: 20px 0 10px;
+    margin: 10px 0 5px;
     letter-spacing: 2px;
     opacity: 0.6;
 }

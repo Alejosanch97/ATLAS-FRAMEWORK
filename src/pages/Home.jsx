@@ -179,18 +179,28 @@ export const Home = ({ onLoginSuccess }) => {
             {/* HERO CON VIDEO DE FONDO */}
             <header className="hero-section hero-original-dark">
                 <video autoPlay muted loop playsInline className="hero-video-bg">
-                    <source src="https://res.cloudinary.com/deafueoco/video/upload/v1/12336965-hd_1920_1028_60fps_pxhxm0" type="video/mp4" />
+                    <source src="https://res.cloudinary.com/deafueoco/video/upload/e_accelerate:100/v1/12336965-hd_1920_1028_60fps_pxhxm0" type="video/mp4" />
                     Tu navegador no soporta videos.
                 </video>
 
                 <div className="hero-overlay-dark"></div>
 
-                {/* Contenedor central (Dueño del centro de la pantalla) */}
                 <div className="hero-content">
+                    {/* NIVEL 1: Cejilla de contexto */}
+                    <p className="hero-overline">Marco de gobernanza para el uso responsable de la IA en educación</p>
+
+                    {/* NIVEL 2: Título Principal */}
                     <h1 className="hero-title">ATLAS</h1>
-                    <p className="hero-subtitle">
-                        Acompañamos a instituciones educativas y equipos directivos en la adopción de la IA con claridad, ética y visión de largo plazo.
-                    </p>
+
+                    {/* NIVEL 3: Descripción unificada */}
+                    <div className="hero-description-block">
+                        <p className="hero-subtitle">
+                            Un marco estructurado que orienta a las instituciones en la integración responsable, ética y sostenible de la inteligencia artificial.
+                        </p>
+                        <p className="hero-tagline">
+                            Acompañamos a equipos directivos en la adopción de la IA con claridad y visión de largo plazo.
+                        </p>
+                    </div>
 
                     <div className="hero-actions-layout">
                         <button className="btn-primary-large" onClick={() => document.getElementById('que-es').scrollIntoView({ behavior: 'smooth' })}>
@@ -202,11 +212,7 @@ export const Home = ({ onLoginSuccess }) => {
                     </div>
                 </div>
 
-                {/* Capa independiente (No afecta el centrado del texto) */}
-                <div
-                    className="hero-discover-more-fixed"
-                    onClick={() => document.getElementById('porque')?.scrollIntoView({ behavior: 'smooth' })}
-                >
+                <div className="hero-discover-more-fixed" onClick={() => document.getElementById('porque')?.scrollIntoView({ behavior: 'smooth' })}>
                     <p>Descubre más</p>
                     <span className="arrow-down-anim">↓</span>
                 </div>
@@ -217,13 +223,30 @@ export const Home = ({ onLoginSuccess }) => {
                     <div className="section-header-content">
                         <p className="section-tag-gold">¿Por qué ATLAS?</p>
                         <h2 className="section-title-large">La educación necesita un marco que asegure la innovación</h2>
-
                         <div className="section-intro-group">
-                            <div className="intro-text-column">
-                                <p>La inteligencia artificial no puede adoptarse sin criterios institucionales claros. Sin alineación con procesos de calidad y aseguramiento, su uso pierde coherencia y aumenta los riesgos.</p>
+                            {/* TEXTO SUPERIOR: Centrado y con ancho controlado para lectura */}
+                            <div className="intro-full-width">
+                                <p>
+                                    La inteligencia artificial no puede adoptarse sin criterios institucionales claros.
+                                    Sin alineación con procesos de calidad y aseguramiento, su uso pierde coherencia y aumenta los riesgos institucionales.
+                                </p>
                             </div>
-                            <div className="intro-text-column">
-                                <p>ATLAS articula la adopción de la IA con los sistemas de calidad, fortaleciendo la gobernanza, la ética y la sostenibilidad institucional.</p>
+
+                            {/* CONTENEDOR DE COLUMNAS: Aquí es donde aplicamos la equidistancia */}
+                            <div className="intro-columns-equidistant">
+                                <div className="column-item">
+                                    <p>
+                                        ATLAS articula la adopción de la IA con los sistemas de calidad,
+                                        fortaleciendo la gobernanza, la ética y la sostenibilidad institucional.
+                                    </p>
+                                </div>
+
+                                <div className="column-item">
+                                    <p className="intro-text-compliance-refined">
+                                        Se fundamenta en los principios internacionales de la <strong>UNESCO, la OECD y la Unión Europea</strong>,
+                                        traduciendo lineamientos globales en un modelo operativo real.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -312,9 +335,10 @@ export const Home = ({ onLoginSuccess }) => {
                                 <p className="diff-card-text">Pasamos de la improvisación a una estrategia institucional clara y compartida fundamentada en los lineamientos internacionales que han establecido principios claros en materia de:</p>
 
                                 <div className="diff-pills-container">
-                                    <div className="diff-pill">Innovación <span>↔</span> Ética</div>
-                                    <div className="diff-pill">Tecnología <span>↔</span> Pedagogía</div>
-                                    <div className="diff-pill">Experimentación <span>↔</span> Gobernanza</div>
+                                    <div className="diff-pill">Etica <span>↔</span> Responsabilidad</div>
+                                    <div className="diff-pill">Trasparenica <span>↔</span> Explicabilidad</div>
+                                    <div className="diff-pill">Protección de datos <span>↔</span> Rendición de cuentas</div>
+                                    <div className="diff-pill">Sostenibilidad <span>↔</span> Supervisión humana</div>
                                 </div>
                             </div>
                         </div>
@@ -459,28 +483,62 @@ export const Home = ({ onLoginSuccess }) => {
             </section>
 
             {/* SECCIÓN IMPLEMENTACIÓN (TRAYECTORIA ESTRATÉGICA) */}
-            <section className="atlas-impl-section">
+            <section className="atlas-routes-section" id="rutas">
                 <div className="container">
-                    <div className="impl-header">
-                        <span className="diff-tag">Metodología</span>
-                        <h2 className="impl-main-title">¿Cómo se implementa ATLAS?</h2>
+                    <div className="routes-header">
+                        <span className="diff-tag">Instrumentos Operativos</span>
+                        <h2 className="routes-main-title">Rutas de navegación institucional</h2>
+                        <div className="routes-intro-box">
+                            <p>
+                                Las rutas no son cursos independientes, sino <strong>recorridos estructurados</strong> que permiten
+                                implementar el modelo ATLAS según el rol institucional.
+                            </p>
+                        </div>
                     </div>
 
-                    <div className="impl-timeline-wrapper">
-                        {[
-                            { n: '01', t: 'Diagnóstico', d: 'Evaluación integral del estado actual y nivel de preparación institucional.' },
-                            { n: '02', t: 'Formación', d: 'Rutas de capacitación estratégica para docentes y equipos directivos.' },
-                            { n: '03', t: 'Lineamientos', d: 'Creación de criterios institucionales para el uso ético y responsable.' },
-                            { n: '04', t: 'Acompañamiento', d: 'Asesoría profesional continua para asegurar la sostenibilidad.' }
-                        ].map((item, i) => (
-                            <div className="impl-step-card" key={i}>
-                                <div className="impl-number-badge">{item.n}</div>
-                                <div className="impl-content">
-                                    <h3>{item.t}</h3>
-                                    <p>{item.d}</p>
-                                </div>
+                    <div className="routes-grid">
+                        {/* RUTA DOCENTE */}
+                        <div className="route-card">
+                            <div className="route-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                    <path d="M12 14l9-5-9-5-9 5 9 5z" />
+                                    <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                                </svg>
                             </div>
-                        ))}
+                            <h3>Ruta Docente</h3>
+                            <p>Orientada a la integración pedagógica de la IA con criterios institucionales claros y aplicables al aula.</p>
+                            <div className="route-footer-line"></div>
+                        </div>
+
+                        {/* RUTA DIRECTIVA */}
+                        <div className="route-card">
+                            <div className="route-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                    <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                            </div>
+                            <h3>Ruta Directiva</h3>
+                            <p>Orientada a liderazgo, gobernanza, toma de decisiones estratégica y diseño de políticas internas.</p>
+                            <div className="route-footer-line"></div>
+                        </div>
+                    </div>
+
+                    {/* NIVELES DE MADUREZ */}
+                    <div className="maturity-levels-footer">
+                        <div className="maturity-info">
+                            <h4>Niveles progresivos de madurez</h4>
+                            <div className="levels-pills">
+                                <span>Foundation</span>
+                                <span className="arrow-sep">→</span>
+                                <span>Pro</span>
+                                <span className="arrow-sep">→</span>
+                                <span>Advanced</span>
+                            </div>
+                        </div>
+                        <p className="maturity-disclaimer">
+                            El avance se fundamenta en <strong>evidencia verificable</strong> y cumplimiento de criterios,
+                            no en la simple asistencia a sesiones formativas.
+                        </p>
                     </div>
                 </div>
             </section>

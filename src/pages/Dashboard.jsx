@@ -359,6 +359,10 @@ export const Dashboard = ({ onLogout }) => {
             )}
 
             <aside className={`atlas-sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
+                {/* NUEVA SECCIÓN DE LOGO */}
+                <div className="sidebar-brand">
+                    <img src="./logo5.png" alt="Logo ATLAS" className="sidebar-logo-main" />
+                </div>
                 <div className="sidebar-user-top">
                     <div className="user-avatar-initial">{userData.Nombre_Completo?.charAt(0)}</div>
                     <div className="user-text">
