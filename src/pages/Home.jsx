@@ -341,7 +341,7 @@ export const Home = ({ onLoginSuccess }) => {
 
                                 <div className="diff-pills-container">
                                     <div className="diff-pill">Etica <span>↔</span> Responsabilidad</div>
-                                    <div className="diff-pill">Trasparenica <span>↔</span> Explicabilidad</div>
+                                    <div className="diff-pill">Transparencia <span>↔</span> Explicabilidad</div>
                                     <div className="diff-pill">Protección de datos <span>↔</span> Rendición de cuentas</div>
                                     <div className="diff-pill">Sostenibilidad <span>↔</span> Supervisión humana</div>
                                 </div>
