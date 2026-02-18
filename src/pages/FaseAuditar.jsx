@@ -37,7 +37,15 @@ export const FaseAuditar = ({ userData, API_URL, onNavigate }) => {
 
             const resForms = await fetch(`${API_URL}?sheet=Config_Formularios`);
             const allForms = await resForms.json();
-            const formsFaseA = Array.isArray(allForms) ? allForms.filter(f => f.Fase_ATLAS === "A") : [];
+            let formsFaseA = Array.isArray(allForms) ? allForms.filter(f => f.Fase_ATLAS === "A") : [];
+            
+            // --- CORRECCIÓN: FILTRADO POR ROL ---
+            if (userData.Rol === "DOCENTE") {
+                formsFaseA = formsFaseA.filter(f => f.ID_Form === "FORM-1770684713222");
+            } else if (userData.Rol === "DIRECTIVO") {
+                formsFaseA = formsFaseA.filter(f => f.ID_Form === "FORM-1770695655576");
+            }
+
             setFormulariosFase(formsFaseA);
 
             const resAnswers = await fetch(`${API_URL}?sheet=Respuestas_Usuarios&user_key=${userData.Teacher_Key}`);
@@ -77,6 +85,7 @@ export const FaseAuditar = ({ userData, API_URL, onNavigate }) => {
 
     const checkFormulariosCompletos = () => {
         if (formulariosFase.length === 0) return false;
+        // --- CORRECCIÓN: CALIFICA EL FINALIZADO SEGÚN EL FORMULARIO CORRESPONDIENTE AL ROL ---
         return formulariosFase.every(form => 
             respuestasUsuario.some(resp => resp.ID_Form === form.ID_Form)
         );
@@ -112,34 +121,52 @@ export const FaseAuditar = ({ userData, API_URL, onNavigate }) => {
     }, [isProcessComplete, loading]);
 
     const handleAceptarMarco = async () => {
+        // --- MEJORA DE VELOCIDAD: ACTUALIZACIÓN OPTIMISTA ---
+        // Definimos el objeto temporal para que la UI cambie de inmediato
+        const optimisticProgreso = {
+            ...progreso,
+            Capa_1_Sentido: "COMPLETADO",
+            ID_Progreso: progreso?.ID_Progreso || `PROG-${Date.now()}`,
+            Fase: "AUDITAR"
+        };
+
+        // Actualizamos estado local inmediatamente para desbloquear Capa 2
+        setProgreso(optimisticProgreso);
+        
+        // Mostramos alerta rápido
+        Swal.fire({
+            title: "Compromiso Registrado",
+            text: "Ha formalizado su adhesión al Marco Ético ATLAS. El diagnóstico ha sido habilitado.",
+            icon: "success",
+            confirmButtonColor: "#c5a059",
+            timer: 2000
+        });
+
         setIsSaving(true);
         const dataPayload = {
             action: progreso ? "update" : "create",
             sheet: "Progreso_Fases_ATLAS",
             rowId: progreso?.rowId || null,
             idField: "ID_Progreso",
-            idValue: progreso?.ID_Progreso || null,
+            idValue: optimisticProgreso.ID_Progreso,
             data: {
-                ID_Progreso: progreso?.ID_Progreso || `PROG-${Date.now()}`,
+                ...optimisticProgreso,
                 Teacher_Key: userData.Teacher_Key,
-                Fase: "AUDITAR",
-                Capa_1_Sentido: "COMPLETADO",
                 Fecha_Actualizacion: new Date().toISOString()
             }
         };
 
         try {
+            // Se envía en segundo plano
             await fetch(API_URL, { method: "POST", body: JSON.stringify(dataPayload) });
-            await fetchInitialData();
-            Swal.fire({
-                title: "Compromiso Registrado",
-                text: "Ha formalizado su adhesión al Marco Ético ATLAS. El diagnóstico ha sido habilitado.",
-                icon: "success",
-                confirmButtonColor: "#c5a059"
-            });
+            // Sincronizamos datos finales sin bloquear al usuario
+            const resProgreso = await fetch(`${API_URL}?sheet=Progreso_Fases_ATLAS&user_key=${userData.Teacher_Key}`);
+            const dataProgreso = await resProgreso.json();
+            const registroFase = Array.isArray(dataProgreso) ? dataProgreso.find(item => item.Fase === "AUDITAR") : null;
+            if (registroFase) setProgreso(registroFase);
         } catch (e) {
             console.error(e);
-            Swal.fire("Error", "No se pudo registrar el compromiso.", "error");
+            // Si falla, podrías revertir si fuera crítico, pero aquí priorizamos fluidez
         } finally {
             setIsSaving(false);
         }

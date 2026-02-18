@@ -553,15 +553,19 @@ transform: scale(1.05);
     opacity: 0.9;
 }
 
-.hero-title {
-    font-size: clamp(4rem, 12vw, 9rem);
-    font-weight: 500;
-    letter-spacing: 0.3em;
-    margin: 0;
-    line-height: 1;
-    text-transform: uppercase;
-    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+.hero-logo {
+    width: clamp(280px, 40vw, 800px);
+    max-width: 90%;
+    height: auto;
+    margin: 10px 0;
+    filter: drop-shadow(0 10px 25px rgba(0,0,0,0.6));
+    transition: transform 0.4s ease;
 }
+
+.hero-logo:hover {
+    transform: scale(1.03);
+}
+
 
 .hero-subtitle {
     font-size: 1.2rem;
@@ -1827,140 +1831,221 @@ transform: scale(1.05);
 .btn-form-submit:hover .btn-icon { transform: translateX(5px); }
 
 /* ==========================================================================
-   ATLAS RESPONSIVE DESIGN (iPad & Mobile Optimization)
+   ATLAS RESPONSIVE SYSTEM (RECONSTRUIDO Y OPTIMIZADO)
    ========================================================================== */
 
-/* 1. TABLETS (iPad Pro, iPad Air, iPad Mini - 1024px hacia abajo) */
+/* 1. DESKTOP PEQUEÑO Y TABLETS (1024px) */
 @media (max-width: 1024px) {
-    /* Navbar */
-    .nav-links-centered {
+    .nav-container { padding: 0 20px; }
+    .nav-links-centered { gap: 20px; transform: translateX(-40%); } /* Ajuste de centrado */
+    .nav-logo-large span { margin-left: 80px; font-size: 1.2rem; }
+
+    /* Grids: De 4 a 2 columnas para que el contenido no se asfixie */
+    .grid-features-animated {
+        grid-template-columns: repeat(2, 1fr);
         gap: 25px;
     }
-    .nav-logo-large span {
-        margin-left: 90px;
-        font-size: 1.3rem;
-    }
 
-    /* Hero */
-    .hero-title { font-size: 6rem; }
-    
-    /* Layouts de dos columnas a una */
+    /* Layouts de dos columnas pasan a una con alineación central */
     .framework-grid, 
     .cert-grid-layout, 
     .contact-flex-layout,
-    .diff-flex-layout {
+    .diff-flex-layout,
+    .routes-grid {
         grid-template-columns: 1fr;
-        gap: 50px;
+        gap: 60px;
     }
 
-    /* Grids de tarjetas */
-    .grid-features-animated {
-        grid-template-columns: repeat(2, 1fr);
-    }
+    /* Sección Diferencial: Ajuste de imagen/card */
+    .diff-text-content { text-align: center; }
+    .diff-accent-line { margin: 0 auto 30px; }
+    .diff-highlight-card { max-width: 600px; margin: 0 auto; }
 
-    .impl-timeline-wrapper {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .impl-timeline-wrapper::before { display: none; } /* Quitamos la línea que cruza */
-
-    /* Framework Sticky */
+    /* Framework Sticky: Deja de ser sticky para fluir en vertical */
     .framework-sticky-info {
         position: relative;
         top: 0;
         text-align: center;
+        margin-bottom: 40px;
     }
-    
+
     /* Login Card */
     .atlas-card-glass {
-        width: 90%;
+        width: 95%;
         height: auto;
-        min-height: 500px;
+        flex-direction: row;
     }
 }
 
-/* 2. SMARTPHONES GRANDES Y TABLETS VERTICALES (768px hacia abajo) */
+/* 2. SMARTPHONES GRANDES Y TABLETS VERTICALES (768px) */
 @media (max-width: 768px) {
-    /* Navbar Mobile (Ajuste simple) */
-    .nav-links-centered { display: none; } /* Recomendado: Usar menú hamburguesa o esconder */
-    
-    /* Hero */
-    .hero-title { font-size: 4rem; letter-spacing: 10px; }
-    .hero-subtitle { font-size: 1rem; padding: 15px; }
-    .hero-actions-layout { flex-direction: column; width: 100%; padding: 0 20px; }
-    .btn-primary-large, .btn-secondary-large { width: 100%; text-align: center; }
+    /* Navbar Mobile: Ocultar links para evitar traslape */
+    .nav-links-centered { display: none; }
+    .nav-logo-large span { font-size: 1rem; letter-spacing: 2px; }
 
-    /* Secciones */
-    .section-intro-group { grid-template-columns: 1fr; gap: 20px; }
-    .grid-features-animated { grid-template-columns: 1fr; }
-    .audience-grid-layout { grid-template-columns: 1fr; }
-    
-    /* Certificación */
-    .cert-cards-container {
+    /* Hero */
+    .hero-content { width: 95%; }
+    .hero-logo { width: 85%; }
+    .hero-subtitle { font-size: 1rem; width: 90%; }
+    .hero-actions-layout { 
+        flex-direction: column; 
+        gap: 15px; 
+        width: 100%; 
+        max-width: 300px; 
+    }
+    .btn-primary-large, .btn-secondary-large { width: 100%; padding: 15px; }
+
+    /* Secciones de Texto */
+    .section-title-large { font-size: 2.2rem; }
+    .intro-columns-equidistant { 
+        flex-direction: column; 
+        gap: 30px; 
+    }
+    .column-item { max-width: 100%; }
+
+    /* Grids de tarjetas a 1 columna */
+    .grid-features-animated,
+    .audience-grid-layout,
+    .routes-grid,
+    .cert-cards-container,
+    .diff-pillars-grid {
         grid-template-columns: 1fr;
     }
 
-    /* Framework Steps */
+    /* Framework Steps: Refuerzo visual */
     .atlas-step-card {
         flex-direction: column;
-        padding: 30px;
-        gap: 20px;
+        align-items: center;
+        text-align: center;
+        padding: 30px 20px;
+    }
+    .step-connector { display: none; } /* Línea vertical ya no funciona bien aquí */
+    .letter-bg { font-size: 4rem; }
+
+    /* Madurez Atlas (Footer oscuro) */
+    .maturity-levels-footer {
+        flex-direction: column;
+        padding: 30px 20px;
+        gap: 30px;
         text-align: center;
     }
-    .step-letter-container { min-width: auto; }
-    .step-connector { display: none; }
-    .atlas-step-card:hover { transform: translateY(-5px); }
+    .maturity-disclaimer {
+        padding-left: 0;
+        border-left: none;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        padding-top: 20px;
+    }
+    .levels-pills { flex-wrap: wrap; justify-content: center; }
 
-    /* Login Mobile */
+    /* Contacto */
+    .contact-form-container { padding: 30px 20px; }
+    .form-row { grid-template-columns: 1fr; }
+
+    /* Login Mobile: Full screen vertical */
     .atlas-card-glass {
         flex-direction: column;
-        width: 100%;
-        height: 100vh;
+        height: auto;
+        min-height: 100vh;
         border-radius: 0;
     }
-    .atlas-side-visual {
-        padding: 40px 20px;
-        flex: 0.4;
-    }
-    .logo-typography { font-size: 2.5rem; }
+    .atlas-side-visual { padding: 60px 20px; }
     .atlas-auth-panel { padding: 40px 20px; }
-    .btn-back-landing { top: 20px; left: 20px; padding: 8px 15px; }
 }
 
-/* 3. SMARTPHONES PEQUEÑOS (480px hacia abajo) */
+/* 3. SMARTPHONES PEQUEÑOS (480px) */
 @media (max-width: 480px) {
-    .hero-title { font-size: 3rem; }
+    .section-spacious { padding: 60px 0; }
     
     .section-title-large, 
     .diff-main-title, 
     .framework-title, 
-    .contact-main-title {
-        font-size: 2rem;
+    .contact-main-title,
+    .routes-main-title {
+        font-size: 1.8rem;
     }
 
-    .impl-timeline-wrapper { grid-template-columns: 1fr; }
-    
-    .contact-form-container {
-        padding: 25px 20px;
-    }
-    
-    .form-row { grid-template-columns: 1fr; }
-
-    /* Ajuste de tarjetas de audiencia */
+    /* Ajuste de Audiencia */
     .audience-card {
         flex-direction: column;
         align-items: center;
         text-align: center;
     }
+    .audience-icon-wrapper { width: 50px; height: 50px; }
 
-    .faq-trigger { padding: 20px; }
-    .faq-question-text { font-size: 1rem; }
+    /* FAQ */
+    .faq-trigger { padding: 20px 15px; }
+    .faq-question-text { font-size: 0.95rem; }
+
+    /* Contacto Mini Cards */
+    .contact-mini-card { flex-direction: column; text-align: center; }
+
+    /* Footer Certificación */
+    .cert-card-tier { padding: 20px; }
 }
 
-/* 4. OPTIMIZACIÓN DE ALTURA PARA IPAD (LANDSCAPE) */
-@media (max-height: 700px) and (min-width: 1024px) {
-    .atlas-card-glass {
-        height: 90vh;
+@media (max-width: 768px) {
+    /* Forzamos que el contenedor sea vertical */
+    .diff-flex-layout {
+        flex-direction: column !important;
+        gap: 40px;
+        padding: 0 20px;
     }
-    .brand-header { margin-bottom: 20px; }
-    .institute-logo { width: 80px; }
+
+    /* El texto ocupa todo el ancho y se centra */
+    .diff-text-content {
+        width: 100% !important;
+        text-align: center;
+        flex: none;
+    }
+
+    .diff-main-title {
+        font-size: 2.2rem; /* Achicamos un poco el título para que no rompa */
+        line-height: 1.2;
+    }
+
+    /* La tarjeta de la derecha (la que se corta en la imagen) */
+    .diff-highlight-card {
+        width: 100% !important;
+        max-width: 100%; /* Evita que herede anchos fijos de escritorio */
+        padding: 30px 20px;
+        margin: 0 auto;
+        box-sizing: border-box; /* Fundamental para que el padding no sume ancho */
+    }
+
+    /* Si las "pills" de adentro también se cortan */
+    .diff-pill {
+        font-size: 0.8rem;
+        padding: 10px 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .contact-flex-layout {
+        flex-direction: column !important;
+        gap: 50px;
+    }
+
+    .contact-text-panel, 
+    .contact-form-container {
+        width: 100% !important;
+        max-width: 100%;
+        flex: none;
+        box-sizing: border-box;
+    }
+
+    .contact-main-title {
+        font-size: 2.4rem;
+        text-align: center;
+    }
+
+    /* Ajuste del formulario para que los inputs no se salgan */
+    .contact-form-container {
+        padding: 30px 20px;
+    }
+
+    /* Si tienes filas de dos inputs (Nombre/Email), las ponemos uno sobre otro */
+    .form-row {
+        grid-template-columns: 1fr !important; 
+        gap: 15px;
+    }
 }

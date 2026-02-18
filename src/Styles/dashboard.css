@@ -106,6 +106,7 @@
     margin-bottom: 8px;
 }
 
+/* --- ESTILO DE ACORDEÓN (MODIFICADO) --- */
 .atlas-group-header {
     padding: 10px 25px;
     display: flex;
@@ -116,6 +117,26 @@
     color: var(--atlas-accent);
     letter-spacing: 1px;
     background: rgba(255, 255, 255, 0.03);
+    /* Nuevas propiedades para interactividad */
+    cursor: pointer;
+    justify-content: space-between; 
+    transition: all 0.2s ease;
+}
+
+.atlas-group-header:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.atlas-group-header div {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.menu-arrow {
+    font-size: 0.8rem;
+    opacity: 0.6;
+    transition: transform 0.3s ease;
 }
 
 .marco-letter {
@@ -164,13 +185,25 @@
     transition: all 0.2s ease;
 }
 
-.atlas-nav-group button {
-    padding-left: 63px;
+/* --- SUBMENÚS (NUEVO) --- */
+.nav-submenu {
+    background: rgba(0, 0, 0, 0.1);
+    animation: fadeInAccordion 0.3s ease-out;
+}
+
+@keyframes fadeInAccordion {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.nav-submenu button {
+    padding-left: 63px; /* Mantenemos tu valor original de indentación */
     font-size: 0.85rem;
 }
 
 .sidebar-nav button:hover, 
-.sidebar-nav button.active {
+.sidebar-nav button.active,
+.sidebar-nav button.active-phase {
     background: rgba(99, 102, 241, 0.1);
     color: #ffffff;
     box-shadow: inset 4px 0 0 var(--atlas-accent);
@@ -200,7 +233,6 @@
     font-weight: 600;
     cursor: pointer;
 }
-
 /* =========================================
    CONTENIDO PRINCIPAL Y CABECERA
    ========================================= */

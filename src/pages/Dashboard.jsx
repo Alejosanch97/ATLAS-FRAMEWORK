@@ -41,6 +41,14 @@ export const Dashboard = ({ onLogout }) => {
     const [infoSeccion, setInfoSeccion] = useState('evalua');
     const [showImprovement, setShowImprovement] = useState(false);
 
+    // 1. Definimos cuál está abierto (empezamos con 'consola')
+    const [openMenu, setOpenMenu] = useState('consola');
+
+    // 2. Función que apaga todos y prende solo el que clickeamos
+    const toggleMenu = (menuName) => {
+        setOpenMenu(prevMenu => prevMenu === menuName ? null : menuName);
+    };
+
 
     useEffect(() => {
         const savedUser = localStorage.getItem("userATLAS");
@@ -68,7 +76,7 @@ export const Dashboard = ({ onLogout }) => {
             const dataResp = await resResp.json();
             if (Array.isArray(dataResp)) setUserResponses(dataResp);
 
-            if (rol === "ADMIN") await fetchAllUsers();
+            if (rol === "ADMIN" || rol === "DIRECTIVO") await fetchAllUsers();
         } catch (e) {
             console.error("Error cargando datos iniciales", e);
         } finally {
@@ -200,21 +208,64 @@ export const Dashboard = ({ onLogout }) => {
     const handleCreateUser = async (e) => {
         e.preventDefault();
         const fd = new FormData(e.target);
-        const tkey = fd.get("tkey");
+
+        // CORRECCIÓN CLAVE: Si estamos editando, el ID viene de editingUser 
+        // porque el input disabled no envía valor en el FormData.
+        const tkey = editingUser ? editingUser.Teacher_Key : fd.get("tkey");
+        const passwordInput = fd.get("pass");
+
         const userObj = {
-            Teacher_Key: tkey, Nombre_Completo: fd.get("nombre"), Rol: fd.get("rol"), Email: fd.get("email"), Huella_IA_Total: editingUser ? editingUser.Huella_IA_Total : 0
+            Teacher_Key: tkey,
+            Nombre_Completo: fd.get("nombre"),
+            Rol: fd.get("rol"),
+            Email: fd.get("email"),
+            // Mantenemos la huella actual si existe
+            Huella_IA_Total: editingUser ? editingUser.Huella_IA_Total : 0
         };
-        if (editingUser) setAllUsers(prev => prev.map(u => u.Teacher_Key === tkey ? userObj : u));
-        else setAllUsers(prev => [...prev, userObj]);
-        setShowUserModal(false); setEditingUser(null); setIsSyncing(true);
+
+        // Actualización local inmediata (Optimistic UI)
+        if (editingUser) {
+            setAllUsers(prev => prev.map(u => u.Teacher_Key === tkey ? { ...u, ...userObj } : u));
+        } else {
+            setAllUsers(prev => [...prev, userObj]);
+        }
+
+        // Cerramos modal y limpiamos estados
+        setShowUserModal(false);
+        setEditingUser(null);
+        setIsSyncing(true);
+
         try {
-            await fetch(API_URL, {
+            // Preparamos la data para el servidor
+            const dataPayload = { ...userObj };
+
+            // Solo enviamos la contraseña si el usuario escribió una nueva
+            if (passwordInput && passwordInput.trim() !== "") {
+                dataPayload.Password_Hash = passwordInput;
+            }
+
+            const response = await fetch(API_URL, {
                 method: 'POST',
                 body: JSON.stringify({
-                    action: editingUser ? 'update' : 'create', sheet: 'Users_ATLAS', idField: 'Teacher_Key', idValue: tkey, data: { ...userObj, Password_Hash: fd.get("pass") }
+                    action: editingUser ? 'update' : 'create',
+                    sheet: 'Users_ATLAS',
+                    idField: 'Teacher_Key',
+                    idValue: tkey,
+                    data: dataPayload
                 })
             });
-        } finally { setIsSyncing(false); }
+
+            if (!response.ok) throw new Error("Error en la respuesta del servidor");
+
+            // Opcional: Recargar la lista completa desde el servidor para confirmar
+            await fetchAllUsers();
+
+        } catch (e) {
+            console.error("Error al guardar el talento:", e);
+            alert("Hubo un problema al guardar los cambios. Por favor, intenta de nuevo.");
+        } finally {
+            setIsSyncing(false);
+        }
     };
 
     const handleLogoutAction = () => {
@@ -359,10 +410,12 @@ export const Dashboard = ({ onLogout }) => {
             )}
 
             <aside className={`atlas-sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
-                {/* NUEVA SECCIÓN DE LOGO */}
+                {/* SECCIÓN DE LOGO */}
                 <div className="sidebar-brand">
                     <img src="./logo5.png" alt="Logo ATLAS" className="sidebar-logo-main" />
                 </div>
+
+                {/* SECCIÓN DE USUARIO */}
                 <div className="sidebar-user-top">
                     <div className="user-avatar-initial">{userData.Nombre_Completo?.charAt(0)}</div>
                     <div className="user-text">
@@ -370,73 +423,152 @@ export const Dashboard = ({ onLogout }) => {
                         <p className="user-role-badge">{userData.Rol}</p>
                     </div>
                 </div>
+
                 <div className="sidebar-divider"></div>
+
                 <nav className="sidebar-nav">
-                    <div className="nav-section">CONSOLA ESTRATÉGICA</div>
-                    <button className={activeTab === "overview" ? "active" : ""} onClick={() => switchTab("overview")}> Panel de Control</button>
-                    
-                    {userData.Rol === "ADMIN" && (
-                        <>
-                            <button className={activeTab === "talentos" ? "active" : ""} onClick={() => switchTab("talentos")}>👥 Gestión de Talentos</button>
-                            <button className={activeTab === "formularios" ? "active" : ""} onClick={() => switchTab("formularios")}>📐 Arquitecto de Instrumentos</button>
-                            <button className={activeTab === "analisis" ? "active" : ""} onClick={() => switchTab("analisis")}>📊 Análisis de Formularios</button>
-                            <button className={activeTab === "explorador" ? "active" : ""} onClick={() => switchTab("explorador")}>🔎 Explorador de Evidencias</button>
-                        </>
-                    )}
+
+                    {/* --- GRUPO: CONSOLA ESTRATÉGICA --- */}
+                    <div className="atlas-nav-group">
+                        <div
+                            className={`atlas-group-header clickable ${openMenu === 'consola' ? 'active-group' : ''}`}
+                            onClick={() => toggleMenu('consola')}
+                        >
+                            <span>CONSOLA ESTRATÉGICA</span>
+                            <span className="menu-arrow">{openMenu === 'consola' ? "▾" : "▸"}</span>
+                        </div>
+
+                        {openMenu === 'consola' && (
+                            <div className="nav-submenu">
+                                <button
+                                    className={activeTab === "overview" ? "active" : ""}
+                                    onClick={() => switchTab("overview")}
+                                >
+                                    Compass de IA
+                                </button>
+
+                                {/* VISTA COMPARTIDA: ADMIN y DIRECTIVO ven Análisis */}
+                                {(userData.Rol === "ADMIN" || userData.Rol === "DIRECTIVO") && (
+                                    <button className={activeTab === "analisis" ? "active" : ""} onClick={() => switchTab("analisis")}>
+                                        Análisis de Formularios
+                                    </button>
+                                )}
+
+                                {/* VISTAS EXCLUSIVAS DE ADMIN */}
+                                {userData.Rol === "ADMIN" && (
+                                    <>
+                                        <button className={activeTab === "talentos" ? "active" : ""} onClick={() => switchTab("talentos")}> Gestión de Talentos</button>
+                                        <button className={activeTab === "formularios" ? "active" : ""} onClick={() => switchTab("formularios")}>Arquitecto de Instrumentos</button>
+                                        <button className={activeTab === "explorador" ? "active" : ""} onClick={() => switchTab("explorador")}> Explorador de Evidencias</button>
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
                     <div className="nav-section">MARCO ATLAS</div>
-                    
-                    {/* SECCIÓN A - AUDIT */}
-                    <div className="atlas-nav-group">
-                        <div className="atlas-group-header"> A — AUDITAR</div>
-                        {userData.Rol === "DOCENTE" && (
-                            <>
-                                <button 
-                                    className={activeTab === "fase_auditar" ? "active-phase" : "phase-btn"} 
-                                    onClick={() => switchTab("fase_auditar")}>
-                                    Fase: Auditar
-                                </button>
-                            </>
-                        )}
-                    </div>
 
-                    {/* SECCIÓN T - TRANSFORM */}
+                    {/* --- SECCIÓN A - AUDITAR --- */}
                     <div className="atlas-nav-group">
-                        <div className="atlas-group-header"> T — TRANSFORMAR</div>
-
-                        {/* Botón visible para ADMIN y DOCENTE */}
-                        <button
-                            className={activeTab === "retos" ? "active" : "phase-btn"}
-                            onClick={() => switchTab("retos")}
+                        <div
+                            className={`atlas-group-header clickable ${openMenu === 'auditar' ? 'active-group' : ''}`}
+                            onClick={() => toggleMenu('auditar')}
                         >
-                            Mis Retos Estratégicos
-                        </button>
-
-                        {/* Botón visible SOLO para DOCENTE */}
-                        {userData.Rol === "DOCENTE" && (
-                            <button
-                                className={activeTab === "responder_fase" && filterPhase === "T" ? "active-phase" : "phase-btn"}
-                                onClick={() => switchTab("responder_fase", "T")}>
-                                Taller de Co-Creación
-                            </button>
+                            <div><span className="marco-letter">A</span> AUDITAR</div>
+                            <span className="menu-arrow">{openMenu === 'auditar' ? "▾" : "▸"}</span>
+                        </div>
+                        {openMenu === 'auditar' && (
+                            <div className="nav-submenu">
+                                {/* DOCENTE y DIRECTIVO ven Diagnóstico */}
+                                {(userData.Rol === "DOCENTE" || userData.Rol === "DIRECTIVO") && (
+                                    <button
+                                        className={activeTab === "fase_auditar" ? "active-phase" : "phase-btn"}
+                                        onClick={() => switchTab("fase_auditar")}
+                                    >
+                                        Diagnóstico
+                                    </button>
+                                )}
+                                {userData.Rol === "ADMIN" && (
+                                    <button
+                                        className={activeTab === "micromodulos_fase" ? "active" : "phase-btn"}
+                                        onClick={() => switchTab("micromodulos_fase", "A")}
+                                    >
+                                        Gestión de Módulos
+                                    </button>
+                                )}
+                            </div>
                         )}
                     </div>
 
-                    {/* SECCIÓN L - LEAD */}
+                    {/* --- SECCIÓN T - TRANSFORMAR --- */}
                     <div className="atlas-nav-group">
-                        <div className="atlas-group-header"> L — LIDERAR</div>
-                        {userData.Rol === "DOCENTE" && (
-                            <button 
-                                className={activeTab === "responder_fase" && filterPhase === "L" ? "active-phase" : "phase-btn"} 
-                                onClick={() => switchTab("responder_fase", "L")}>
-                                Panel de Influencia
-                            </button>
+                        <div
+                            className={`atlas-group-header clickable ${openMenu === 'transformar' ? 'active-group' : ''}`}
+                            onClick={() => toggleMenu('transformar')}
+                        >
+                            <div><span className="marco-letter">T</span> TRANSFORMAR</div>
+                            <span className="menu-arrow">{openMenu === 'transformar' ? "▾" : "▸"}</span>
+                        </div>
+                        {openMenu === 'transformar' && (
+                            <div className="nav-submenu">
+                                <button
+                                    className={activeTab === "retos" ? "active" : "phase-btn"}
+                                    onClick={() => switchTab("retos")}
+                                >
+                                    Mis Retos Estratégicos
+                                </button>
+                                {/* DOCENTE y DIRECTIVO ven Taller */}
+                                {(userData.Rol === "DOCENTE" || userData.Rol === "DIRECTIVO") && (
+                                    <button
+                                        className={activeTab === "responder_fase" && filterPhase === "T" ? "active-phase" : "phase-btn"}
+                                        onClick={() => switchTab("responder_fase", "T")}
+                                    >
+                                        Taller de Co-Creación
+                                    </button>
+                                )}
+                            </div>
                         )}
                     </div>
 
-                    <div className="atlas-nav-group"><div className="atlas-group-header"> A — ASEGURAR</div></div>
-                    <div className="atlas-nav-group"><div className="atlas-group-header"> S — SOSTENER</div></div>
+                    {/* --- SECCIÓN L - LIDERAR --- */}
+                    <div className="atlas-nav-group">
+                        <div
+                            className={`atlas-group-header clickable ${openMenu === 'liderar' ? 'active-group' : ''}`}
+                            onClick={() => toggleMenu('liderar')}
+                        >
+                            <div><span className="marco-letter">L</span> LIDERAR</div>
+                            <span className="menu-arrow">{openMenu === 'liderar' ? "▾" : "▸"}</span>
+                        </div>
+                        {openMenu === 'liderar' && (
+                            <div className="nav-submenu">
+                                {/* DOCENTE y DIRECTIVO ven Panel de Influencia */}
+                                {(userData.Rol === "DOCENTE" || userData.Rol === "DIRECTIVO") && (
+                                    <button
+                                        className={activeTab === "responder_fase" && filterPhase === "L" ? "active-phase" : "phase-btn"}
+                                        onClick={() => switchTab("responder_fase", "L")}
+                                    >
+                                        Panel de Influencia
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* SECCIONES PENDIENTES */}
+                    <div className="atlas-nav-group">
+                        <div className="atlas-group-header" style={{ opacity: 0.5 }}>
+                            <span className="marco-letter">A</span> ASEGURAR
+                        </div>
+                    </div>
+                    <div className="atlas-nav-group">
+                        <div className="atlas-group-header" style={{ opacity: 0.5 }}>
+                            <span className="marco-letter">S</span> SOSTENER
+                        </div>
+                    </div>
+
                 </nav>
+
+                {/* BOTÓN DE CIERRE DE SESIÓN */}
                 <div className="sidebar-bottom">
                     <button className="btn-logout-minimal" onClick={handleLogoutAction}>
                         <span>Cerrar Sesión</span> <i className="icon-exit">🚪</i>
@@ -771,6 +903,7 @@ export const Dashboard = ({ onLogout }) => {
                                                 <label style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748b' }}>ROL DE USUARIO</label>
                                                 <select name="rol" className="atlas-textarea" style={{ minHeight: '45px' }} defaultValue={editingUser?.Rol || "DOCENTE"}>
                                                     <option value="DOCENTE">DOCENTE</option>
+                                                    <option value="DIRECTIVO">DIRECTIVO</option>
                                                     <option value="ADMIN">ADMINISTRADOR</option>
                                                 </select>
                                             </div>

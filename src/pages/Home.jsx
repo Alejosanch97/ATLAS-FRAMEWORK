@@ -190,7 +190,12 @@ export const Home = ({ onLoginSuccess }) => {
                     <p className="hero-overline">Marco de gobernanza para el uso responsable de la IA en educación</p>
 
                     {/* NIVEL 2: Título Principal */}
-                    <h1 className="hero-title">ATLAS</h1>
+                    <img
+                        src={"./logo5.png"}
+                        alt="ATLAS Logo"
+                        className="hero-logo"
+                    />
+
 
                     {/* NIVEL 3: Descripción unificada */}
                     <div className="hero-description-block">
@@ -198,15 +203,15 @@ export const Home = ({ onLoginSuccess }) => {
                             Un marco estructurado que orienta a las instituciones en la integración responsable, ética y sostenible de la inteligencia artificial.
                         </p>
                         <p className="hero-tagline">
-                            Acompañamos a equipos directivos en la adopción de la IA con claridad y visión de largo plazo.
+                            Acompañamos a instituciones educativas y equipos directivos en la adopción de la IA con claridad, ética y visión de largo plazo.
                         </p>
                     </div>
 
                     <div className="hero-actions-layout">
-                        <button className="btn-primary-large" onClick={() => document.getElementById('que-es').scrollIntoView({ behavior: 'smooth' })}>
+                        <button className="btn-primary-large" onClick={() => document.getElementById('porque').scrollIntoView({ behavior: 'smooth' })}>
                             Explorar ATLAS
                         </button>
-                        <button className="btn-secondary-large" onClick={() => document.getElementById('porque').scrollIntoView({ behavior: 'smooth' })}>
+                        <button className="btn-secondary-large" onClick={() => document.getElementById('que-es').scrollIntoView({ behavior: 'smooth' })}>
                             Conocer el marco
                         </button>
                     </div>
@@ -526,7 +531,7 @@ export const Home = ({ onLoginSuccess }) => {
                     {/* NIVELES DE MADUREZ */}
                     <div className="maturity-levels-footer">
                         <div className="maturity-info">
-                            <h4>Niveles progresivos de madurez</h4>
+                            <h4>Niveles progresivos de madurez en IA</h4>
                             <div className="levels-pills">
                                 <span>Foundation</span>
                                 <span className="arrow-sep">→</span>
@@ -548,8 +553,8 @@ export const Home = ({ onLoginSuccess }) => {
                 <div className="container">
                     <div className="cert-grid-layout">
                         <div className="cert-intro">
-                            <span className="diff-tag">Acreditación</span>
-                            <h2 className="cert-title">Certificación ATLAS por niveles</h2>
+                            <span className="diff-tag">Certificaciones para:</span>
+                            <h2 className="cert-title">Docentes, directivos e instituciones</h2>
                             <p className="cert-lead">Reconocemos el nivel de madurez alcanzado en la adopción responsable de la IA bajo estándares institucionales.</p>
                             <div className="cert-badge-note">
                                 <strong>Nota:</strong> Evalúa procesos, no herramientas.

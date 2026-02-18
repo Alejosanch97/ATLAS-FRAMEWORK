@@ -20,27 +20,39 @@ export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncin
             const forms = await resForms.json();
             const resAnswers = await fetch(`${API_URL}?sheet=Respuestas_Usuarios&user_key=${userData?.Teacher_Key}`);
             const answers = await resAnswers.json();
-            
+
             if (Array.isArray(forms)) {
-                // LÓGICA DE FILTRADO
+                let filtered = forms;
+
+                // 1. Filtrado por Fase (A, T o L)
                 if (filterPhase) {
-                    // Si hay una fase activa (A, T o L), filtramos los formularios
-                    const filtered = forms.filter(f => f.Fase_ATLAS === filterPhase);
-                    setAvailableForms(filtered);
-                } else {
-                    // Si no hay fase (ADMIN en Explorador), mostramos todos
-                    setAvailableForms(forms);
+                    filtered = filtered.filter(f => f.Fase_ATLAS === filterPhase);
+
+                    // 2. FILTRADO ESPECIAL POR ROL (Solo para Fase AUDITAR)
+                    if (filterPhase === "A") {
+                        if (userData.Rol === "DOCENTE") {
+                            // Solo ve su formulario de diagnóstico
+                            filtered = filtered.filter(f => f.ID_Form === "FORM-1770684713222");
+                        } else if (userData.Rol === "DIRECTIVO") {
+                            // Solo ve el checklist institucional
+                            filtered = filtered.filter(f => f.ID_Form === "FORM-1770695655576");
+                        }
+                        // Nota: Si el rol es ADMIN, no entra en estos ifs y ve ambos formularios de la fase A.
+                    }
                 }
+
+                setAvailableForms(filtered);
             }
-            
-            if (Array.isArray(answers)) setUserAnswers(answers);
+
+            if (Array.isArray(answers)) {
+                setUserAnswers(answers);
+            }
         } catch (e) {
             console.error("Error cargando datos:", e);
         } finally {
             setIsSyncing(false);
         }
     };
-
     const isFormAnswered = (formId) => userAnswers.some(ans => ans.ID_Form === formId);
     
     // Estos arrays dependen de availableForms ya filtrado por fase
