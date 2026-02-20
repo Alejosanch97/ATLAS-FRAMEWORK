@@ -113,57 +113,62 @@ export const Dashboard = ({ onLogout }) => {
         }
     };
 
-    // Dentro de tu useEffect en el Dashboard.js
+    // --- CÁLCULO DE HUELLA ATLAS CORREGIDO ---
     useEffect(() => {
+        // CORRECCIÓN: Validamos que userData existe antes de intentar leer .Rol
+        if (!userData || !userData.Rol || isLoading) return;
+
         const calcularHuella = () => {
-            if (isLoading) return;
+            try {
+                // --- 1. AUDITAR (20%) - LÓGICA SIMPLIFICADA ---
+                const ID_DOCENTE = "FORM-1770684713222";
+                const ID_DIRECTIVO = "FORM-1770695655576";
+                
+                // Usamos Optional Chaining (?.) por seguridad extra
+                const idBuscado = userData?.Rol === "DIRECTIVO" ? ID_DIRECTIVO : ID_DOCENTE;
 
-            // --- 1. AUDITAR (20%) - LÓGICA SIMPLIFICADA ---
-            // Definimos los IDs según el rol (igual que en tu tabla e interfaz)
-            const ID_DOCENTE = "FORM-1770684713222";
-            const ID_DIRECTIVO = "FORM-1770695655576";
-            const idBuscado = userData.Rol === "DIRECTIVO" ? ID_DIRECTIVO : ID_DOCENTE;
+                // Sumamos los puntos del formulario de diagnóstico correspondiente
+                const puntosFormulario = userResponses
+                    .filter(r => r.ID_Form === idBuscado)
+                    .reduce((sum, curr) => sum + parseFloat(curr.Puntos_Ganados || 0), 0);
 
-            // Buscamos en las respuestas del usuario si existe ese formulario
-            // Sumamos los puntos igual que haces en el .reduce de la tabla
-            const puntosFormulario = userResponses
-                .filter(r => r.ID_Form === idBuscado)
-                .reduce((sum, curr) => sum + parseFloat(curr.Puntos_Ganados || 0), 0);
+                let pAuditar = 0;
+                if (puntosFormulario > 0) {
+                    const config = allFormsInfo.find(f => f.ID_Form === idBuscado);
+                    const maximo = parseFloat(config?.Puntos_Maximos || 100);
+                    // Proporción sobre el 20%
+                    pAuditar = (puntosFormulario / maximo) * 20;
+                }
 
-            let pAuditar = 0;
-            if (puntosFormulario > 0) {
-                // Buscamos el máximo configurado para ese formulario específico
-                const config = allFormsInfo.find(f => f.ID_Form === idBuscado);
-                const maximo = parseFloat(config?.Puntos_Maximos || 100);
+                // --- 2. LIDERAR (8%) ---
+                const semanalCount = misRetos.filter(r =>
+                    String(r.Status || "").toLowerCase().trim() === 'completed'
+                ).length;
+                const pLiderar = misRetos.length > 0 ? (semanalCount / misRetos.length) * 8 : 0;
 
-                // Regla de tres: (puntos / maximo) * 20
-                pAuditar = (puntosFormulario / maximo) * 20;
+                // --- 3. TRANSFORMACIÓN (30%) ---
+                const transCount = retosTransformar.filter(r =>
+                    String(r.Autoevaluacion_Status || "").toUpperCase().trim() === 'COMPLETADO'
+                ).length;
+                const pTransformar = Math.min(transCount * 10, 30);
+
+                // --- TOTAL FINAL ---
+                const total = Math.round(pAuditar + pLiderar + pTransformar);
+
+                console.log("=== CALCULO HUELLA OK ===");
+                console.log(`Buscando ID: ${idBuscado} | Puntos: ${puntosFormulario}`);
+                console.log(`Resultados -> A: ${pAuditar.toFixed(1)}% | L: ${pLiderar.toFixed(1)}% | T: ${pTransformar}%`);
+
+                setHuellaPuntaje(total);
+            } catch (error) {
+                console.error("Error calculando la huella:", error);
             }
-
-            // --- 2. LIDERAR (8%) ---
-            const semanalCount = misRetos.filter(r =>
-                String(r.Status || "").toLowerCase().trim() === 'completed'
-            ).length;
-            const pLiderar = misRetos.length > 0 ? (semanalCount / misRetos.length) * 8 : 0;
-
-            // --- 3. TRANSFORMACIÓN (30%) ---
-            const transCount = retosTransformar.filter(r =>
-                String(r.Autoevaluacion_Status || "").toUpperCase().trim() === 'COMPLETADO'
-            ).length;
-            const pTransformar = Math.min(transCount * 10, 30);
-
-            // --- TOTAL FINAL ---
-            const total = Math.round(pAuditar + pLiderar + pTransformar);
-
-            console.log("=== CALCULO HUELLA SIMPLIFICADO ===");
-            console.log(`Buscando ID: ${idBuscado} | Puntos hallados: ${puntosFormulario}`);
-            console.log(`Auditar: ${pAuditar.toFixed(1)}% | Liderar: ${pLiderar.toFixed(1)}% | Trans: ${pTransformar}%`);
-
-            setHuellaPuntaje(total);
         };
 
         calcularHuella();
-    }, [userResponses, allFormsInfo, misRetos, retosTransformar, userData.Rol, isLoading]);
+
+        // CAMBIO CLAVE: Quitamos 'userData.Rol' de aquí para que no rompa al cargar
+    }, [userResponses, allFormsInfo, misRetos, retosTransformar, userData, isLoading]);
 
     useEffect(() => {
         if (huellaPuntaje >= 90) setCompassTab(4);
@@ -451,7 +456,19 @@ export const Dashboard = ({ onLogout }) => {
         ];
         return info[compassTab] || info[0];
     };
-    if (!userData) return <div className="atlas-loader">Iniciando Sesión...</div>;
+    // --- CORRECCIÓN AQUÍ ---
+    // 1. Movemos la validación antes de cualquier ejecución que use userData
+    if (!userData) {
+        return (
+            <div className="atlas-dashboard-loading-screen">
+                <div className="atlas-loader"></div>
+                <p>Sincronizando credenciales...</p>
+            </div>
+        );
+    }
+
+    // 2. Ahora que sabemos que userData EXISTE, calculamos los datos del compass
+    const currentCompass = getCompassData();
 
     return (
         <div className={`atlas-dashboard-layout ${isMobileMenuOpen ? 'mobile-nav-open' : ''}`}>
