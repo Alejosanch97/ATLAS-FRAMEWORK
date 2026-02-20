@@ -7,10 +7,14 @@ import { Analisis } from "./Analisis";
 import { FaseAuditar } from "./FaseAuditar"; // Importante: Asegúrate de que el archivo existe
 import { MicromodulosPage } from "./MicromodulosPage";
 
+import { FaseTransformar } from "./FaseTransformar";
+import { EjecutarReto } from "./EjecutarReto";
+
 const API_URL = 'https://script.google.com/macros/s/AKfycbxcqIbNhC3H7za-GsBF9iuTU___o8OBCF8URGNxwdQm5q8pUd1vpgthbYyrBRkGXJ5Y8Q/exec';
 
 export const Dashboard = ({ onLogout }) => {
     const [activeTab, setActiveTab] = useState("overview");
+    const [activeRetoId, setActiveRetoId] = useState(null);
     const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
@@ -33,6 +37,7 @@ export const Dashboard = ({ onLogout }) => {
     const [editingReto, setEditingReto] = useState(null);
     const [showUserModal, setShowUserModal] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
+    const [retosTransformar, setRetosTransformar] = useState([]);
 
     const navigate = useNavigate();
 
@@ -63,68 +68,102 @@ export const Dashboard = ({ onLogout }) => {
 
     const loadInitialData = async (key, rol) => {
         setIsLoading(true);
+        console.log("Iniciando carga para:", key);
+
         try {
-            const resForms = await fetch(`${API_URL}?sheet=Config_Formularios`);
+            // Ejecutamos las peticiones en paralelo para que sea más rápido
+            const [resForms, resRetos, resRetosTrans, resResp] = await Promise.all([
+                fetch(`${API_URL}?sheet=Config_Formularios`),
+                fetch(`${API_URL}?sheet=Weekly_Challenges&user_key=${key}`),
+                fetch(`${API_URL}?sheet=Retos_Transformar_ATLAS&user_key=${key}`),
+                fetch(`${API_URL}?sheet=Respuestas_Usuarios&user_key=${key}`)
+            ]);
+
             const dataForms = await resForms.json();
+            const dataRetos = await resRetos.json();
+            const dataRetosTrans = await resRetosTrans.json();
+            const dataResp = await resResp.json();
+
+            // Seteamos estados validando que sean arrays
             if (Array.isArray(dataForms)) setAllFormsInfo(dataForms);
 
-            const resRetos = await fetch(`${API_URL}?sheet=Weekly_Challenges&user_key=${key}`);
-            const dataRetos = await resRetos.json();
-            if (Array.isArray(dataRetos)) setMisRetos(dataRetos);
+            if (Array.isArray(dataRetos)) {
+                setMisRetos(dataRetos);
+            } else {
+                setMisRetos([]);
+            }
 
-            const resResp = await fetch(`${API_URL}?sheet=Respuestas_Usuarios&user_key=${key}`);
-            const dataResp = await resResp.json();
+            // --- VALIDACIÓN CLAVE PARA RETOS TRANSFORMACIÓN ---
+            console.log("Datos Transformar recibidos:", dataRetosTrans);
+            if (Array.isArray(dataRetosTrans)) {
+                setRetosTransformar(dataRetosTrans);
+            } else {
+                console.error("Retos Transformar no es un array:", dataRetosTrans);
+                setRetosTransformar([]);
+            }
+
             if (Array.isArray(dataResp)) setUserResponses(dataResp);
 
             if (rol === "ADMIN" || rol === "DIRECTIVO") await fetchAllUsers();
+
         } catch (e) {
-            console.error("Error cargando datos iniciales", e);
+            console.error("Error crítico en carga de datos:", e);
         } finally {
             setIsLoading(false);
         }
     };
 
+    // Dentro de tu useEffect en el Dashboard.js
     useEffect(() => {
         const calcularHuella = () => {
-            // --- 1. LÓGICA DE FORMULARIOS (FASE A = 40%) ---
-            const formulariosFaseA = allFormsInfo.filter(f => f.Fase_ATLAS === 'A');
+            if (isLoading) return;
 
-            let porcentajeForms = 0;
-            if (formulariosFaseA.length > 0) {
-                // Calcular máximo posible de la Fase A
-                let maxPuntosFaseA = 0;
-                formulariosFaseA.forEach(f => {
-                    maxPuntosFaseA += parseFloat(f.Puntos_Maximos || 0);
-                });
+            // --- 1. AUDITAR (20%) - LÓGICA SIMPLIFICADA ---
+            // Definimos los IDs según el rol (igual que en tu tabla e interfaz)
+            const ID_DOCENTE = "FORM-1770684713222";
+            const ID_DIRECTIVO = "FORM-1770695655576";
+            const idBuscado = userData.Rol === "DIRECTIVO" ? ID_DIRECTIVO : ID_DOCENTE;
 
-                if (maxPuntosFaseA === 0) maxPuntosFaseA = 100;
+            // Buscamos en las respuestas del usuario si existe ese formulario
+            // Sumamos los puntos igual que haces en el .reduce de la tabla
+            const puntosFormulario = userResponses
+                .filter(r => r.ID_Form === idBuscado)
+                .reduce((sum, curr) => sum + parseFloat(curr.Puntos_Ganados || 0), 0);
 
-                // Sumar puntos obtenidos solo de formularios Fase A
-                const idsFaseA = formulariosFaseA.map(f => f.ID_Form);
-                const sumaNotasFaseA = userResponses
-                    .filter(r => idsFaseA.includes(r.ID_Form))
-                    .reduce((sum, r) => sum + parseFloat(r.Puntos_Ganados || 0), 0);
+            let pAuditar = 0;
+            if (puntosFormulario > 0) {
+                // Buscamos el máximo configurado para ese formulario específico
+                const config = allFormsInfo.find(f => f.ID_Form === idBuscado);
+                const maximo = parseFloat(config?.Puntos_Maximos || 100);
 
-                // Calcular peso sobre el 40%
-                porcentajeForms = (sumaNotasFaseA / maxPuntosFaseA) * 40;
+                // Regla de tres: (puntos / maximo) * 20
+                pAuditar = (puntosFormulario / maximo) * 20;
             }
 
-            // --- 2. LÓGICA DE RETOS (8%) ---
-            const totalRetos = misRetos.length;
-            const retosCompletados = misRetos.filter(r => r.Status === 'completed').length;
+            // --- 2. LIDERAR (8%) ---
+            const semanalCount = misRetos.filter(r =>
+                String(r.Status || "").toLowerCase().trim() === 'completed'
+            ).length;
+            const pLiderar = misRetos.length > 0 ? (semanalCount / misRetos.length) * 8 : 0;
 
-            // Si no hay retos creados, el porcentaje es 0
-            const porcentajeRetos = totalRetos > 0 ? (retosCompletados / totalRetos) * 8 : 0;
+            // --- 3. TRANSFORMACIÓN (30%) ---
+            const transCount = retosTransformar.filter(r =>
+                String(r.Autoevaluacion_Status || "").toUpperCase().trim() === 'COMPLETADO'
+            ).length;
+            const pTransformar = Math.min(transCount * 10, 30);
 
-            // --- 3. SUMA FINAL ---
-            // Máximo alcanzable ahora: 48%
-            const totalFinal = Math.min(porcentajeForms + porcentajeRetos, 100);
+            // --- TOTAL FINAL ---
+            const total = Math.round(pAuditar + pLiderar + pTransformar);
 
-            setHuellaPuntaje(Math.round(totalFinal));
+            console.log("=== CALCULO HUELLA SIMPLIFICADO ===");
+            console.log(`Buscando ID: ${idBuscado} | Puntos hallados: ${puntosFormulario}`);
+            console.log(`Auditar: ${pAuditar.toFixed(1)}% | Liderar: ${pLiderar.toFixed(1)}% | Trans: ${pTransformar}%`);
+
+            setHuellaPuntaje(total);
         };
 
         calcularHuella();
-    }, [userResponses, allFormsInfo, misRetos]); // Reincorporamos misRetos como dependencia
+    }, [userResponses, allFormsInfo, misRetos, retosTransformar, userData.Rol, isLoading]);
 
     useEffect(() => {
         if (huellaPuntaje >= 90) setCompassTab(4);
@@ -156,6 +195,34 @@ export const Dashboard = ({ onLogout }) => {
             if (Array.isArray(data)) setAllUsers(data);
         } catch (e) { console.error("Error cargando usuarios", e); }
         finally { setIsSyncing(false); }
+    };
+
+    // --- MANEJADOR DE NAVEGACIÓN MEJORADO ---
+    // --- MANEJADOR DE NAVEGACIÓN UNIFICADO ---
+    const switchTab = (tab, extra = "") => {
+        // 1. Cambiamos la pestaña activa
+        setActiveTab(tab);
+
+        // 2. Lógica condicional según el tipo de pestaña
+        if (tab === 'ejecutar_reto') {
+            // Si vamos a ejecutar un reto, el 'extra' es el número del reto (1, 2, 3)
+            setActiveRetoId(extra);
+        } else if (tab === 'fase_auditar' || tab === 'fase_transformar') {
+            // Secciones directas, no requieren 'filterPhase' obligatorio pero 
+            // reseteamos el extra por seguridad
+            setFilterPhase("");
+        } else {
+            // Para 'responder_fase', el 'extra' es la letra de la fase (A, T, L)
+            setFilterPhase(extra);
+        }
+
+        // 3. Cerramos el menú móvil si está abierto
+        setIsMobileMenuOpen(false);
+
+        // 4. Refrescamos datos si volvemos al inicio
+        if (tab === "overview") {
+            handleManualRefresh();
+        }
     };
 
     const handleManualRefresh = () => {
@@ -274,16 +341,6 @@ export const Dashboard = ({ onLogout }) => {
         navigate("/");
     };
 
-   const switchTab = (tab, phase = "") => {
-        setActiveTab(tab);
-        setFilterPhase(phase);
-        setIsMobileMenuOpen(false);
-
-        if (tab === "overview") {
-            handleManualRefresh();
-        }
-    };
-
     const getHeaderContent = () => {
         switch (activeTab) {
             case "talentos": return { title: "Gestión de Talentos", subtitle: "L - Liderar: Administración de Usuarios" };
@@ -291,6 +348,8 @@ export const Dashboard = ({ onLogout }) => {
             case "explorador": return { title: "Explorador de Evidencias", subtitle: "Centro de Respuesta" };
             case "analisis": return { title: "Análisis Estratégico", subtitle: "Data e Insights" };
             case "retos": return { title: "Mis Retos Estratégicos", subtitle: "L - Liderar: Seguimiento de Objetivos" };
+            case "fase_transformar": return { title: "Fase: Transformar", subtitle: "Estrategia Pedagógica UNESCO" };
+            case "ejecutar_reto": return { title: `Reto ${activeRetoId}`, subtitle: "Consignación de Evidencia Pedagógica" };
             case "fase_auditar": return { title: "Fase: Auditar", subtitle: "Gobernanza y Sentido Crítico de la IA" };
             case "responder_fase": 
                 const faseTxt = filterPhase === "A" ? "AUDITAR" : filterPhase === "T" ? "TRANSFORMAR" : "LIDERAR";
@@ -411,7 +470,10 @@ export const Dashboard = ({ onLogout }) => {
 
             <aside className={`atlas-sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
                 {/* SECCIÓN DE LOGO */}
-                <div className="sidebar-brand">
+                <div className="sidebar-brand"
+                    onClick={() => switchTab("overview")}
+                    style={{ cursor: 'pointer' }}
+                >
                     <img src="./logo5.png" alt="Logo ATLAS" className="sidebar-logo-main" />
                 </div>
 
@@ -511,21 +573,22 @@ export const Dashboard = ({ onLogout }) => {
                         </div>
                         {openMenu === 'transformar' && (
                             <div className="nav-submenu">
+                                {/* NUEVO BOTÓN: Misiones de Transformación (Aparece de primero) */}
+                                <button
+                                    className={(activeTab === "fase_transformar" || activeTab === "ejecutar_reto") ? "active-phase" : "phase-btn"}
+                                    onClick={() => switchTab("fase_transformar")}
+                                >
+                                    Misiones de Transformación
+                                </button>
+
+                                {/* TUS BOTONES EXISTENTES (SE MANTIENEN IGUAL) */}
                                 <button
                                     className={activeTab === "retos" ? "active" : "phase-btn"}
                                     onClick={() => switchTab("retos")}
                                 >
                                     Mis Retos Estratégicos
                                 </button>
-                                {/* DOCENTE y DIRECTIVO ven Taller */}
-                                {(userData.Rol === "DOCENTE" || userData.Rol === "DIRECTIVO") && (
-                                    <button
-                                        className={activeTab === "responder_fase" && filterPhase === "T" ? "active-phase" : "phase-btn"}
-                                        onClick={() => switchTab("responder_fase", "T")}
-                                    >
-                                        Taller de Co-Creación
-                                    </button>
-                                )}
+
                             </div>
                         )}
                     </div>
@@ -955,6 +1018,32 @@ export const Dashboard = ({ onLogout }) => {
                         API_URL={API_URL}
                         filterPhase={filterPhase}
                         onNavigate={switchTab}  /* <--- AGREGA ESTA LÍNEA */
+                    />
+                )}
+
+                {/* Agrega esto después de tus otros tabs en el <main> */}
+                {/* --- SECCIÓN TRANSFORMAR --- */}
+                {activeTab === "fase_transformar" && (
+                    <FaseTransformar
+                        userData={userData}
+                        API_URL={API_URL}
+                        onNavigate={(tab, extra) => {
+                            if (tab === "overview") handleManualRefresh(); // Actualiza puntos al volver
+                            switchTab(tab, extra);
+                        }}
+                    />
+                )}
+
+                {/* --- SECCIÓN EJECUTAR RETO --- */}
+                {activeTab === "ejecutar_reto" && (
+                    <EjecutarReto
+                        userData={userData}
+                        API_URL={API_URL}
+                        retoId={activeRetoId}
+                        onNavigate={(tab, extra) => {
+                            if (tab === "fase_transformar" || tab === "overview") handleManualRefresh();
+                            switchTab(tab, extra);
+                        }}
                     />
                 )}
 
