@@ -120,7 +120,7 @@ export const Home = ({ onLoginSuccess }) => {
                         <div className="form-wrapper">
                             <div className="brand-header">
                                 <img
-                                    src="https://i.pinimg.com/736x/f1/d7/b9/f1d7b925820b3e01749d2a567ba9cedc.jpg"
+                                    src={"./logo7.png"}
                                     alt="Logo ATLAS"
                                     className="institute-logo"
                                 />
