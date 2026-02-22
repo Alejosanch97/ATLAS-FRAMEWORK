@@ -1105,24 +1105,67 @@
 
 /* MANTENEMOS TU LÓGICA DE ANIMACIÓN ORIGINAL */
 .liquid-group {
-    transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-    animation: liquidPulse 4s infinite alternate ease-in-out;
+    transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wave-front {
+    animation: moveWave 3s repeat-x linear infinite;
+    transform: translateX(0);
+}
+
+.wave-back {
+    animation: moveWave 5s repeat-x linear infinite reverse;
+    transform: translateX(0);
 }
 
 .liquid-body {
     fill: var(--atlas-blue-mid) !important;
 }
 
-.wave {
-    fill: var(--atlas-blue-mid) !important;
-    animation: atlasWaveDynamic 1.5s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95);
+
+/* Animación para la onda frontal: Fluidez hacia adelante */
+@keyframes waveFrontLogic {
+    0% {
+        d: path("M0,0 C25,-12 75,12 100,0 L100,100 L0,100 Z");
+        transform: translateX(-2px);
+    }
+    50% {
+        d: path("M0,0 C25,12 75,-12 100,0 L100,100 L0,100 Z");
+        transform: translateX(2px);
+    }
+    100% {
+        d: path("M0,0 C25,-12 75,12 100,0 L100,100 L0,100 Z");
+        transform: translateX(-2px);
+    }
 }
 
-@keyframes atlasWaveDynamic {
-    0%, 100% { d: path("M0,0 C15,-20 85,20 100,0 L100,100 L0,100 Z"); }
-    50% { d: path("M0,0 C15,20 85,-20 100,0 L100,100 L0,100 Z"); }
+/* Animación para la onda trasera: Persecución lenta */
+@keyframes waveBackLogic {
+    0% {
+        d: path("M0,0 C25,10 75,-10 100,0 L100,100 L0,100 Z");
+        transform: translateX(2px);
+    }
+    50% {
+        d: path("M0,0 C25,-10 75,10 100,0 L100,100 L0,100 Z");
+        transform: translateX(-2px);
+    }
+    100% {
+        d: path("M0,0 C25,10 75,-10 100,0 L100,100 L0,100 Z");
+        transform: translateX(2px);
+    }
 }
 
+.wave-logic {
+    transform-origin: center bottom;
+}
+
+.wave-logic.front {
+    animation: waveFrontLogic 3s ease-in-out infinite;
+}
+
+.wave-logic.back {
+    animation: waveBackLogic 5s ease-in-out infinite; /* Tiempo diferente para que no sincronicen */
+}
 /* BRILLO (SHEEN) ORIGINAL */
 .atlas-a-container::after {
     content: "";

@@ -6,6 +6,7 @@ import { ResponderFormularios } from "./ResponderFormularios";
 import { Analisis } from "./Analisis";
 import { FaseAuditar } from "./FaseAuditar"; // Importante: Asegúrate de que el archivo existe
 import { MicromodulosPage } from "./MicromodulosPage";
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 import { FaseTransformar } from "./FaseTransformar";
 import { EjecutarReto } from "./EjecutarReto";
@@ -782,19 +783,32 @@ export const Dashboard = ({ onLogout }) => {
                             <div className="atlas-a-container">
                                 <svg viewBox="0 0 100 100" className="atlas-svg-shape">
                                     <defs>
-                                        <mask id="maskA"><path d="M50 0 L100 100 H80 L70 75 H30 L20 100 H0 Z" fill="white" /></mask>
-                                        <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#c5a059" /><stop offset="100%" stopColor="#8a6d3b" />
+                                        <mask id="maskA">
+                                            <path d="M50 0 L100 100 H80 L70 75 H30 L20 100 H0 Z" fill="white" />
+                                        </mask>
+                                        <linearGradient id="liquidGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#1e293b" />
+                                            <stop offset="100%" stopColor="#0f172a" />
                                         </linearGradient>
                                     </defs>
+
                                     <g mask="url(#maskA)">
-                                        <rect x="0" y="0" width="100" height="100" fill="#f1f5f9" />
-                                        <g className="liquid-group" style={{ transform: `translateY(${100 - huellaPuntaje}%)`, transition: 'transform 1s ease' }}>
-                                            <path className="wave" d="M0,0 C30,-5 70,5 100,0 L100,100 L0,100 Z" />
-                                            <rect x="0" y="0" width="100" height="100" className="liquid-body" fill="url(#goldGradient)" />
+                                        {/* Fondo azul muy tenue para eliminar el gris muerto */}
+                                        <rect x="0" y="0" width="100" height="100" fill="rgba(15, 23, 42, 0.05)" />
+
+                                        <g className="liquid-group" style={{
+                                            transform: `translateY(${100 - huellaPuntaje}%)`,
+                                            transition: 'transform 1.5s cubic-bezier(0.4, 0, 0.2, 1)'
+                                        }}>
+                                            {/* Onda trasera: Usamos una clase diferente para animarla por separado */}
+                                            <path className="wave-logic back" d="M0,0 C20,-10 80,10 100,0 L100,100 L0,100 Z" fill="rgba(15, 23, 42, 0.0001)" />
+
+                                            {/* Onda frontal */}
+                                            <path className="wave-logic front" d="M0,0 C25,-15 75,15 100,0 L100,100 L0,100 Z" fill="url(#liquidGradient)" />
                                         </g>
                                     </g>
                                 </svg>
+
                                 <div className="huella-data">
                                     <span className="huella-number">{huellaPuntaje}%</span>
                                     <span className="huella-label">NIVEL ATLAS</span>
