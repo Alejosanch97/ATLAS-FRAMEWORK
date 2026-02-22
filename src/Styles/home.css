@@ -497,7 +497,7 @@ transform: scale(1.05);
     align-items: center; 
     justify-content: center;
     position: relative;
-    padding: 0;
+    padding: 80px 0;
     overflow: hidden;
     background-color: #102a43;
 }
@@ -1020,107 +1020,160 @@ transform: scale(1.05);
     opacity: 0.7;
 }
 
-/* --- SECCIÓN MARCO ATLAS (REFORZADA CON CONTRASTE) --- */
-.atlas-framework-section {
+/* ==========================================================================
+   STK-SECTION: SISTEMA DE MARCO ATLAS (VERSIÓN FINAL BLINDADA)
+   ========================================================================== */
+
+/* 1. Contenedor Raíz: Aseguramos que no haya bloqueos de scroll */
+.stk-wrapper-section {
     padding: 120px 0;
-    background-color: #ffffff;
-    overflow: visible;
+    background-color: #ffffff !important;
+    position: relative !important;
+    height: 100vh;
+    overflow: hidden; 
 }
 
-.framework-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.2fr;
+/* 2. El Grid: Forzamos alineación al inicio para permitir el desplazamiento */
+.stk-main-grid {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 40px;
+    display: grid !important;
+    grid-template-columns: 450px 1fr !important; 
     gap: 80px;
-    align-items: start;
+    /* align-items: start es la propiedad que permite que el sticky funcione,
+       evita que la columna izquierda se estire artificialmente */
+    align-items: start !important; 
+    position: relative;
+    height: 100%;
 }
 
-/* Columna Izquierda Fija */
-.framework-sticky-info {
-    position: sticky;
-    top: 150px;
-    height: fit-content;
+/* --- COLUMNA IZQUIERDA (ESPACIO DE CONTENCIÓN) --- */
+.stk-left-column {
+    position: relative;
+    height: 100%; /* Permite que el contenido flote dentro de toda la altura del grid */
+    overflow: visible !important;
 }
 
-.framework-title {
+/* --- BLOQUE STICKY REAL (EL QUE SE QUEDA FIJO) --- */
+.stk-sticky-box {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    top: 100px !important; /* Ajusta este valor si tienes un header fijo */
+    z-index: 10;
+    padding-bottom: 20px;
+}
+
+/* --- ESTILOS DE TEXTO E IDENTIDAD (IZQUIERDA) --- */
+.stk-tag {
+    color: #c5a059; /* Usando el dorado ATLAS */
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 15px;
+}
+
+.stk-title {
     font-size: 3rem;
     color: #0a1929;
-    margin: 20px 0;
     line-height: 1.1;
-    font-weight: 700;
+    font-weight: 800;
+    margin: 20px 0;
 }
 
-.framework-description {
+.stk-gold-line {
+    width: 60px;
+    height: 4px;
+    background: #c5a059;
+    margin-bottom: 30px;
+    border-radius: 2px;
+}
+
+.stk-text-main {
     font-size: 1.15rem;
     color: #4a5568;
     line-height: 1.7;
-    margin-bottom: 30px;
+    margin-bottom: 35px;
 }
 
-.framework-badge {
+.stk-badge-info {
     display: inline-block;
-    padding: 10px 20px;
-    background: #f1f5f9; /* Un poco más oscuro que antes */
-    border-left: 4px solid var(--atlas-gold);
+    padding: 15px 25px;
+    background: #f1f5f9;
+    border-left: 4px solid #c5a059;
     font-weight: 700;
     color: #0a1929;
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 1px;
+    line-height: 1.4;
 }
 
-/* Columna Derecha de Pasos */
-.framework-steps-scroll {
+/* --- COLUMNA DERECHA (TARJETAS CON SCROLL) --- */
+.stk-right-scroll-area {
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 40px; 
+    position: relative;
+    overflow-y: auto;          /* 👈 AQUÍ VIVE EL SCROLL */
+    height: 100%;
+    padding-right: 10px;
+    scrollbar-width: none;        /* Firefox */
+    -ms-overflow-style: none;     /* IE */
 }
 
-.atlas-step-card {
+.stk-right-scroll-area::-webkit-scrollbar {
+    display: none;                /* Chrome/Safari */
+}
+
+/* Tarjeta de Paso Atlas */
+.stk-step-card {
     position: relative;
     padding: 45px;
-    /* Fondo ligeramente gris para que destaque sobre el blanco puro del fondo general */
-    background: #d7dde3; 
+    background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 20px;
+    border-radius: 24px;
     display: flex;
     gap: 35px;
     transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
     z-index: 1;
 }
 
-.atlas-step-card:hover {
-    background: #ffffff; /* Al hacer hover, se vuelve blanca y "brilla" */
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
-    border-color: var(--atlas-gold);
+.stk-step-card:hover {
+    background: #ffffff;
+    box-shadow: 0 30px 60px rgba(16, 42, 67, 0.1);
+    border-color: #c5a059;
     transform: translateX(15px);
 }
 
-/* Letras Gigantes: Mayor contraste */
-.step-letter-container {
+/* Letras Gigantes y Números */
+.stk-letter-box {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 80px;
+    min-width: 90px;
 }
 
-.letter-bg {
+.stk-letter-ghost {
     font-size: 5.5rem;
     font-weight: 900;
-    /* Color mucho más visible que antes */
     color: #494b4e; 
     line-height: 0.9;
+    opacity: 0.4;
     transition: all 0.4s ease;
 }
 
-.atlas-step-card:hover .letter-bg {
-    color: var(--atlas-gold);
-    opacity: 0.15;
+.stk-step-card:hover .stk-letter-ghost {
+    color: #c5a059;
+    opacity: 0.2;
 }
 
-.step-number {
+.stk-step-num {
     font-weight: 800;
-    color: var(--atlas-gold);
+    color: #c5a059;
     font-size: 1rem;
     margin-top: -5px;
     background: #ffffff;
@@ -1129,33 +1182,33 @@ transform: scale(1.05);
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-/* Contenido de cada paso */
-.step-content {
+/* Contenido de la Tarjeta */
+.stk-card-body {
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
 
-.step-content h3 {
-    font-size: 1.6rem;
+.stk-card-body h3 {
+    font-size: 1.7rem;
     color: #0a1929;
     margin-bottom: 12px;
     font-weight: 700;
 }
 
-.step-content p {
-    color: #4a5568; /* Texto un poco más oscuro para legibilidad */
+.stk-card-body p {
+    color: #4a5568;
     line-height: 1.6;
     font-size: 1.05rem;
 }
 
-/* Conector visual entre tarjetas (Línea punteada premium) */
-.step-connector {
+/* Conector Vertical (Línea punteada) */
+.stk-vertical-line {
     position: absolute;
-    left: 85px;
-    bottom: -35px;
+    left: 90px;
+    bottom: -40px;
     width: 2px;
-    height: 35px;
+    height: 40px;
     background: repeating-linear-gradient(
         to bottom,
         #cbd5e1,
@@ -1166,8 +1219,16 @@ transform: scale(1.05);
     z-index: -1;
 }
 
-.atlas-step-card:last-child .step-connector {
-    display: none;
+/* Responsividad: En tablets y móviles el sticky se desactiva */
+@media (max-width: 992px) {
+    .stk-main-grid {
+        grid-template-columns: 1fr !important;
+        gap: 60px;
+    }
+    .stk-sticky-box {
+        position: relative !important;
+        top: 0 !important;
+    }
 }
 
 /* --- SECCIÓN AUDIENCIA ATLAS --- */
@@ -1768,8 +1829,8 @@ transform: scale(1.05);
 /* Formulario Glassmorphism */
 .contact-form-container {
     flex: 1;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(15px);
+    background: rgba(255, 255, 255, 0.03); /* Un toque más sutil */
+    backdrop-filter: blur(20px);
     padding: 50px;
     border-radius: 30px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1788,26 +1849,33 @@ transform: scale(1.05);
 .atlas-premium-form textarea {
     width: 100%;
     padding: 18px 25px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Fondo oscuro semitransparente para que el texto blanco resalte */
+    background: rgba(10, 25, 41, 0.6) !important; 
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 12px;
-    color: white;
+    color: #ffffff !important; /* Texto siempre blanco */
     font-size: 1rem;
     transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 
 .atlas-premium-form input:focus, 
 .atlas-premium-form textarea:focus {
     outline: none;
-    background: rgba(255, 255, 255, 0.08);
-    border-color: var(--atlas-gold);
-    box-shadow: 0 0 20px rgba(197, 160, 89, 0.15);
+    background: rgba(10, 25, 41, 0.9) !important; /* Se oscurece un poco más */
+    border-color: #c5a059; /* El dorado ATLAS */
+    box-shadow: 0 0 15px rgba(197, 160, 89, 0.2);
+}
+
+.atlas-premium-form input::placeholder, 
+.atlas-premium-form textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5); /* Gris claro para que no compita con el texto real */
 }
 
 .btn-form-submit {
     width: 100%;
     padding: 20px;
-    background: var(--atlas-gold);
+    background: #c5a059; /* Dorado ATLAS */
     color: #0a1929;
     border: none;
     border-radius: 12px;
@@ -1816,52 +1884,53 @@ transform: scale(1.05);
     letter-spacing: 2px;
     cursor: pointer;
     display: flex;
-    align-items: center; justify-content: center;
+    align-items: center; 
+    justify-content: center;
     gap: 12px;
     transition: all 0.4s ease;
+    margin-top: 10px;
 }
 
 .btn-form-submit:hover {
     background: #ffffff;
+    color: #0a1929;
     transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 15px 30px rgba(197, 160, 89, 0.2);
 }
 
 .btn-icon { width: 20px; height: 20px; transition: transform 0.3s ease; }
 .btn-form-submit:hover .btn-icon { transform: translateX(5px); }
 
 /* ==========================================================================
-   ATLAS RESPONSIVE SYSTEM (RECONSTRUIDO Y OPTIMIZADO)
+   ATLAS RESPONSIVE SYSTEM (TU VERSIÓN ORIGINAL + NUEVOS AJUSTES STK)
    ========================================================================== */
 
 /* 1. DESKTOP PEQUEÑO Y TABLETS (1024px) */
 @media (max-width: 1024px) {
     .nav-container { padding: 0 20px; }
-    .nav-links-centered { gap: 20px; transform: translateX(-40%); } /* Ajuste de centrado */
+    .nav-links-centered { gap: 20px; transform: translateX(-40%); }
     .nav-logo-large span { margin-left: 80px; font-size: 1.2rem; }
 
-    /* Grids: De 4 a 2 columnas para que el contenido no se asfixie */
     .grid-features-animated {
         grid-template-columns: repeat(2, 1fr);
         gap: 25px;
     }
 
-    /* Layouts de dos columnas pasan a una con alineación central */
     .framework-grid, 
     .cert-grid-layout, 
     .contact-flex-layout,
     .diff-flex-layout,
-    .routes-grid {
-        grid-template-columns: 1fr;
+    .routes-grid,
+    .stk-main-grid { /* 👈 NUEVO: Se integra a tu lista de una columna */
+        grid-template-columns: 1fr !important;
         gap: 60px;
     }
 
-    /* Sección Diferencial: Ajuste de imagen/card */
     .diff-text-content { text-align: center; }
     .diff-accent-line { margin: 0 auto 30px; }
     .diff-highlight-card { max-width: 600px; margin: 0 auto; }
 
-    /* Framework Sticky: Deja de ser sticky para fluir en vertical */
+    /* Framework Sticky Original */
     .framework-sticky-info {
         position: relative;
         top: 0;
@@ -1869,7 +1938,15 @@ transform: scale(1.05);
         margin-bottom: 40px;
     }
 
-    /* Login Card */
+    /* 👈 NUEVO: Ajuste para el nuevo Marco Atlas STK */
+    .stk-sticky-box {
+        position: relative !important;
+        top: 0 !important;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    .stk-gold-line { margin: 0 auto 30px; }
+
     .atlas-card-glass {
         width: 95%;
         height: auto;
@@ -1879,11 +1956,9 @@ transform: scale(1.05);
 
 /* 2. SMARTPHONES GRANDES Y TABLETS VERTICALES (768px) */
 @media (max-width: 768px) {
-    /* Navbar Mobile: Ocultar links para evitar traslape */
     .nav-links-centered { display: none; }
     .nav-logo-large span { font-size: 1rem; letter-spacing: 2px; }
 
-    /* Hero */
     .hero-content { width: 95%; }
     .hero-logo { width: 85%; }
     .hero-subtitle { font-size: 1rem; width: 90%; }
@@ -1895,7 +1970,6 @@ transform: scale(1.05);
     }
     .btn-primary-large, .btn-secondary-large { width: 100%; padding: 15px; }
 
-    /* Secciones de Texto */
     .section-title-large { font-size: 2.2rem; }
     .intro-columns-equidistant { 
         flex-direction: column; 
@@ -1903,7 +1977,6 @@ transform: scale(1.05);
     }
     .column-item { max-width: 100%; }
 
-    /* Grids de tarjetas a 1 columna */
     .grid-features-animated,
     .audience-grid-layout,
     .routes-grid,
@@ -1912,17 +1985,28 @@ transform: scale(1.05);
         grid-template-columns: 1fr;
     }
 
-    /* Framework Steps: Refuerzo visual */
+    /* 👈 NUEVO: Ajuste de Tarjetas STK para que no se corten */
+    .stk-wrapper-section { height: auto !important; overflow: visible !important; }
+    .stk-step-card {
+        flex-direction: column !important;
+        align-items: center;
+        text-align: center;
+        padding: 30px 20px;
+        gap: 20px;
+    }
+    .stk-vertical-line { display: none; } 
+    .stk-letter-ghost { font-size: 4rem; }
+
+    /* Framework Steps Original */
     .atlas-step-card {
         flex-direction: column;
         align-items: center;
         text-align: center;
         padding: 30px 20px;
     }
-    .step-connector { display: none; } /* Línea vertical ya no funciona bien aquí */
+    .step-connector { display: none; } 
     .letter-bg { font-size: 4rem; }
 
-    /* Madurez Atlas (Footer oscuro) */
     .maturity-levels-footer {
         flex-direction: column;
         padding: 30px 20px;
@@ -1939,9 +2023,9 @@ transform: scale(1.05);
 
     /* Contacto */
     .contact-form-container { padding: 30px 20px; }
-    .form-row { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr !important; }
 
-    /* Login Mobile: Full screen vertical */
+    /* Login Mobile */
     .atlas-card-glass {
         flex-direction: column;
         height: auto;
@@ -1950,6 +2034,41 @@ transform: scale(1.05);
     }
     .atlas-side-visual { padding: 60px 20px; }
     .atlas-auth-panel { padding: 40px 20px; }
+
+    /* Tus correcciones específicas de Diferencial */
+    .diff-flex-layout {
+        flex-direction: column !important;
+        gap: 40px;
+        padding: 0 20px;
+    }
+    .diff-text-content {
+        width: 100% !important;
+        text-align: center;
+        flex: none;
+    }
+    .diff-main-title { font-size: 2.2rem; line-height: 1.2; }
+    .diff-highlight-card {
+        width: 100% !important;
+        max-width: 100%;
+        padding: 30px 20px;
+        margin: 0 auto;
+        box-sizing: border-box;
+    }
+    .diff-pill { font-size: 0.8rem; padding: 10px 15px; }
+
+    /* Tus correcciones específicas de Contacto */
+    .contact-flex-layout {
+        flex-direction: column !important;
+        gap: 50px;
+    }
+    .contact-text-panel, 
+    .contact-form-container {
+        width: 100% !important;
+        max-width: 100%;
+        flex: none;
+        box-sizing: border-box;
+    }
+    .contact-main-title { font-size: 2.4rem; text-align: center; }
 }
 
 /* 3. SMARTPHONES PEQUEÑOS (480px) */
@@ -1959,12 +2078,12 @@ transform: scale(1.05);
     .section-title-large, 
     .diff-main-title, 
     .framework-title, 
+    .stk-title, /* 👈 NUEVO: Título Atlas STK */
     .contact-main-title,
     .routes-main-title {
         font-size: 1.8rem;
     }
 
-    /* Ajuste de Audiencia */
     .audience-card {
         flex-direction: column;
         align-items: center;
@@ -1972,80 +2091,10 @@ transform: scale(1.05);
     }
     .audience-icon-wrapper { width: 50px; height: 50px; }
 
-    /* FAQ */
     .faq-trigger { padding: 20px 15px; }
     .faq-question-text { font-size: 0.95rem; }
 
-    /* Contacto Mini Cards */
     .contact-mini-card { flex-direction: column; text-align: center; }
-
-    /* Footer Certificación */
     .cert-card-tier { padding: 20px; }
 }
 
-@media (max-width: 768px) {
-    /* Forzamos que el contenedor sea vertical */
-    .diff-flex-layout {
-        flex-direction: column !important;
-        gap: 40px;
-        padding: 0 20px;
-    }
-
-    /* El texto ocupa todo el ancho y se centra */
-    .diff-text-content {
-        width: 100% !important;
-        text-align: center;
-        flex: none;
-    }
-
-    .diff-main-title {
-        font-size: 2.2rem; /* Achicamos un poco el título para que no rompa */
-        line-height: 1.2;
-    }
-
-    /* La tarjeta de la derecha (la que se corta en la imagen) */
-    .diff-highlight-card {
-        width: 100% !important;
-        max-width: 100%; /* Evita que herede anchos fijos de escritorio */
-        padding: 30px 20px;
-        margin: 0 auto;
-        box-sizing: border-box; /* Fundamental para que el padding no sume ancho */
-    }
-
-    /* Si las "pills" de adentro también se cortan */
-    .diff-pill {
-        font-size: 0.8rem;
-        padding: 10px 15px;
-    }
-}
-
-@media (max-width: 768px) {
-    .contact-flex-layout {
-        flex-direction: column !important;
-        gap: 50px;
-    }
-
-    .contact-text-panel, 
-    .contact-form-container {
-        width: 100% !important;
-        max-width: 100%;
-        flex: none;
-        box-sizing: border-box;
-    }
-
-    .contact-main-title {
-        font-size: 2.4rem;
-        text-align: center;
-    }
-
-    /* Ajuste del formulario para que los inputs no se salgan */
-    .contact-form-container {
-        padding: 30px 20px;
-    }
-
-    /* Si tienes filas de dos inputs (Nombre/Email), las ponemos uno sobre otro */
-    .form-row {
-        grid-template-columns: 1fr !important; 
-        gap: 15px;
-    }
-}

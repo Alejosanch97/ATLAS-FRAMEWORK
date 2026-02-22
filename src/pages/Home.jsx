@@ -70,28 +70,28 @@ export const Home = ({ onLoginSuccess }) => {
 
     const faqData = [
         {
-            q: "¿ATLAS es una plataforma o software?",
-            a: "No. ATLAS es un marco estratégico, no una herramienta tecnológica. Proporciona un proceso estructurado para guiar la adopción responsable de la IA, sin depender de software específico."
+            q: "¿COMPASS es una plataforma o software?",
+            a: "No. COMPASS es un marco estratégico, no una herramienta tecnológica. Proporciona un proceso estructurado para guiar la adopción responsable de la IA, sin depender de software específico."
         },
         {
             q: "¿Se puede adaptar a mi institución?",
-            a: "Sí. ATLAS está diseñado para adaptarse a diferentes contextos: colegios, universidades, instituciones públicas o privadas, de distintos tamaños y niveles de madurez tecnológica."
+            a: "Sí. COMPASS está diseñado para adaptarse a diferentes contextos: colegios, universidades, instituciones públicas o privadas, de distintos tamaños y niveles de madurez tecnológica."
         },
         {
             q: "¿Necesitamos expertos en IA?",
-            a: "No. ATLAS no requiere expertise técnico previo. El marco está pensado para líderes educativos y equipos pedagógicos, proporcionando orientación accesible y práctica."
+            a: "No. COMPASS no requiere expertise técnico previo. El marco está pensado para líderes educativos y equipos pedagógicos, proporcionando orientación accesible y práctica."
         },
         {
             q: "¿Reemplaza políticas existentes?",
-            a: "No necesariamente. ATLAS puede integrarse con políticas y procesos existentes, fortaleciéndolos con un enfoque específico para la adopción responsable de la IA."
+            a: "No necesariamente. COMPASS puede integrarse con políticas y procesos existentes, fortaleciéndolos con un enfoque específico para la adopción responsable de la IA."
         },
         {
-            q: "¿Cuánto dura un proceso ATLAS?",
-            a: "ATLAS está diseñado para desarrollarse a lo largo de ciclos institucionales, generalmente alineados con el año académico. Un primer ciclo de implementación suele abarcar entre 9 y 12 meses, lo que permite diagnosticar, formar, integrar lineamientos y acompañar la adopción de la inteligencia artificial de manera coherente y sostenible."
+            q: "¿Cuánto dura un proceso COMPASS?",
+            a: "COMPASS está diseñado para desarrollarse a lo largo de ciclos institucionales, generalmente alineados con el año académico. Un primer ciclo de implementación suele abarcar entre 9 y 12 meses, lo que permite diagnosticar, formar, integrar lineamientos y acompañar la adopción de la inteligencia artificial de manera coherente y sostenible."
         },
         {
-            q: "¿ATLAS apoya los procesos de acreditación y calidad institucional?",
-            a: "Sí. ATLAS contribuye a los procesos de calidad y acreditación al ofrecer un marco estructurado para la adopción responsable de la IA, alineado con la gobernanza institucional, la formación docente y la mejora continua."
+            q: "¿COMPASS apoya los procesos de acreditación y calidad institucional?",
+            a: "Sí. COMPASS contribuye a los procesos de calidad y acreditación al ofrecer un marco estructurado para la adopción responsable de la IA, alineado con la gobernanza institucional, la formación docente y la mejora continua."
         }
     ];
 
@@ -108,7 +108,7 @@ export const Home = ({ onLoginSuccess }) => {
                     <div className="atlas-side-visual">
                         <div className="visual-overlay"></div>
                         <div className="branding-content">
-                            <h1 className="logo-typography">ATLAS</h1>
+                            <h1 className="logo-typography">COMPASS</h1>
                             <div className="accent-line"></div>
                             <p className="tagline">IA RESPONSABLE EN EDUCACIÓN</p>
                         </div>
@@ -165,7 +165,7 @@ export const Home = ({ onLoginSuccess }) => {
                         />
                     </div>
                     <div className="nav-links-centered">
-                        <a href="#porque">¿Por qué ATLAS?</a>
+                        <a href="#porque">¿Por qué COMPASS?</a>
                         <a href="#que-es">El Marco</a>
                         <a href="#quienes">¿Para quién?</a>
                         <a href="#certificacion">Certificación</a>
@@ -191,7 +191,7 @@ export const Home = ({ onLoginSuccess }) => {
 
                     {/* NIVEL 2: Título Principal */}
                     <img
-                        src={"./logo5.png"}
+                        src={"./logo6.png"}
                         alt="ATLAS Logo"
                         className="hero-logo"
                     />
@@ -209,7 +209,7 @@ export const Home = ({ onLoginSuccess }) => {
 
                     <div className="hero-actions-layout">
                         <button className="btn-primary-large" onClick={() => document.getElementById('porque').scrollIntoView({ behavior: 'smooth' })}>
-                            Explorar ATLAS
+                            Explorar COMPASS
                         </button>
                         <button className="btn-secondary-large" onClick={() => document.getElementById('que-es').scrollIntoView({ behavior: 'smooth' })}>
                             Conocer el marco
@@ -226,7 +226,7 @@ export const Home = ({ onLoginSuccess }) => {
             <section className="section-white section-spacious" id="porque">
                 <div className="container">
                     <div className="section-header-content">
-                        <p className="section-tag-gold">¿Por qué ATLAS?</p>
+                        <p className="section-tag-gold">¿Por qué COMPASS?</p>
                         <h2 className="section-title-large">La educación necesita un marco que asegure la innovación</h2>
                         <div className="section-intro-group">
                             {/* TEXTO SUPERIOR: Centrado y con ancho controlado para lectura */}
@@ -241,7 +241,7 @@ export const Home = ({ onLoginSuccess }) => {
                             <div className="intro-columns-equidistant">
                                 <div className="column-item">
                                     <p>
-                                        ATLAS articula la adopción de la IA con los sistemas de calidad,
+                                        COMPASS articula la adopción de la IA con los sistemas de calidad,
                                         fortaleciendo la gobernanza, la ética y la sostenibilidad institucional.
                                     </p>
                                 </div>
@@ -326,16 +326,16 @@ export const Home = ({ onLoginSuccess }) => {
                         {/* Bloque Izquierdo: Texto Principal */}
                         <div className="diff-text-content">
                             <span className="diff-tag">Propósito</span>
-                            <h2 className="diff-main-title">ATLAS surge para aportar coherencia, responsabilidad y propósito</h2>
+                            <h2 className="diff-main-title">COMPASS surge para aportar coherencia, responsabilidad y propósito</h2>
                             <div className="diff-accent-line"></div>
                             <p className="diff-description">
-                                ATLAS no es una plataforma tecnológica ni un programa de capacitación. Es un modelo de gobernanza institucional diseñado para asegurar que la adopción de la IA responda a criterios pedagógicos, éticos y estratégicos consistentes con estándares internacionales.</p>
+                                COMPASS no es una plataforma tecnológica ni un programa de capacitación. Es un modelo de gobernanza institucional diseñado para asegurar que la adopción de la IA responda a criterios pedagógicos, éticos y estratégicos consistentes con estándares internacionales.</p>
                         </div>
 
                         {/* Bloque Derecho: Tarjeta Flotante (Glassmorphism) */}
                         <div className="diff-highlight-card">
                             <div className="diff-card-inner">
-                                <h3>¿Qué hace diferente a ATLAS?</h3>
+                                <h3>¿Qué hace diferente a COMPASS?</h3>
                                 <p className="diff-card-subtitle">De lo reactivo a lo estratégico</p>
                                 <p className="diff-card-text">Pasamos de la improvisación a una estrategia institucional clara y compartida fundamentada en los lineamientos internacionales que han establecido principios claros en materia de:</p>
 
@@ -370,47 +370,49 @@ export const Home = ({ onLoginSuccess }) => {
             </section>
 
             {/* EL MARCO (DISEÑO TERCER PANEL REFINADO) */}
-            <section className="atlas-framework-section" id="que-es">
-                <div className="container framework-container">
-                    <div className="framework-grid">
+            {/* --- SECCIÓN MARCO ATLAS AISLADA --- */}
+            <section className="stk-wrapper-section" id="que-es">
+                <div className="stk-main-grid">
 
-                        {/* LADO IZQUIERDO: Información fija (Sticky) */}
-                        <div className="framework-sticky-info">
-                            <span className="diff-tag">El Modelo</span>
-                            <h2 className="framework-title">Un marco estructurado y adaptable</h2>
-                            <div className="diff-accent-line"></div>
-                            <p className="framework-description">
-                                ATLAS se estructura en cinco fases interdependientes que conforman un ciclo continuo de madurez institucional:
+                    {/* COLUMNA IZQUIERDA: Bloque que se queda fijo */}
+                    <aside className="stk-left-column">
+                        <div className="stk-sticky-box">
+                            <span className="stk-tag">El Modelo</span>
+                            <h2 className="stk-title">Un marco estructurado y adaptable</h2>
+                            <div className="stk-gold-line"></div>
+                            <p className="stk-text-main">
+                                El COMPASS AI Framework, basado en el ATLAS Model, se organiza en cinco fases interdependientes que conforman un ciclo continuo de madurez institucional.
                             </p>
-                            <div className="framework-badge">
+                            <div className="stk-badge-info">
                                 Estas fases no constituyen servicios independientes, sino dimensiones articuladas de un mismo sistema de gobernanza.
                             </div>
                         </div>
+                    </aside>
 
-                        {/* LADO DERECHO: Flujo de Pasos (Scrollable) */}
-                        <div className="framework-steps-scroll">
-                            {[
-                                { l: 'A', t: 'Auditar', d: 'Evaluación estructurada del estado actual, prácticas existentes y riesgos asociados al uso de la IA, en coherencia con estándares internacionales.' },
-                                { l: 'T', t: 'Transformar', d: 'Rediseño intencional de prácticas pedagógicas y procesos académicos para integrar la IA de manera alineada con el proyecto educativo institucional.' },
-                                { l: 'L', t: 'Liderar', d: 'Fortalecimiento del liderazgo académico y definición de responsabilidades institucionales para la toma de decisiones informadas y éticamente fundamentadas.' },
-                                { l: 'A', t: 'Asegurar', d: 'Establecimiento de criterios, estándares y mecanismos de evaluación que permitan verificar impacto, calidad y cumplimiento de principios éticos.' },
-                                { l: 'S', t: 'Sostener', d: 'Integración del modelo como práctica institucional permanente mediante monitoreo, evidencia y mejora continua.' }
-                            ].map((step, i) => (
-                                <div className="atlas-step-card" key={i}>
-                                    <div className="step-letter-container">
-                                        <span className="letter-bg">{step.l}</span>
-                                        <span className="step-number">0{i + 1}</span>
-                                    </div>
-                                    <div className="step-content">
-                                        <h3>{step.t}</h3>
-                                        <p>{step.d}</p>
-                                    </div>
-                                    <div className="step-connector"></div>
+                    {/* COLUMNA DERECHA: Bloque que hace scroll */}
+                    <div className="stk-right-scroll-area">
+                        {[
+                            { l: 'A', t: 'Auditar', d: 'Evaluación estructurada del estado actual, prácticas existentes y riesgos asociados al uso de la IA, en coherencia con estándares internacionales.' },
+                            { l: 'T', t: 'Transformar', d: 'Rediseño intencional de prácticas pedagógicas y procesos académicos para integrar la IA de manera alineada con el proyecto educativo institucional.' },
+                            { l: 'L', t: 'Liderar', d: 'Fortalecimiento del liderazgo académico y definición de responsabilidades institucionales para la toma de decisiones informadas y éticamente fundamentadas.' },
+                            { l: 'A', t: 'Asegurar', d: 'Establecimiento de criterios, estándares y mecanismos de evaluación que permitan verificar impacto, calidad y cumplimiento de principios éticos.' },
+                            { l: 'S', t: 'Sostener', d: 'Integración del modelo como práctica institucional permanente mediante monitoreo, evidencia y mejora continua.' }
+                        ].map((step, i) => (
+                            <div className="stk-step-card" key={i}>
+                                <div className="stk-letter-box">
+                                    <span className="stk-letter-ghost">{step.l}</span>
+                                    <span className="stk-step-num">0{i + 1}</span>
                                 </div>
-                            ))}
-                        </div>
-
+                                <div className="stk-card-body">
+                                    <h3>{step.t}</h3>
+                                    <p>{step.d}</p>
+                                </div>
+                                {/* El conector visual solo aparece entre tarjetas */}
+                                {i < 4 && <div className="stk-vertical-line"></div>}
+                            </div>
+                        ))}
                     </div>
+
                 </div>
             </section>
 
@@ -583,7 +585,7 @@ export const Home = ({ onLoginSuccess }) => {
                                             </li>
                                         ))}
                                     </ul>
-                                    <div className="cert-tier-footer">ATLAS Certified</div>
+                                    <div className="cert-tier-footer">COMPASS Certified</div>
                                 </div>
                             ))}
                         </div>
@@ -597,7 +599,7 @@ export const Home = ({ onLoginSuccess }) => {
 
                     <div className="faq-header">
                         <span className="diff-tag">Soporte</span>
-                        <h2 className="faq-title">Resolviendo tus dudas sobre ATLAS</h2>
+                        <h2 className="faq-title">Resolviendo tus dudas sobre COMPASS</h2>
                         <div className="faq-accent-line"></div>
                     </div>
 
@@ -643,7 +645,7 @@ export const Home = ({ onLoginSuccess }) => {
                         {/* Info Panel */}
                         <div className="contact-text-panel">
                             <span className="diff-tag">Contacto</span>
-                            <h2 className="contact-main-title">Comienza tu camino con ATLAS</h2>
+                            <h2 className="contact-main-title">Comienza tu camino en COMPASS</h2>
                             <p className="contact-subtitle">
                                 Tanto si das tus primeros pasos como si buscas ordenar prácticas existentes,
                                 nuestro equipo te ayudará a avanzar con visión de largo plazo.

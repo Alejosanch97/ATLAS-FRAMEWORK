@@ -1,5 +1,6 @@
 /* =========================================
    ATLAS UNIQUE STYLES - COMPLETO PROTEGIDO
+   VERSIÓN 2.1: CORRECCIÓN DE ESPACIOS Y JERARQUÍA
    ========================================= */
 
 :root {
@@ -32,11 +33,11 @@
     justify-content: space-between;
     align-items: center;
     background: white;
-    padding: 25px 35px; /* Un poco más de aire */
+    padding: 25px 35px;
     border-radius: 20px;
     box-shadow: var(--atlas-shadow);
     margin-bottom: 30px;
-    border-bottom: 4px solid var(--atlas-gold); /* Detalle de diseño */
+    border-bottom: 4px solid var(--atlas-gold);
 }
 
 .btn-back-minimal {
@@ -68,7 +69,7 @@
 }
 
 .atlas-unique-title-box h2 {
-    font-size: 1.5rem; /* Ligeramente más grande */
+    font-size: 1.5rem;
     font-weight: 800;
     color: var(--atlas-dark);
     margin: 0;
@@ -91,7 +92,7 @@
     color: white;
 }
 
-/* --- SECCIÓN NARRATIVA (DISEÑO MEJORADO) --- */
+/* --- SECCIÓN NARRATIVA --- */
 .narrative-hero-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -99,17 +100,15 @@
     margin-bottom: 40px;
 }
 
-/* Card Narrativa Izquierda: Menos plana */
 .narrative-card {
     background: white;
     padding: 30px;
     border-radius: 20px;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
     border-left: 6px solid var(--atlas-gold);
-    background-image: linear-gradient(45deg, #ffffff 95%, #fffbeb 100%); /* Sutil degradado */
+    background-image: linear-gradient(45deg, #ffffff 95%, #fffbeb 100%);
 }
 
-/* Mission Card (La oscura): Diseño Premium */
 .mission-card {
     grid-column: span 2;
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
@@ -121,7 +120,6 @@
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
 }
 
-/* Adorno visual para la card de misión */
 .mission-card::after {
     content: "";
     position: absolute;
@@ -161,7 +159,6 @@
     align-items: flex-start;
 }
 
-/* Checkmark dorado para la lista */
 .narrative-list li::before {
     content: "◈";
     color: var(--atlas-gold);
@@ -186,11 +183,90 @@
     border: 1px solid var(--atlas-border);
 }
 
-/* --- FORMULARIO CARDS (MANTENIDO) --- */
-.atlas-unique-form-wrapper {
+/* --- FORMULARIO CARDS Y GRIDS --- */
+.atlas-unique-form-wrapper, 
+.directivo-forms-container {
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 40px; /* Espacio optimizado entre tarjetas de fases */
+    width: 100%;
+}
+
+.responsabilidad-item select,
+.fase-row select,
+.priorizacion-item select {
+    width: 100%;
+    padding: 12px 48px 12px 18px;
+    box-sizing: border-box;
+}
+
+.fase-row, 
+div[class*="Análisis de responsabilidad"] > div {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 10px; /* Espacio mínimo entre etiqueta y selector */
+    box-sizing: border-box;
+    padding: 10px 5px;
+}
+
+.fase-row,
+.priorizacion-item,
+.responsabilidad-item {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    align-items: center;
+    gap: 40px;
+    padding: 18px 0;
+}
+
+
+/* Permitir que la etiqueta se ajuste si el select es muy grande */
+.fase-row span,
+.fase-row label {
+    flex: 1;
+    min-width: 220px;
+    font-size: 1.05rem; /* ligeramente más legible */
+}
+
+.card-body, .form-container { 
+    overflow: visible !important;
+}
+
+.card-body {
+    padding: 40px;
+    overflow: visible;   /* 👈 importante */
+}
+
+.responsabilidad-item select,
+.fase-row select,
+.priorizacion-item select {
+    
+    width: 100% !important;
+    min-width: 340px !important;   /* ancho real necesario */
+    max-width: 100% !important;
+
+    box-sizing: border-box !important;
+
+    padding: 12px 48px 12px 18px !important; /* espacio para flecha */
+
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+
+    display: block !important;
+}
+
+/* Mejora la visibilidad de los inputs numéricos */
+input[type="number"], 
+.priorizacion-input {
+    padding: 5px;
+    text-align: center;
+    width: 45px;
+    height: 35px;
+    font-size: 1rem;
 }
 
 .form-card {
@@ -199,17 +275,79 @@
     border-radius: 24px;
     box-shadow: var(--atlas-shadow);
     transition: transform 0.3s ease;
+    border: 1px solid rgba(226, 232, 240, 0.6);
+    /* Margen de seguridad para asegurar separación */
+    margin-bottom: 10px; 
+}
+
+.form-card {
+    padding: 40px 60px; /* más espacio lateral */
+}
+
+.form-card.highlight {
+    border: 2px solid var(--atlas-gold-light);
+    background: linear-gradient(to bottom, #ffffff, #fffdf9);
 }
 
 .form-section-title {
     font-size: 1.2rem;
     font-weight: 700;
     color: var(--atlas-gold);
-    margin-bottom: 25px;
+    margin-bottom: 30px; /* Más espacio bajo el título */
     text-transform: uppercase;
     letter-spacing: 1px;
     border-bottom: 2px solid #f1f5f9;
     padding-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* --- NUEVAS FILAS DE INPUTS (RETO 2 Y 3) --- */
+.input-group-row-premium {
+    display: grid;
+    grid-template-columns: 1fr 200px;
+    align-items: center;
+    gap: 20px;
+    padding: 15px 0; /* Más aire entre filas */
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.input-group-row-premium:last-child { border-bottom: none; }
+
+.grid-2-col-premium {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+/* --- SELECTS Y RANKINGS --- */
+.atlas-select-premium, .atlas-select-small {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    font-weight: 600;
+    color: var(--atlas-slate);
+    cursor: pointer;
+}
+
+.atlas-select-small {
+    width: 100%;
+    min-width: 260px;   /* 👈 importante */
+    padding: 10px 40px 10px 14px;
+    box-sizing: border-box;
+}
+
+.inline-input-premium {
+    border: 2px solid var(--atlas-gold-light);
+    border-radius: 10px;
+    padding: 8px 12px;
+    text-align: center;
+    font-weight: 700;
+    color: var(--atlas-gold);
 }
 
 /* --- OPCIONES VERTICALES PREMIUM --- */
@@ -260,14 +398,18 @@
 }
 
 /* --- INPUTS Y TEXTAREAS --- */
-.input-group label {
+.input-group {
+    margin-bottom: 25px; /* Espacio entre preguntas dentro de la card */
+}
+
+.input-group label, .group-main-label {
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     font-weight: 700;
     color: var(--atlas-slate);
 }
 
-input[type="text"], textarea, .atlas-select-premium {
+input[type="text"], textarea {
     width: 100%;
     padding: 15px 20px;
     border: 2px solid #e2e8f0;
@@ -284,7 +426,15 @@ input[type="text"]:focus, textarea:focus {
     box-shadow: 0 0 0 4px rgba(197, 160, 89, 0.1);
 }
 
-textarea { min-height: 100px; resize: vertical; }
+textarea { min-height: 120px; resize: vertical; }
+
+.char-count {
+    display: block;
+    text-align: right;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 5px;
+}
 
 /* --- MATRIZ ÉTICA --- */
 .matriz-table {
@@ -315,9 +465,10 @@ input[type="range"] {
     width: 100%;
 }
 
-/* --- AUTOEVALUACIÓN (MANTENIDO PERFECTO) --- */
+/* --- AUTOEVALUACIÓN --- */
 .autoevaluacion-final-section {
-    margin-top: 50px;
+    margin-top: 80px;
+    padding-bottom: 60px;
 }
 
 .autoeval-card {
@@ -332,6 +483,7 @@ input[type="range"] {
     color: #c5a059 !important; 
     margin-bottom: 20px; 
     font-size: 1.8rem;
+    letter-spacing: 1px;
 }
 
 .autoeval-card p, 
@@ -346,7 +498,7 @@ input[type="range"] {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    max-width: 600px;
+    max-width: 650px;
     margin: 30px auto;
 }
 
@@ -360,10 +512,6 @@ input[type="range"] {
     cursor: pointer;
     transition: 0.3s;
     text-align: left;
-}
-
-.atlas-checkbox-row-premium * {
-    color: #ffffff !important;
 }
 
 .atlas-checkbox-row-premium:hover {
@@ -382,149 +530,239 @@ input[type="range"] {
     background: var(--atlas-gold) !important;
     color: #ffffff !important;
     border: none;
-    padding: 20px 50px;
-    border-radius: 15px;
-    font-size: 1.2rem;
+    padding: 22px 60px;
+    border-radius: 18px;
+    font-size: 1.3rem;
     font-weight: 800;
     cursor: pointer;
     transition: 0.4s;
     margin-top: 20px;
     text-transform: uppercase;
+    box-shadow: 0 10px 20px rgba(197, 160, 89, 0.3);
+}
+
+.btn-finalizar-mision:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(197, 160, 89, 0.4);
 }
 
 .btn-finalizar-mision:disabled {
     background: #475569 !important;
     opacity: 0.5;
     cursor: not-allowed;
+    box-shadow: none;
 }
 
-/* --- RESPONSIVIDAD --- */
-@media (max-width: 768px) {
-    .narrative-hero-section { grid-template-columns: 1fr; }
-    .grid-2-col-premium { grid-template-columns: 1fr; }
-    .mission-card { grid-column: span 1; }
+/* --- CONTENEDOR DE LA FILA (EL SECRETO) --- */
+.input-group-row-premium {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 15px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.5); /* Fondo sutil para separar filas */
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.input-group-row-premium:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+/* --- ETIQUETA DE TEXTO (IZQUIERDA) --- */
+.label-text-small, 
+.input-group-row-premium label, 
+.input-group-row-premium span {
+    font-size: 0.95rem;
+    color: #444;
+    font-weight: 500;
+    flex: 1;            /* Toma el espacio necesario pero cede si el select crece */
+    min-width: 0;       /* Permite que el texto se ajuste */
+    white-space: normal; /* Si el nombre es muy largo, baja a la siguiente línea */
+    line-height: 1.2;
+}
+
+/* --- SELECTOR ESTILO PÍLDORA (DERECHA) --- */
+.atlas-select-small {
+    flex: 0 0 auto;       /* No permite que el select se encoja de más */
+    width: auto !important;
+    min-width: 180px;     /* Espacio suficiente para "Responsable Principal" */
+    max-width: 250px;     /* Evita que rompa el card en pantallas chicas */
+    
+    padding: 8px 35px 8px 15px !important;
+    border-radius: 50px;  /* Forma de cápsula */
+    border: 1.5px solid #e0d5b1;
+    background-color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+    
+    /* Reset de apariencia para que se vea limpio */
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23c9ad6e' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C2.185 5.355 2.402 5 2.808 5h10.384a.25.25 0 0 1 .186.425l-4.845 5.482a.25.25 0 0 1-.386 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    
+    cursor: pointer;
+    text-overflow: clip; /* Asegura que no salgan los puntos suspensivos */
+}
+
+/* --- INPUT DE NÚMERO (FASE 5) --- */
+.inline-input-premium {
+    width: 55px !important;
+    height: 38px !important;
+    border-radius: 10px !important;
+    border: 2px solid #e0d5b1 !important;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1rem;
+    color: #c9ad6e;
+    flex: 0 0 auto;
+}
+
+/* --- AJUSTE DEL CARD PARA QUE NO SE SALGA NADA --- */
+.form-card {
+    overflow: hidden; /* Corta cualquier desborde accidental */
+    padding: 20px;
+    border-radius: 18px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin-bottom: 10px;
+}
+
+/* --- AJUSTE ESPECÍFICO PARA "OTRO CASO..." --- */
+
+/* Contenedor del input "Otro" para que no esté pegado a los checks */
+.input-group-inline {
+    margin-top: 15px;
+    padding-left: 10px;
+    width: 100%;
+}
+
+/* Redefinición para que el input de texto "Otro" se vea premium y largo */
+.input-group-inline .inline-input-premium {
+    width: 100% !important; /* Ocupa todo el ancho disponible */
+    max-width: 400px;        /* Pero no tanto para que no se vea exagerado */
+    height: 45px !important;
+    text-align: left;       /* Texto a la izquierda, no centrado como los números */
+    padding: 10px 20px !important;
+    border-radius: 12px !important;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--atlas-slate);
+    background: #ffffff;
+    border: 2px solid var(--atlas-gold-light) !important;
+    transition: all 0.3s ease;
+}
+
+.input-group-inline .inline-input-premium:focus {
+    border-color: var(--atlas-gold) !important;
+    box-shadow: 0 0 0 4px rgba(197, 160, 89, 0.1);
+    outline: none;
+}
+
+/* Placeholder elegante */
+.input-group-inline .inline-input-premium::placeholder {
+    color: #94a3b8;
+    font-style: italic;
+    font-weight: 400;
 }
 
 /* =========================================
-   SOPORTE MULTIDISPOSITIVO (RESPONSIVE)
+   ATLAS RESPONSIVE OPTIMIZADO V3.0
    ========================================= */
 
-/* --- TABLETS E IPADS (PANTALLAS MEDIANAS) --- */
 @media (max-width: 1024px) {
-    .atlas-unique-main-content {
-        max-width: 92%;
-    }
+    .atlas-unique-main-content { max-width: 95%; }
     
-    .form-card {
-        padding: 30px;
-    }
-
-    .narrative-hero-section {
-        gap: 15px;
+    /* Ajuste de grid para tablets */
+    .fase-row, .priorizacion-item, .responsabilidad-item {
+        grid-template-columns: 1fr 300px; 
+        gap: 20px;
     }
 }
 
-/* --- MÓVILES Y TABLETS VERTICALES (IPHONE PRO MAX, ETC) --- */
 @media (max-width: 768px) {
-    .atlas-unique-page-wrapper {
-        padding: 20px 15px;
-    }
+    .atlas-unique-page-wrapper { padding: 15px 10px; }
 
-    /* Reorganización de Cabecera */
+    /* Header en columna para móviles */
     .reto-header-inline {
         flex-direction: column;
-        text-align: center;
-        padding: 20px;
         gap: 15px;
-    }
-
-    .btn-back-minimal {
-        width: 100%;
-        justify-content: center;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 10px;
-    }
-
-    /* Grid a una sola columna */
-    .narrative-hero-section {
-        grid-template-columns: 1fr;
-    }
-
-    .mission-card {
-        grid-column: span 1;
-        padding: 30px 20px;
-    }
-
-    .atlas-unique-title-box h2 {
-        font-size: 1.25rem;
-    }
-
-    /* Adaptación de Matriz Ética (Se vuelve lista) */
-    .matriz-table td {
-        display: block;
-        width: 100%;
+        padding: 20px;
         text-align: center;
     }
 
-    .desc-cell {
-        border-radius: 15px 15px 0 0 !important;
-        border-bottom: 1px solid #e2e8f0;
+    /* Convertir Grids en bloques verticales para que nada se corte */
+    .fase-row, 
+    .priorizacion-item, 
+    .responsabilidad-item,
+    .input-group-row-premium {
+        display: flex !important;
+        flex-direction: column !important; /* Texto arriba, selector abajo */
+        align-items: flex-start !important;
+        gap: 10px !important;
+        padding: 15px 10px !important;
     }
 
-    .score-cell {
-        border-radius: 0 0 15px 15px !important;
-        padding-top: 10px !important;
+    /* Forzar que los selects y etiquetas ocupen el 100% en móvil */
+    .atlas-select-small, 
+    .atlas-select-premium {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
     }
 
-    /* Autoevaluación táctil */
-    .autoeval-card {
-        padding: 40px 20px;
+    .fase-row span, .fase-row label, .label-text-small {
+        min-width: 100% !important;
+        width: 100% !important;
     }
 
-    .atlas-checkbox-row-premium {
-        padding: 15px;
+    /* Ajuste de la sección narrativa */
+    .narrative-hero-section { grid-template-columns: 1fr; }
+    .mission-card { padding: 25px 15px; }
+
+    /* Cards de formulario con menos padding para ganar espacio */
+    .form-card { padding: 25px 15px !important; }
+    
+    /* Inputs de número alineados a la derecha en móvil para fácil acceso */
+    .inline-input-premium {
+        align-self: flex-end; 
     }
 }
 
-/* --- MÓVILES PEQUEÑOS --- */
 @media (max-width: 480px) {
-    .form-card {
-        padding: 25px 15px;
-    }
-
-    .form-section-title {
-        font-size: 1rem;
+    .atlas-unique-title-box h2 { font-size: 1.2rem; }
+    
+    .form-section-title { 
+        font-size: 1rem; 
+        flex-direction: column; 
+        align-items: flex-start; 
     }
 
     .check-label-row {
-        padding: 15px;
-        gap: 10px;
-    }
-
-    .label-text {
+        padding: 12px;
         font-size: 0.9rem;
     }
 
     .btn-finalizar-mision {
+        padding: 15px 30px;
+        font-size: 1.1rem;
         width: 100%;
-        padding: 18px 10px;
-        font-size: 1rem;
     }
+
+    /* Evitar que las cajas de texto se vean gigantes */
+    textarea { min-height: 100px; }
 }
 
-/* --- AJUSTE PARA IPHONE HORIZONTAL (LANDSCAPE) --- */
-@media (max-height: 500px) and (orientation: landscape) {
-    .atlas-unique-page-wrapper {
-        padding: 10px;
-    }
-    
-    .reto-header-inline {
-        margin-bottom: 15px;
-        padding: 10px 25px;
-    }
+/* --- FIX GLOBAL PARA DESBORDE --- */
+* {
+    box-sizing: border-box;
+}
 
-    .narrative-hero-section {
-        grid-template-columns: 1fr 1fr; /* Volvemos a 2 columnas para aprovechar el ancho */
-    }
+html, body {
+    max-width: 100%;
+    overflow-x: hidden; /* Evita el scroll horizontal molesto */
 }

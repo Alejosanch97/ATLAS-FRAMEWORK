@@ -9,6 +9,9 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
     const [retosCompletados, setRetosCompletados] = useState([]);
     const [isSaving, setIsSaving] = useState(false);
 
+    // Identificación de Rol
+    const isDirectivo = userData.Rol === "DIRECTIVO";
+
     useEffect(() => {
         fetchData();
     }, []);
@@ -68,8 +71,10 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
             setProgreso({ ...progreso, Capa_1_Sentido: 'COMPLETADO', ID_Progreso: nuevoID });
             
             Swal.fire({
-                title: "¡Marco Activado!",
-                text: "Has formalizado tu inicio en la fase TRANSFORMAR. Los retos están listos.",
+                title: isDirectivo ? "¡Liderazgo Activado!" : "¡Marco Activado!",
+                text: isDirectivo 
+                    ? "Has formalizado tu inicio en las decisiones de gobernanza responsable." 
+                    : "Has formalizado tu inicio en la fase TRANSFORMAR. Los retos están listos.",
                 icon: "success",
                 confirmButtonColor: "#c5a059"
             });
@@ -98,11 +103,18 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                 <div className="transformar-intro-container animate-fade-in">
                     <header className="intro-hero">
                         <span className="badge-fase-pill">Fase 2: Transformar</span>
-                        <h1>Te damos la bienvenida a la fase TRANSFORMAR</h1>
-                        <p className="hero-subtitle">
-                            En la fase anterior analizaste herramientas e identificaste riesgos. 
-                            Ahora comienza el paso más importante: <strong>convertir ese análisis en acción pedagógica responsable.</strong>
-                        </p>
+                        <h1>{isDirectivo ? "Te damos la bienvenida a la fase TRANSFORMAR" : "Te damos la bienvenida a la fase TRANSFORMAR"}</h1>
+                        
+                        {isDirectivo ? (
+                            <p className="hero-subtitle">
+                                En la fase anterior analizaste escenarios, identificaste riesgos institucionales y reflexionaste sobre el impacto ético y regulatorio del uso de la IA en educación. Ahora comienza el paso más importante: <strong>convertir ese análisis en decisiones de gobernanza responsables.</strong>
+                            </p>
+                        ) : (
+                            <p className="hero-subtitle">
+                                En la fase anterior analizaste herramientas e identificaste riesgos. 
+                                Ahora comienza el paso más importante: <strong>convertir ese análisis en acción pedagógica responsable.</strong>
+                            </p>
+                        )}
                     </header>
 
                     <section className="narrative-grid">
@@ -111,27 +123,57 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                                 <span className="step-number">01</span>
                                 <h3>¿Qué significa TRANSFORMAR?</h3>
                             </div>
-                            <p>Significa pasar de evaluar la IA… a <strong>diseñar con criterio.</strong> En esta etapa desarrollarás retos que te permitirán:</p>
-                            <ul className="bullet-list-minimal">
-                                <li>• Integrar IA con intención pedagógica clara.</li>
-                                <li>• Proteger la agencia y dignidad estudiantil.</li>
-                                <li>• Evitar dependencia tecnológica.</li>
-                                <li>• Diseñar experiencias centradas en lo humano.</li>
-                            </ul>
+                            
+                            {isDirectivo ? (
+                                <>
+                                    <p>Significa pasar de comprender el riesgo… a <strong>liderar con criterio.</strong> En esta etapa empezarás a desarrollar los retos directivos que te permitirán:</p>
+                                    <ul className="bullet-list-minimal">
+                                        <li>• Clasificar y gestionar riesgos institucionales asociados al uso de IA.</li>
+                                        <li>• Proteger derechos fundamentales de estudiantes y comunidad educativa.</li>
+                                        <li>• Fortalecer mecanismos de supervisión humana y rendición de cuentas.</li>
+                                        <li>• Diseñar estructuras de gobernanza responsables y sostenibles.</li>
+                                    </ul>
+                                </>
+                            ) : (
+                                <>
+                                    <p>Significa pasar de evaluar la IA… a <strong>diseñar con criterio.</strong> En esta etapa desarrollarás retos que te permitirán:</p>
+                                    <ul className="bullet-list-minimal">
+                                        <li>• Integrar IA con intención pedagógica clara.</li>
+                                        <li>• Proteger la agencia y dignidad estudiantil.</li>
+                                        <li>• Evitar dependencia tecnológica.</li>
+                                        <li>• Diseñar experiencias centradas en lo humano.</li>
+                                    </ul>
+                                </>
+                            )}
                         </div>
 
                         <div className="info-card-step">
                             <div className="step-header">
                                 <span className="step-number">02</span>
-                                <h3>Marco UNESCO (2024)</h3>
+                                <h3>{isDirectivo ? "Marcos de Liderazgo" : "Marco UNESCO (2024)"}</h3>
                             </div>
-                            <p>Esta fase está alineada con el <em>AI Competency Framework for Teachers</em>, que propone una progresión clara:</p>
-                            <div className="unesco-stack">
-                                <div className="u-item"><strong>Adquirir:</strong> Comprender riesgos y fundamentos.</div>
-                                <div className="u-item"><strong>Profundizar:</strong> Integrar de manera crítica.</div>
-                                <div className="u-item"><strong>Crear:</strong> Diseñar prácticas innovadoras.</div>
-                            </div>
-                            <p className="small-context">Ahora iniciarás el recorrido por estos niveles a través de los retos.</p>
+                            
+                            {isDirectivo ? (
+                                <>
+                                    <p>Esta fase está alineada con los marcos internacionales que orientan el liderazgo en IA en educación:</p>
+                                    <div className="unesco-stack">
+                                        <div className="u-item"><strong>EU AI Act 2024:</strong> Enfoque basado en riesgo.</div>
+                                        <div className="u-item"><strong>OCDE:</strong> Responsabilidad, robustez y transparencia.</div>
+                                        <div className="u-item"><strong>UNESCO:</strong> Dignidad, equidad y protección de derechos.</div>
+                                    </div>
+                                    <p className="small-context">Para el rol directivo, esta fase implica identificar riesgos estructurales y diseñar protocolos institucionales.</p>
+                                </>
+                            ) : (
+                                <>
+                                    <p>Esta fase está alineada con el <em>AI Competency Framework for Teachers</em>, que propone una progresión clara:</p>
+                                    <div className="unesco-stack">
+                                        <div className="u-item"><strong>Adquirir:</strong> Comprender riesgos y fundamentos.</div>
+                                        <div className="u-item"><strong>Profundizar:</strong> Integrar de manera crítica.</div>
+                                        <div className="u-item"><strong>Crear:</strong> Diseñar prácticas innovadoras.</div>
+                                    </div>
+                                    <p className="small-context">Ahora iniciarás el recorrido por estos niveles a través de los retos.</p>
+                                </>
+                            )}
                         </div>
                     </section>
 
@@ -140,30 +182,45 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                             <span className="icon-badge">📺</span>
                             <div>
                                 <h3>Antes de comenzar</h3>
-                                <p>Debes visualizar el video explicativo del <strong>AI Competency Framework for Teachers – UNESCO (2024)</strong>. Este video es la base conceptual de tus retos.</p>
+                                {isDirectivo ? (
+                                    <p>Debes visualizar el video explicativo sobre el <strong>marco regulatorio y de gobernanza en IA</strong> aplicado a educación.</p>
+                                ) : (
+                                    <p>Debes visualizar el video explicativo del <strong>AI Competency Framework for Teachers – UNESCO (2024)</strong>. Este video es la base conceptual de tus retos.</p>
+                                )}
                             </div>
                         </div>
                         
                         <div className="video-grid-content">
-                            <div className="video-wrapper-premium">
-                                <iframe
-                                    src="https://player.cloudinary.com/embed/?cloud_name=deafueoco&public_id=UNESCO_VIDEO_xt1z8v"
-                                    width="100%"
-                                    height="100%"
-                                    style={{ border: "none" }}
-                                    allow="fullscreen; encrypted-media"
-                                    title="UNESCO AI Framework"
-                                ></iframe>
-                            </div>
+                            <iframe
+                                src={isDirectivo
+                                    ? "https://player.cloudinary.com/embed/?cloud_name=deafueoco&public_id=La_Ley_de_IA_de_la_Unio%CC%81n_Europea_qfj6aw&profile=cld-looping"
+                                    : "https://player.cloudinary.com/embed/?cloud_name=deafueoco&public_id=UNESCO_VIDEO_xt1z8v&profile=cld-looping"
+                                }
+                                width="100%"
+                                height="100%"
+                                style={{ border: "none", backgroundColor: "#000" }} // Fondo negro mientras carga el poster
+                                allow="fullscreen; encrypted-media"
+                                title="Framework Video"
+                            ></iframe>
                             <div className="video-points-card">
                                 <h4>En este video encontrarás:</h4>
-                                <ul>
-                                    <li>✔ Las dimensiones del marco.</li>
-                                    <li>✔ El enfoque human-centred.</li>
-                                    <li>✔ La importancia de la agencia.</li>
-                                    <li>✔ El rol de la supervisión humana.</li>
-                                    <li>✔ La progresión competencial.</li>
-                                </ul>
+                                {isDirectivo ? (
+                                    <ul>
+                                        <li>✔ El enfoque basado en riesgo del EU AI Act.</li>
+                                        <li>✔ Qué significa un sistema de alto riesgo en educación.</li>
+                                        <li>✔ Las obligaciones de supervisión humana y accountability.</li>
+                                        <li>✔ La importancia de la gobernanza de datos.</li>
+                                        <li>✔ El rol estratégico del liderazgo directivo en la era de la IA.</li>
+                                    </ul>
+                                ) : (
+                                    <ul>
+                                        <li>✔ Las dimensiones del marco.</li>
+                                        <li>✔ El enfoque human-centred.</li>
+                                        <li>✔ La importancia de la agencia.</li>
+                                        <li>✔ El rol de la supervisión humana.</li>
+                                        <li>✔ La progresión competencial.</li>
+                                    </ul>
+                                )}
                             </div>
                         </div>
                     </section>
@@ -171,14 +228,30 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                     <section className="final-action-section">
                         <div className="expectations-header">
                             <h3>¿Qué se espera en esta fase?</h3>
-                            <p>No se trata de usar más IA. Se trata de usarla con <strong>criterio profesional.</strong></p>
+                            {isDirectivo ? (
+                                <p>No se trata de implementar más tecnología. Se trata de <strong>gobernarla con criterio estratégico.</strong></p>
+                            ) : (
+                                <p>No se trata de usar más IA. Se trata de usarla con <strong>criterio profesional.</strong></p>
+                            )}
                         </div>
                         
                         <div className="expectations-grid-styled">
-                            <div className="exp-card">✔ Diseñar con intención, no por moda.</div>
-                            <div className="exp-card">✔ Justificar pedagógicamente el uso de IA.</div>
-                            <div className="exp-card">✔ Mantener expectativas altas para todos.</div>
-                            <div className="exp-card">✔ Integrar principios de equidad.</div>
+                            {isDirectivo ? (
+                                <>
+                                    <div className="exp-card">✔ Tomes decisiones basadas en análisis de riesgo y no en presión tecnológica.</div>
+                                    <div className="exp-card">✔ Establezcas criterios claros de aprobación y supervisión de herramientas IA.</div>
+                                    <div className="exp-card">✔ Protejas derechos fundamentales y privacidad estudiantil.</div>
+                                    <div className="exp-card">✔ Diseñes protocolos ante errores, incidentes y vulneraciones.</div>
+                                    
+                                </>
+                            ) : (
+                                <>
+                                    <div className="exp-card">✔ Diseñar con intención, no por moda.</div>
+                                    <div className="exp-card">✔ Justificar pedagógicamente el uso de IA.</div>
+                                    <div className="exp-card">✔ Mantener expectativas altas para todos.</div>
+                                    <div className="exp-card">✔ Integrar principios de equidad.</div>
+                                </>
+                            )}
                         </div>
                         
                         <div className="action-button-wrapper">
@@ -199,19 +272,24 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                     <div className="dashboard-header-flex">
                         <div className="title-area">
                             <button className="btn-back-atlas" onClick={() => onNavigate('overview')}>⬅ Volver</button>
-                            <h2>Misiones de Transformación Pedagógica</h2>
+                            <h2>{isDirectivo ? "Misiones de Liderazgo y Gobernanza" : "Misiones de Transformación Pedagógica"}</h2>
                         </div>
                         <div className="level-badge-status">
-                            Nivel: {retosCompletados.length === 3 ? " Experto" : retosCompletados.length === 2 ? " Deepen" : retosCompletados.length === 1 ? " Adquirir" : "🌱 Iniciando"}
+                            {isDirectivo ? "Estatus: " : "Nivel: "} 
+                            {retosCompletados.length === 3 ? " Experto" : retosCompletados.length === 2 ? (isDirectivo ? " Estratega" : " Deepen") : retosCompletados.length === 1 ? (isDirectivo ? " Gestor" : " Adquirir") : "🌱 Iniciando"}
                         </div>
                     </div>
 
                     <div className="retos-roadmap-v2">
-                        {[
+                        {(isDirectivo ? [
+                            { id: 1, title: "Uso de Alto Riesgo", level: "EU AI Act", icon: "⚖️", desc: "Clasificar un caso según el enfoque basado en riesgo y tomar una decisión." },
+                            { id: 2, title: "Protocolo Privacidad", level: "Gobernanza", icon: "🔐", desc: "Diseñar la estructura de un protocolo institucional de privacidad de datos." },
+                            { id: 3, title: "Gestión de Crisis", level: "Accountability", icon: "🚨", desc: "Gestionar un incidente crítico generado por un sistema de IA." }
+                        ] : [
                             { id: 1, title: "Evaluación Ética", level: "Adquirir", icon: "⚖️", desc: "Comprender riesgos y fundamentos iniciales." },
                             { id: 2, title: "Rediseño Human-Centred", level: "Profundizar", icon: "🧠", desc: "Integrar la IA de manera crítica en tu planeación." },
                             { id: 3, title: "Diferenciación Inclusiva", level: "Crear", icon: "🌍", desc: "Diseñar prácticas innovadoras y responsables." }
-                        ].map((reto) => {
+                        ]).map((reto) => {
                             const isCompleted = retosCompletados.includes(reto.id);
                             // El reto 1 está desbloqueado por defecto. Los demás requieren el anterior.
                             const isLocked = reto.id > 1 && !retosCompletados.includes(reto.id - 1);
@@ -227,7 +305,7 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                                         <div className="lock-indicator">🔒 Pendiente del nivel anterior</div>
                                     ) : (
                                         <button 
-                                            onClick={() => onNavigate('ejecutar_reto', reto.id)}
+                                            onClick={() => onNavigate(isDirectivo ? 'ejecutar_reto' : 'ejecutar_reto', reto.id)}
                                             className="btn-launch-mission"
                                         >
                                             {isCompleted ? "Ver Evidencia" : "Aceptar Misión"}
@@ -242,8 +320,11 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                     {retosCompletados.length === 3 && (
                         <div className="congrats-final-atlas">
                             <div className="congrats-content">
-                                <h3> Fase Transformar Completada</h3>
-                                <p>Has demostrado competencia en los tres niveles UNESCO. Tus evidencias están listas para la validación final.</p>
+                                <h3>{isDirectivo ? "Gobernanza Fortalecida" : "Fase Transformar Completada"}</h3>
+                                <p>{isDirectivo 
+                                    ? "Has demostrado competencia liderando la IA con criterio estratégico. Tus protocolos están listos." 
+                                    : "Has demostrado competencia en los tres niveles UNESCO. Tus evidencias están listas para la validación final."}
+                                </p>
                             </div>
                         </div>
                     )}
