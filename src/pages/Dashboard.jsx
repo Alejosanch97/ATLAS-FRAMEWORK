@@ -8,8 +8,14 @@ import { FaseAuditar } from "./FaseAuditar"; // Importante: Asegúrate de que el
 import { MicromodulosPage } from "./MicromodulosPage";
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
+
 import { FaseTransformar } from "./FaseTransformar";
 import { EjecutarReto } from "./EjecutarReto";
+import AnalisisLiderazgo from "./AnalisisLiderazgo";
+
+// Dashboard.jsx
+import FaseLiderar from "./FaseLiderar"; // Sin llaves si usaste export default
+import RetosLiderar from "./RetosLiderar";
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbxcqIbNhC3H7za-GsBF9iuTU___o8OBCF8URGNxwdQm5q8pUd1vpgthbYyrBRkGXJ5Y8Q/exec';
 
@@ -39,6 +45,7 @@ export const Dashboard = ({ onLogout }) => {
     const [showUserModal, setShowUserModal] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
     const [retosTransformar, setRetosTransformar] = useState([]);
+    const [retosLiderarData, setRetosLiderarData] = useState([]); // Importante para que no salga pantalla blanca
 
     const navigate = useNavigate();
 
@@ -46,6 +53,7 @@ export const Dashboard = ({ onLogout }) => {
     const [isCompassInfoExpanded, setIsCompassInfoExpanded] = useState(false);
     const [infoSeccion, setInfoSeccion] = useState('evalua');
     const [showImprovement, setShowImprovement] = useState(false);
+    const [seguimientoData, setSeguimientoData] = useState([]);
 
     // 1. Definimos cuál está abierto (empezamos con 'consola')
     const [openMenu, setOpenMenu] = useState('consola');
@@ -67,23 +75,25 @@ export const Dashboard = ({ onLogout }) => {
         }
     }, [navigate]);
 
-    const loadInitialData = async (key, rol) => {
+   const loadInitialData = async (key, rol) => {
         setIsLoading(true);
         console.log("Iniciando carga para:", key);
 
         try {
-            // Ejecutamos las peticiones en paralelo para que sea más rápido
-            const [resForms, resRetos, resRetosTrans, resResp] = await Promise.all([
+            // 1. CARGA PRINCIPAL (Datos críticos para la Huella y Funcionamiento)
+            const [resForms, resRetos, resRetosTrans, resResp, resLiderar] = await Promise.all([
                 fetch(`${API_URL}?sheet=Config_Formularios`),
                 fetch(`${API_URL}?sheet=Weekly_Challenges&user_key=${key}`),
                 fetch(`${API_URL}?sheet=Retos_Transformar_ATLAS&user_key=${key}`),
-                fetch(`${API_URL}?sheet=Respuestas_Usuarios&user_key=${key}`)
+                fetch(`${API_URL}?sheet=Respuestas_Usuarios&user_key=${key}`),
+                fetch(`${API_URL}?sheet=Liderar_Prompts_Docentes&user_key=${key}`)
             ]);
 
             const dataForms = await resForms.json();
             const dataRetos = await resRetos.json();
             const dataRetosTrans = await resRetosTrans.json();
             const dataResp = await resResp.json();
+            const dataLiderar = await resLiderar.json();
 
             // Seteamos estados validando que sean arrays
             if (Array.isArray(dataForms)) setAllFormsInfo(dataForms);
@@ -94,8 +104,7 @@ export const Dashboard = ({ onLogout }) => {
                 setMisRetos([]);
             }
 
-            // --- VALIDACIÓN CLAVE PARA RETOS TRANSFORMACIÓN ---
-            console.log("Datos Transformar recibidos:", dataRetosTrans);
+            // --- VALIDACIÓN RETOS TRANSFORMACIÓN ---
             if (Array.isArray(dataRetosTrans)) {
                 setRetosTransformar(dataRetosTrans);
             } else {
@@ -103,12 +112,31 @@ export const Dashboard = ({ onLogout }) => {
                 setRetosTransformar([]);
             }
 
+            // --- VALIDACIÓN RETOS LIDERAR ---
+            if (Array.isArray(dataLiderar)) {
+                setRetosLiderarData(dataLiderar);
+            } else {
+                console.error("Datos Liderar no es un array:", dataLiderar);
+                setRetosLiderarData([]);
+            }
+
             if (Array.isArray(dataResp)) setUserResponses(dataResp);
+
+            // 2. CARGA DE NOTIFICACIONES (Independiente para no afectar la Huella)
+            try {
+                const resSeguimiento = await fetch(`${API_URL}?sheet=Liderar_Seguimiento_Directivo`);
+                const dataSeguimiento = await resSeguimiento.json();
+                if (Array.isArray(dataSeguimiento)) {
+                    setSeguimientoData(dataSeguimiento);
+                }
+            } catch (segErr) {
+                console.warn("La hoja de Seguimiento no pudo cargarse, pero el dashboard continuará:", segErr);
+            }
 
             if (rol === "ADMIN" || rol === "DIRECTIVO") await fetchAllUsers();
 
         } catch (e) {
-            console.error("Error crítico en carga de datos:", e);
+            console.error("Error crítico en carga de datos principal:", e);
         } finally {
             setIsLoading(false);
         }
@@ -358,6 +386,13 @@ export const Dashboard = ({ onLogout }) => {
             case "ejecutar_reto": return { title: `Reto ${activeRetoId}`, subtitle: "Consignación de Evidencia Pedagógica" };
             case "fase_auditar": return { title: "Fase: Auditar", subtitle: "Gobernanza y Sentido Crítico de la IA" };
             case "responder_fase": 
+            case "fase_liderar": return { title: "Fase: Liderar", subtitle: "Gobernanza y Ética de la IA" };
+            case "retos_liderar": return { title: `Misión`, subtitle: "Auditoría de Responsabilidad Pedagógica" };
+            case "analisis_liderazgo":
+                return {
+                    title: "Dashboard de Gobernanza",
+                    subtitle: "Monitoreo Institucional de Riesgo Ético"
+                };
                 const faseTxt = filterPhase === "A" ? "AUDITAR" : filterPhase === "T" ? "TRANSFORMAR" : "LIDERAR";
                 return { title: `Fase ${faseTxt}`, subtitle: `Instrumentos de la Etapa ${filterPhase}` };
             default: return { title: "Bienvenido al Marco ATLAS", subtitle: "Modelo de Madurez y Gobernanza en IA Educativa" };
@@ -622,7 +657,14 @@ export const Dashboard = ({ onLogout }) => {
                         </div>
                         {openMenu === 'liderar' && (
                             <div className="nav-submenu">
-                                {/* DOCENTE y DIRECTIVO ven Panel de Influencia */}
+                                {/* BOTÓN PRINCIPAL DE LA FASE */}
+                                <button
+                                    className={(activeTab === "fase_liderar" || activeTab === "retos_liderar") ? "active-phase" : "phase-btn"}
+                                    onClick={() => switchTab("fase_liderar")}
+                                >
+                                    Laboratorio Ético
+                                </button>
+
                                 {(userData.Rol === "DOCENTE" || userData.Rol === "DIRECTIVO") && (
                                     <button
                                         className={activeTab === "responder_fase" && filterPhase === "L" ? "active-phase" : "phase-btn"}
@@ -911,6 +953,84 @@ export const Dashboard = ({ onLogout }) => {
                                 </table>
                             </div>
                         </div>
+                        {/* --- CENTRO DE NOTIFICACIONES (SOLO DOCENTES) --- */}
+                        {userData?.Rol === "DOCENTE" && (
+                            <div className="info-card wide-card notifications-atlas-card">
+                                <div className="card-header-flex">
+                                    <div className="title-group-main">
+                                        <h3>Centro de Notificaciones ATLAS</h3>
+                                        <p className="subtitle-compass-mini">Avisos de seguimiento y soporte institucional</p>
+                                    </div>
+                                    <span className="notification-badge-count">
+                                        {(() => {
+                                            const miID = String(userData.Teacher_Key || "").trim();
+                                            const total = seguimientoData.filter(s => {
+                                                const keyHoja = String(s.Teacher_Key || "").trim();
+                                                return keyHoja.includes(miID);
+                                            }).length;
+                                            return total;
+                                        })()} Mensajes
+                                    </span>
+                                </div>
+
+                                <div className="notifications-container">
+                                    {(() => {
+                                        const miID = String(userData.Teacher_Key || "").trim();
+
+                                        // --- DEBUG: LOGS PARA RASTREAR EL ERROR ---
+                                        console.log("🔍 Mi Teacher_Key actual:", miID);
+                                        console.log("📊 Datos brutos recibidos en seguimientoData:", seguimientoData);
+
+                                        // FILTRO ROBUSTO:
+                                        const filtradas = seguimientoData.filter(s => {
+                                            // Limpiamos la key de la hoja de posibles comas o texto extra
+                                            const keyHoja = String(s.Teacher_Key || "").trim();
+                                            const coincide = keyHoja.includes(miID);
+
+                                            if (coincide) console.log("✅ Coincidencia encontrada en fila:", s);
+                                            return coincide;
+                                        });
+
+                                        if (filtradas.length === 0) {
+                                            return <p className="notif-empty">No tienes mensajes pendientes o seguimiento activo.</p>;
+                                        }
+
+                                        return [...filtradas].reverse().map((notif, idx) => {
+                                            // Normalizamos el texto de la acción para la comparación
+                                            const accionOriginal = String(notif.Accion_Activada || "");
+                                            const accionStr = accionOriginal.toUpperCase();
+
+                                            // Verificación de tipos (con logs si es necesario)
+                                            const esRezagado = accionStr.includes("REZAGADOS");
+                                            const esAyuda = accionStr.includes("AYUDA PRESENCIAL");
+
+                                            return (
+                                                <div key={`notif-${idx}`} className={`notification-item ${esRezagado ? 'alert' : esAyuda ? 'help' : ''}`}>
+                                                    <div className="notif-icon">{esRezagado ? "⚠️" : esAyuda ? "🤝" : "🔔"}</div>
+                                                    <div className="notif-content">
+                                                        <p className="notif-text">
+                                                            {esRezagado
+                                                                ? "Atención: Tienes tareas pendientes en tus fases. Es importante retomar el proceso."
+                                                                : esAyuda
+                                                                    ? `Ayuda presencial asignada por ${notif.Docente_Mentor_Key || 'Mentor'}.`
+                                                                    : accionOriginal
+                                                            }
+                                                        </p>
+                                                        <div className="notif-footer-meta">
+                                                            <span className="notif-tag-dim">{notif.Dimension_Priorizada || "INSTITUCIONAL"}</span>
+                                                            <span className="notif-date">
+                                                                {notif.Fecha_Accion ? new Date(notif.Fecha_Accion).toLocaleDateString() : '---'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        });
+                                    })()}
+                                </div>
+                            </div>
+                        )}
+  
                     </section>
                 )}
 
@@ -1075,6 +1195,44 @@ export const Dashboard = ({ onLogout }) => {
                             if (tab === "fase_transformar" || tab === "overview") handleManualRefresh();
                             switchTab(tab, extra);
                         }}
+                    />
+                )}
+                {/* --- SECCIÓN LIDERAR: INTRO Y DASHBOARD DE RETOS --- */}
+                {activeTab === "fase_liderar" && (
+                    <FaseLiderar
+                        userData={userData}
+                        API_URL={API_URL}
+                        progreso={{
+                            // Buscamos si hay retos completados en la data que cargamos
+                            Retos_Liderar: (retosLiderarData || [])
+                                .filter(r => r.Status === 'completed')
+                                .map(r => r.ID_Prompt?.includes('2') ? 2 : 1),
+                            // Verificamos si ya aceptó la fase (Capa de sentido)
+                            Capa_Liderar_Status: userData?.Capa_Liderar_Status || "PENDIENTE"
+                        }}
+                        onRefreshProgreso={handleManualRefresh}
+                        onNavigate={switchTab}
+                    />
+                )}
+
+                {/* --- SECCIÓN LIDERAR: EJECUCIÓN DE RETOS (LABORATORIO/RESULTADOS) --- */}
+                {activeTab === "retos_liderar" && (
+                    <RetosLiderar
+                        userData={userData}
+                        API_URL={API_URL}
+                        retoId={activeRetoId || 1} // Si no hay ID, por defecto carga el 1
+                        onNavigate={(tab, extra) => {
+                            if (tab === "fase_liderar") handleManualRefresh();
+                            switchTab(tab, extra);
+                        }}
+                    />
+                )}
+                {/* --- VISTA EXCLUSIVA DIRECTIVOS: DASHBOARD INSTITUCIONAL --- */}
+                {activeTab === "analisis_liderazgo" && (
+                    <AnalisisLiderazgo
+                        userData={userData}
+                        API_URL={API_URL}
+                        onNavigate={switchTab}
                     />
                 )}
 

@@ -1422,6 +1422,105 @@
     to { opacity: 1; }
 }
 
+/* --- ESTILOS CARD NOTIFICACIONES --- */
+.notifications-atlas-card {
+    border-top: 4px solid var(--primary) !important;
+    background: white;
+}
+
+.notification-badge-count {
+    background: #1e293b;
+    color: var(--primary);
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    border: 1px solid var(--primary);
+}
+
+.notifications-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.notification-item {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+}
+
+.notification-item:hover {
+    border-color: var(--primary);
+    background: #fffdf9;
+    transform: translateX(4px);
+}
+
+.notification-item.alert {
+    border-left: 4px solid var(--danger);
+    background: #fff5f5;
+}
+
+.notification-item.help {
+    border-left: 4px solid var(--info);
+    background: #f0f7ff;
+}
+
+.notif-icon {
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.notif-content {
+    flex: 1;
+}
+
+.notif-text {
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+}
+
+.notif-footer-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notif-tag-dim {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--primary);
+    background: rgba(197, 160, 89, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.notif-date {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.notif-empty {
+    text-align: center;
+    padding: 30px;
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
 /* =========================================
    CORRECCIÓN DE RESPONSIVIDAD ATLAS (ACTUALIZADO 2026)
    ========================================= */
@@ -1617,4 +1716,185 @@
     backface-visibility: hidden;
     perspective: 1000px;
     will-change: transform, d;
+}
+
+/* =========================================
+   REVISIÓN INTEGRAL RESPONSIVE ATLAS 2026
+   ========================================= */
+
+/* --- TABLETS E IPADS (1024px hacia abajo) --- */
+@media (max-width: 1024px) {
+    .atlas-main-content {
+        padding: 30px 20px;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr; /* Colapsamos a una columna */
+        gap: 20px;
+    }
+
+    .wide-card {
+        grid-column: span 1 !important;
+    }
+
+    /* Ajuste de la Huella (La A) */
+    .huella-card {
+        min-height: 450px;
+        padding: 20px;
+    }
+
+    .atlas-a-container {
+        width: 280px;
+        height: 300px;
+    }
+
+    /* Ajuste Professional Upgrade */
+    .professional-upgrade .method-grid {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .professional-upgrade .method-item {
+        flex: 1 1 calc(50% - 10px); /* 2 por fila en tablet */
+        font-size: 0.8rem;
+    }
+}
+
+/* --- CELULARES Y TABLETS VERTICALES (768px hacia abajo) --- */
+@media (max-width: 768px) {
+    /* 1. Sidebar Flotante */
+    .mobile-toggle {
+        display: flex; /* Aparece el botón hamburguesa */
+    }
+
+    .atlas-sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        bottom: 0;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 2000;
+        width: 280px;
+    }
+
+    .atlas-sidebar.open {
+        left: 0;
+        box-shadow: 20px 0 50px rgba(0,0,0,0.3);
+    }
+
+    /* 2. Layout Principal */
+    .atlas-main-content {
+        padding-top: 85px; /* Espacio para el botón mobile */
+    }
+
+    .main-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    /* 3. La "A" Profesional */
+    .huella-card h3 {
+        position: relative; /* Deja de ser absolute para no encimarse */
+        top: 0;
+        left: 0;
+        font-size: 1.5rem;
+        text-align: center;
+        width: 100%;
+    }
+
+    .atlas-a-container {
+        width: 240px;
+        height: 260px;
+        margin: 40px auto;
+    }
+
+    .huella-number {
+        font-size: 4rem;
+    }
+
+    /* 4. Professional Upgrade (Card de contenido oscuro) */
+    .prompt-content-rich {
+        padding: 20px;
+    }
+
+    .intro-text-dark {
+        font-size: 0.95rem;
+    }
+
+    .professional-upgrade .method-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* 2 columnas fijas */
+    }
+
+    /* 5. Centro de Notificaciones */
+    .notification-item {
+        flex-direction: column; /* Icono arriba, texto abajo */
+        gap: 10px;
+    }
+
+    .notif-footer-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+}
+
+/* --- CELULARES PEQUEÑOS (480px hacia abajo) --- */
+@media (max-width: 480px) {
+    .atlas-main-content {
+        padding: 80px 15px 20px;
+    }
+
+    .huella-number {
+        font-size: 3rem;
+    }
+
+    .atlas-a-container {
+        width: 180px;
+        height: 200px;
+    }
+
+    /* Tablas de usuarios/retos */
+    .atlas-table th, .atlas-table td {
+        padding: 8px;
+        font-size: 0.75rem;
+    }
+
+    /* Botones de Retos */
+    .form-row {
+        grid-template-columns: 1fr; /* Todo en una fila vertical */
+    }
+
+    /* Botones Professional Upgrade - Evitar desbordamiento */
+    .professional-upgrade .method-grid {
+        grid-template-columns: 1fr; /* 1 por fila para lectura clara */
+    }
+
+    .professional-upgrade .method-item {
+        white-space: normal; /* Permitimos que el texto rompa si es muy largo */
+        padding: 15px;
+        height: auto;
+    }
+
+    /* Compass Card */
+    .compass-nav-pills {
+        flex-direction: column;
+    }
+
+    .compass-title-group-unique {
+        gap: 10px;
+    }
+
+    .compass-h2-unique {
+        font-size: 1.1rem;
+    }
+}
+
+/* --- SOLUCIÓN PARA TABLAS CON SCROLL EN MÓVIL --- */
+.user-scroll-list {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }

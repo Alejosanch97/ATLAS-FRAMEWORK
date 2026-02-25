@@ -438,6 +438,419 @@
     font-size: 2rem;
     margin-bottom: 15px;
 }
+/* --- BOTÓN VOLVER AL MAPA (ESTILO ORIGINAL RESTAURADO) --- */
+.top-nav-intro {
+    display: flex;
+    justify-content: flex-start; /* Alinea a la izquierda como en tu imagen */
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.btn-back-atlas-minimal {
+    background: white !important;
+    border: 1.5px solid #000 !important; /* Borde negro de la captura */
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-weight: 700;
+    color: #000 !important;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+/* =========================================
+   NUEVOS ESTILOS: REPORTE DE AUDITORÍA ÉTICA (LIDERAR)
+   ========================================= */
+
+.reporte-profundo-container {
+    background: #fff;
+    border-radius: 40px;
+    padding: 50px;
+    box-shadow: 0 20px 80px rgba(0,0,0,0.08);
+    border: 1px solid #f1f5f9;
+    margin-top: 20px;
+}
+
+.reporte-header-grid {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #f8fafc;
+    padding-bottom: 30px;
+    margin-bottom: 40px;
+}
+
+.pill-status {
+    background: var(--atlas-blue-dark);
+    color: var(--atlas-gold);
+    padding: 6px 15px;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.prompt-preview-text {
+    color: #64748b;
+    font-style: italic;
+    margin-top: 10px;
+    max-width: 600px;
+    font-size: 0.9rem;
+}
+
+.global-gauge {
+    text-align: center;
+    background: #fdfbf7;
+    padding: 20px 40px;
+    border-radius: 30px;
+    border: 1px solid rgba(197, 160, 89, 0.2);
+}
+
+.gauge-value {
+    font-size: 3.5rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+/* Grid de los 4 cuadrantes del reporte */
+.reporte-grid-cuadrante {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.cuadrante-card {
+    background: #f8fafc;
+    padding: 30px;
+    border-radius: 25px;
+    border: 1px solid #e2e8f0;
+    transition: transform 0.3s ease;
+}
+
+.cuadrante-card:hover {
+    transform: translateY(-5px);
+}
+
+.card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.semaforo-indicator {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.fundamento-mini {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #94a3b8;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.feedback-text {
+    font-size: 0.95rem;
+    color: #334155;
+    margin: 12px 0;
+    line-height: 1.5;
+}
+
+.recomendacion-box {
+    background: white;
+    padding: 15px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    border-left: 4px solid #cbd5e1;
+    color: #475569;
+}
+
+.reporte-final-reflexion {
+    background: #f1f5f9;
+    padding: 30px;
+    border-radius: 25px;
+    text-align: center;
+}
+
+.reflexion-inner {
+    max-width: 800px;
+    margin: 0 auto 25px auto;
+    font-size: 1.05rem;
+    color: #1e293b;
+    line-height: 1.6;
+}
+
+.btn-close-reporte {
+    background: var(--atlas-blue-dark);
+    color: white;
+    padding: 15px 40px;
+    border-radius: 15px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-close-reporte:hover {
+    background: #000;
+    transform: scale(1.05);
+}
+
+/* =========================================
+   ESTILOS ESPECÍFICOS: LIDERAR (PROTOCOLO Y ANÁLISIS)
+   ========================================= */
+/* =========================================
+   ESTILOS ESPECÍFICOS: LIDERAR (PROTOCOLO Y ANÁLISIS)
+   ========================================= */
+
+/* Contenedor único para evitar el conflicto con el grid de video */
+.liderar-full-width-container {
+    width: 100%;
+    display: block; /* Cambiamos de grid a block para ocupar todo el ancho */
+    margin: 0 auto;
+}
+
+/* Card de Protocolos: Diseño de ancho completo */
+.liderar-protocols-card-canvas {
+    background: rgba(255, 255, 255, 0.05); /* Fondo oscuro semitransparente */
+    padding: 45px;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    max-width: none; /* Eliminamos restricciones de ancho previo */
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.liderar-protocols-card-canvas:hover {
+    border-color: rgba(197, 160, 89, 0.3);
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.liderar-protocols-card-canvas h4 {
+    color: var(--atlas-gold);
+    font-size: 1.6rem;
+    margin-bottom: 35px;
+    font-weight: 800;
+    text-transform: none;
+    letter-spacing: 0.5px;
+}
+
+/* Organización de compromisos en dos columnas para llenar el espacio */
+.liderar-commitments {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas iguales */
+    gap: 40px;
+}
+
+.commit-item {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.dot-gold {
+    width: 12px;
+    height: 12px;
+    background: var(--atlas-gold);
+    border-radius: 50%;
+    margin-top: 8px;
+    flex-shrink: 0;
+    box-shadow: 0 0 15px rgba(197, 160, 89, 0.5);
+}
+
+.commit-text-box p {
+    margin: 0;
+    font-size: 1.15rem;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.commit-text-box small {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    display: block;
+    margin-top: 6px;
+}
+
+/* --- AJUSTES DE TEXTO PARA EL REPORTE (ANÁLISIS) --- */
+.interpreta-text {
+    font-size: 0.95rem;
+    color: #475569;
+    margin-top: 15px;
+    line-height: 1.5;
+}
+
+.text-muted-liderar {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    margin-top: 5px;
+}
+
+/* --- DISEÑO DEL ANÁLISIS (IMAGEN 2) --- */
+.liderar-report-canvas {
+    background: #ffffff;
+    border-radius: 35px;
+    padding: 45px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.06);
+    border: 1px solid #f1f5f9;
+}
+
+.report-narrative-section {
+    margin-bottom: 35px;
+    position: relative;
+}
+
+.narrative-step-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 18px;
+}
+
+.step-circle {
+    width: 32px;
+    height: 32px;
+    background: #f1f5f9;
+    color: #64748b;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.85rem;
+}
+
+.narrative-step-header h3 {
+    font-size: 1.5rem;
+    color: #1e293b;
+    margin: 0;
+    font-weight: 800;
+}
+
+.narrative-content-box {
+    padding-left: 47px; /* Alineación con el texto del título */
+}
+
+.narrative-label {
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.prompt-blockquote {
+    background: #f8fafc;
+    border-left: 5px solid #e2e8f0;
+    padding: 20px 25px;
+    border-radius: 0 15px 15px 0;
+    font-style: italic;
+    color: #475569;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Índice Global ATLAS */
+.resultado-indice-global {
+    background: #fdfbf7;
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    padding: 22px;
+    border-radius: 18px;
+}
+
+.indice-at-label {
+    margin: 0;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #92400e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.indice-at-value {
+    margin: 5px 0 0 0;
+    color: #0f172a;
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+
+/* Semáforo de Riesgo Badge */
+.resultado-semaforo-badge {
+    display: inline-block;
+    padding: 10px 25px;
+    border-radius: 100px;
+    color: white;
+    font-weight: 800;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+.dictamen-desc-text {
+    font-size: 1rem;
+    color: #475569;
+    line-height: 1.5;
+}
+
+/* --- BLOQUE FINAL DE DICTAMEN --- */
+.analisis-final-master {
+    margin-top: 50px;
+    padding-top: 40px;
+    border-top: 2px dashed #e2e8f0;
+}
+
+.dictamen-header {
+    margin-bottom: 25px;
+}
+
+.badge-atlas-audit {
+    display: inline-block;
+    background: #0f172a;
+    color: var(--atlas-gold);
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+
+.parrafo-analisis-format p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #334155;
+    text-align: justify;
+}
+
+.parrafo-analisis-format strong {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.reporte-actions-footer {
+    margin-top: 40px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Adaptación para móviles del reporte */
+@media (max-width: 850px) {
+    .reporte-grid-cuadrante {
+        grid-template-columns: 1fr;
+    }
+    .reporte-header-grid {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 20px;
+    }
+}
 
 /* --- ANIMACIONES --- */
 @keyframes fadeIn {

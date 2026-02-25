@@ -8,6 +8,9 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
     const [loading, setLoading] = useState(true);
     const [retosCompletados, setRetosCompletados] = useState([]);
     const [isSaving, setIsSaving] = useState(false);
+    
+    // Estado para alternar entre intro y dashboard
+    const [showIntro, setShowIntro] = useState(true);
 
     // Identificación de Rol
     const isDirectivo = userData.Rol === "DIRECTIVO";
@@ -44,6 +47,12 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
     };
 
     const handleAceptarFase = async () => {
+        // Si ya está completado, el botón simplemente nos lleva al dashboard
+        if (progreso?.Capa_1_Sentido === 'COMPLETADO') {
+            setShowIntro(false);
+            return;
+        }
+
         setIsSaving(true);
         const nuevoID = progreso?.ID_Progreso || `PROG-T-${Date.now()}`;
         
@@ -69,6 +78,7 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
             });
 
             setProgreso({ ...progreso, Capa_1_Sentido: 'COMPLETADO', ID_Progreso: nuevoID });
+            setShowIntro(false); // Al aceptar, vamos al dashboard
             
             Swal.fire({
                 title: isDirectivo ? "¡Liderazgo Activado!" : "¡Marco Activado!",
@@ -85,6 +95,9 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
         }
     };
 
+    // Lógica de renderizado: 
+    const renderIntro = showIntro;
+
     return (
         <div className="transformar-master-container">
             {/* LOADER FLOTANTE (Imagen 3) - No bloquea la carga del contenido */}
@@ -97,11 +110,20 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                 </div>
             )}
 
-            {/* Renderizado condicional de Vistas sin bloqueo de loading */}
-            {progreso?.Capa_1_Sentido !== 'COMPLETADO' ? (
+            {/* Renderizado condicional de Vistas */}
+            {renderIntro ? (
                 // --- VISTA 1: BIENVENIDA Y CONTEXTO EXTENDIDO ---
                 <div className="transformar-intro-container animate-fade-in">
                     <header className="intro-hero">
+                        <div className="top-nav-intro">
+                            {/* CORREGIDO: Este vuelve al mapa principal */}
+                            <button
+                                className="btn-back-atlas-minimal"
+                                onClick={() => onNavigate('overview')}
+                            >
+                                ⬅ Volver
+                            </button>
+                        </div>
                         <span className="badge-fase-pill">Fase 2: Transformar</span>
                         <h1>{isDirectivo ? "Te damos la bienvenida a la fase TRANSFORMAR" : "Te damos la bienvenida a la fase TRANSFORMAR"}</h1>
                         
@@ -198,7 +220,7 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                                 }
                                 width="100%"
                                 height="100%"
-                                style={{ border: "none", backgroundColor: "#000" }} // Fondo negro mientras carga el poster
+                                style={{ border: "none", backgroundColor: "#000" }}
                                 allow="fullscreen; encrypted-media"
                                 title="Framework Video"
                             ></iframe>
@@ -260,9 +282,11 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                                 onClick={handleAceptarFase}
                                 disabled={isSaving}
                             >
-                                {isSaving ? "Registrando..." : "Aceptar Marco y Comenzar Retos"}
+                                {isSaving ? "Registrando..." : (progreso?.Capa_1_Sentido === 'COMPLETADO' ? "Ver Misiones de Retos" : "Aceptar Marco y Comenzar Retos")}
                             </button>
-                            <p className="helper-text">Al aceptar, certificas que has comprendido la base ética y conceptual de la fase.</p>
+                            {progreso?.Capa_1_Sentido !== 'COMPLETADO' && (
+                                <p className="helper-text">Al aceptar, certificas que has comprendido la base ética y conceptual de la fase.</p>
+                            )}
                         </div>
                     </section>
                 </div>
@@ -270,10 +294,16 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                 // --- VISTA 2: DASHBOARD DE RETOS ---
                 <div className="transformar-dashboard animate-fade-in">
                     <div className="dashboard-header-flex">
-                        <div className="title-area">
-                            <button className="btn-back-atlas" onClick={() => onNavigate('overview')}>⬅ Volver</button>
-                            <h2>{isDirectivo ? "Misiones de Liderazgo y Gobernanza" : "Misiones de Transformación Pedagógica"}</h2>
-                        </div>
+                            <div className="title-area">
+                                {/* CORREGIDO: Este te regresa a la sección del video (Intro) */}
+                                <button
+                                    className="btn-back-atlas"
+                                    onClick={() => setShowIntro(true)}
+                                >
+                                    ⬅ Volver
+                                </button>
+                                <h2>{isDirectivo ? "Misiones de Liderazgo y Gobernanza" : "Misiones de Transformación Pedagógica"}</h2>
+                            </div>
                         <div className="level-badge-status">
                             {isDirectivo ? "Estatus: " : "Nivel: "} 
                             {retosCompletados.length === 3 ? " Experto" : retosCompletados.length === 2 ? (isDirectivo ? " Estratega" : " Deepen") : retosCompletados.length === 1 ? (isDirectivo ? " Gestor" : " Adquirir") : "🌱 Iniciando"}
@@ -291,7 +321,6 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                             { id: 3, title: "Diferenciación Inclusiva", level: "Crear", icon: "🌍", desc: "Diseñar prácticas innovadoras y responsables." }
                         ]).map((reto) => {
                             const isCompleted = retosCompletados.includes(reto.id);
-                            // El reto 1 está desbloqueado por defecto. Los demás requieren el anterior.
                             const isLocked = reto.id > 1 && !retosCompletados.includes(reto.id - 1);
 
                             return (
