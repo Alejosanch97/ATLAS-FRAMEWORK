@@ -17,6 +17,9 @@ import AnalisisLiderazgo from "./AnalisisLiderazgo";
 import FaseLiderar from "./FaseLiderar"; // Sin llaves si usaste export default
 import RetosLiderar from "./RetosLiderar";
 
+import FaseAsegurar from "./FaseAsegurar"; 
+import TallerMejoraAsegurar from "./TallerMejoraAsegurar";
+
 const API_URL = 'https://script.google.com/macros/s/AKfycbxcqIbNhC3H7za-GsBF9iuTU___o8OBCF8URGNxwdQm5q8pUd1vpgthbYyrBRkGXJ5Y8Q/exec';
 
 export const Dashboard = ({ onLogout }) => {
@@ -388,6 +391,10 @@ export const Dashboard = ({ onLogout }) => {
             case "responder_fase": 
             case "fase_liderar": return { title: "Fase: Liderar", subtitle: "Gobernanza y Ética de la IA" };
             case "retos_liderar": return { title: `Misión`, subtitle: "Auditoría de Responsabilidad Pedagógica" };
+            case "fase_asegurar":
+                return { title: "Fase: Asegurar", subtitle: "Gobernanza y Sostenibilidad de la IA" };
+            case "taller_asegurar":
+                return { title: "Taller de Mejora Guiada", subtitle: "Refactorización Ética de Prácticas" };
             case "analisis_liderazgo":
                 return {
                     title: "Dashboard de Gobernanza",
@@ -678,10 +685,25 @@ export const Dashboard = ({ onLogout }) => {
                     </div>
 
                     {/* SECCIONES PENDIENTES */}
+                    {/* --- SECCIÓN A - ASEGURAR (ACTIVA) --- */}
                     <div className="atlas-nav-group">
-                        <div className="atlas-group-header" style={{ opacity: 0.5 }}>
-                            <span className="marco-letter">A</span> ASEGURAR
+                        <div
+                            className={`atlas-group-header clickable ${openMenu === 'asegurar' ? 'active-group' : ''}`}
+                            onClick={() => toggleMenu('asegurar')}
+                        >
+                            <div><span className="marco-letter">A</span> ASEGURAR</div>
+                            <span className="menu-arrow">{openMenu === 'asegurar' ? "▾" : "▸"}</span>
                         </div>
+                        {openMenu === 'asegurar' && (
+                            <div className="nav-submenu">
+                                <button
+                                    className={(activeTab === "fase_asegurar" || activeTab === "taller_asegurar") ? "active-phase" : "phase-btn"}
+                                    onClick={() => switchTab("fase_asegurar")}
+                                >
+                                    Protocolos y Mejora
+                                </button>
+                            </div>
+                        )}
                     </div>
                     <div className="atlas-nav-group">
                         <div className="atlas-group-header" style={{ opacity: 0.5 }}>
@@ -1233,6 +1255,29 @@ export const Dashboard = ({ onLogout }) => {
                         userData={userData}
                         API_URL={API_URL}
                         onNavigate={switchTab}
+                    />
+                )}
+
+                {/* --- RENDERIZADO DE LA FASE ASEGURAR --- */}
+                {activeTab === "fase_asegurar" && (
+                    <FaseAsegurar
+                        userData={userData}
+                        API_URL={API_URL}
+                        onNavigate={switchTab}
+                        onRefreshProgreso={handleManualRefresh}
+                    />
+                )}
+
+                {/* --- RENDERIZADO DEL TALLER ESPECÍFICO --- */}
+                {activeTab === "taller_asegurar" && (
+                    <TallerMejoraAsegurar
+                        userData={userData}
+                        API_URL={API_URL}
+                        onNavigate={(tab) => {
+                            // Si volvemos a la fase, refrescamos los puntos en el dashboard
+                            if (tab === "fase_asegurar" || tab === "overview") handleManualRefresh();
+                            switchTab(tab);
+                        }}
                     />
                 )}
 
