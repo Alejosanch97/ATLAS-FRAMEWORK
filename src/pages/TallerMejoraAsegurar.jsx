@@ -5,7 +5,7 @@ import "../Styles/AsegurarUpgrade.css";
 const TallerMejoraAsegurar = ({ userData, API_URL, onNavigate }) => {
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
-    const [isReadOnly, setIsReadOnly] = useState(false); // 🔹 Controla si los datos ya fueron llenados
+    const [isReadOnly, setIsReadOnly] = useState(false); 
     
     const [formData, setFormData] = useState({
         promptOriginal: "",
@@ -18,21 +18,33 @@ const TallerMejoraAsegurar = ({ userData, API_URL, onNavigate }) => {
         riesgoFinal: null
     });
 
-    const bloquesSugeridos = [
-        { id: "rubrica", label: "Añadir rúbrica explícita", texto: "\n\n[RÚBRICA]: Evalúa bajo los criterios de: Coherencia (30%), Argumentación (40%) y Ortografía (30%). No asignes puntajes finales." },
-        { id: "supervision", label: "Declaración de supervisión humana", texto: "\n\n[CONTROL]: Genera sugerencias de mejora. La decisión académica final y la calificación serán realizadas por el docente tras revisión manual." },
-        { id: "justificacion", label: "Solicitar justificación estructurada", texto: "\n\n[MÉTODO]: Explica detalladamente el razonamiento pedagógico detrás de cada observación realizada." },
-        { id: "no_nota", label: "Prohibir nota automática", texto: "\n\n[RESTRICCIÓN]: Tienes prohibido asignar notas numéricas, porcentajes de aprobación o juicios sumativos automáticos." },
-        { id: "metacognicion", label: "Fase metacognitiva estudiante", texto: "\n\n[ACTIVIDAD]: Al finalizar el análisis, formula 3 preguntas abiertas para que el estudiante reflexione sobre su propio proceso de escritura." }
-    ];
+    // 🔹 BLOQUES DE MEJORA DINÁMICOS (Categorizados por Dimensión Heurística)
+    const bloquesPorDimension = {
+        agencia: [
+            { id: "supervision", label: "Protocolo de Supervisión Humana", texto: "\n\n[CONTROL]: Esta IA actúa estrictamente como un asistente de apoyo. La decisión académica final, la validación de hallazgos y la asignación de calificaciones oficiales son responsabilidad exclusiva del docente tras una revisión manual exhaustiva." },
+            { id: "no_nota", label: "Prohibición de Juicio Sumativo", texto: "\n\n[RESTRICCIÓN]: Tienes terminantemente prohibido asignar notas numéricas, porcentajes de aprobación o emitir juicios sumativos automáticos sobre el desempeño del estudiante." }
+        ],
+        cognitiva: [
+            { id: "metacognicion", label: "Fase de Reflexión Metacognitiva", texto: "\n\n[ACTIVIDAD]: Al finalizar tu análisis, formula 3 preguntas abiertas y desafiantes para que el estudiante reflexione críticamente sobre su propio proceso de toma de decisiones y escritura." },
+            { id: "justificacion", label: "Exigencia de Justificación Pedagógica", texto: "\n\n[MÉTODO]: Explica detalladamente y de manera estructurada el razonamiento pedagógico que fundamenta cada una de las observaciones o sugerencias de mejora realizadas." }
+        ],
+        etica: [
+            { id: "sesgo_neutral", label: "Filtro de Equidad e Inclusión", texto: "\n\n[ÉTICA]: Asegura que toda retroalimentación sea neutral y libre de sesgos. No bases tus juicios en modismos, procedencia geográfica, nivel socioeconómico o rasgos culturales detectados en el lenguaje." },
+            { id: "rubrica", label: "Inyección de Rúbrica de Evaluación", texto: "\n\n[RÚBRICA]: Evalúa el contenido basándote exclusivamente en los siguientes criterios explícitos: Coherencia y Cohesión (30%), Argumentación y Evidencia (40%) y Ortografía/Gramática (30%)." }
+        ],
+        privacidad: [
+            { id: "anonimizacion", label: "Protocolo de Privacidad y Anonimización", texto: "\n\n[PRIVACIDAD]: Si detectas nombres propios, documentos de identidad, correos o datos sensibles, ignóralos por completo y reemplázalos por etiquetas genéricas como [ESTUDIANTE] en tu respuesta final." }
+        ]
+    };
 
-    // 🔹 MOTOR HEURÍSTICO COMPLETO (Restaurado con todos tus verbos)
+    // 🔹 MOTOR HEURÍSTICO 2.0 (Multicapa - Restaurado y Potenciado)
     const analizarPromptHeuristico = (text) => {
         if (!text || text.length < 10) return { etica: 5, privacidad: 5, agencia: 5, cognitiva: 5, hallazgos: [] };
 
         const quitarTildes = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const normalText = quitarTildes(text.toLowerCase());
 
+        // CAPA 1: Riesgo Explícito (Verbos Críticos Originales)
         const verbosCriticos = {
             agencia: {
                 total: [
@@ -119,19 +131,38 @@ const TallerMejoraAsegurar = ({ userData, API_URL, onNavigate }) => {
         let puntosRiesgo = { etica: 0, privacidad: 0, agencia: 0, cognitiva: 0 };
         let encontrados = [];
 
+        // CAPA 1 y 2: Léxico y Delegación Funcional Implícita
         Object.keys(verbosCriticos).forEach(dim => {
             Object.keys(verbosCriticos[dim]).forEach(sub => {
                 verbosCriticos[dim][sub].forEach(v => {
                     const regex = new RegExp(`\\b${v}\\b`, "i");
                     if (regex.test(normalText)) {
-                        puntosRiesgo[dim] += 3;
+                        // Multiplicador por Capa 2 (Automatización/Sustitución pesan más)
+                        let multiplicador = (sub === 'automatizacion' || sub === 'sustitucion') ? 4.5 : 3;
+                        puntosRiesgo[dim] += multiplicador;
                         encontrados.push(v);
                     }
                 });
             });
         });
 
-        const normalizar = (p) => p >= 12 ? 1 : p >= 8 ? 2 : p >= 4 ? 3 : p >= 1 ? 4 : 5;
+        // CAPA 3: Gobernanza (Penalizar si no existe declaración de supervisión humana)
+        const supervisiónExpresiones = ["revision humana", "el docente", "el profesor", "supervision", "manual", "validara"];
+        const tieneSupervision = supervisiónExpresiones.some(exp => normalText.includes(exp));
+        if (!tieneSupervision && puntosRiesgo.agencia > 0) {
+            puntosRiesgo.agencia *= 1.5; // Penalización por falta de gobernanza
+        }
+
+        // CAPA 4: Dependencia Cognitiva
+        const complejidadCognitiva = ["genera argumentos", "redacta estructura", "optimiza ensayo", "escribe version final"];
+        complejidadCognitiva.forEach(exp => {
+            if (normalText.includes(exp)) {
+                puntosRiesgo.cognitiva += 4;
+                encontrados.push(exp);
+            }
+        });
+
+        const normalizar = (p) => p >= 15 ? 1 : p >= 10 ? 2 : p >= 5 ? 3 : p >= 1 ? 4 : 5;
 
         return {
             etica: normalizar(puntosRiesgo.etica),
@@ -142,35 +173,31 @@ const TallerMejoraAsegurar = ({ userData, API_URL, onNavigate }) => {
         };
     };
 
-    // 🔹 EFECTO DE CARGA INICIAL (Corregido para traer datos guardados)
+    // 🔹 EFECTO DE CARGA INICIAL
     useEffect(() => {
         const cargarDatos = async () => {
             setLoading(true);
             try {
-                // 1. Intentamos buscar si ya completó ASEGURAR para ver sus datos
                 const resExistente = await fetch(`${API_URL}?sheet=ASEGURAR_Docentes&user_key=${userData.Teacher_Key}`);
                 const dataExistente = await resExistente.json();
 
                 if (Array.isArray(dataExistente) && dataExistente.length > 0) {
                     const reg = dataExistente[dataExistente.length - 1];
-                    setIsReadOnly(true); // 🔹 Activamos modo vista
+                    setIsReadOnly(true); 
                     setFormData({
                         promptOriginal: reg.Prompt_Original,
                         promptMejorado: reg.Prompt_Mejorado,
                         alertasOriginal: reg.Alertas_Detectadas ? reg.Alertas_Detectadas.split(", ") : [],
                         bloquesActivados: reg.Bloques_Activados ? reg.Bloques_Activados.split(", ") : [],
                         reflexion: {
-                            q1: reg.Reflexion_1_Cambios,
-                            q2: reg.Reflexion_2_Riesgos,
-                            q3: reg.Reflexion_3_Supervision,
-                            q4: reg.Reflexion_4_Cognicion
+                            q1: reg.Reflexion_1_Cambios, q2: reg.Reflexion_2_Riesgos,
+                            q3: reg.Reflexion_3_Supervision, q4: reg.Reflexion_4_Cognicion
                         },
                         estandares: reg.Estandar_Seleccionado ? reg.Estandar_Seleccionado.split(" | ") : [],
                         riesgoPrevio: reg.Riesgo_Previo ? JSON.parse(reg.Riesgo_Previo) : null,
                         riesgoFinal: reg.Riesgo_Final ? JSON.parse(reg.Riesgo_Final) : null
                     });
                 } else {
-                    // 2. Si no hay nada, cargamos el prompt original de LIDERAR para iniciar el taller
                     const resOriginal = await fetch(`${API_URL}?sheet=Liderar_Prompts_Docentes&user_key=${userData.Teacher_Key}`);
                     const dataOriginal = await resOriginal.json();
                     if (Array.isArray(dataOriginal) && dataOriginal.length > 0) {
@@ -195,15 +222,18 @@ const TallerMejoraAsegurar = ({ userData, API_URL, onNavigate }) => {
         cargarDatos();
     }, [API_URL, userData.Teacher_Key]);
 
-    // 🔹 MANEJO DE BLOQUES DE MEJORA
-    const toggleBloque = (bloque) => {
-        if (isReadOnly) return; // 🔹 No permitir cambios si es modo lectura
-        let nuevosBloques = formData.bloquesActivados.includes(bloque.id)
-            ? formData.bloquesActivados.filter(id => id !== bloque.id)
-            : [...formData.bloquesActivados, bloque.id];
+    // 🔹 MANEJO DE BLOQUES DE MEJORA DINÁMICA
+    const toggleBloque = (bloqueId) => {
+        if (isReadOnly) return;
+        let nuevosBloques = formData.bloquesActivados.includes(bloqueId)
+            ? formData.bloquesActivados.filter(id => id !== bloqueId)
+            : [...formData.bloquesActivados, bloqueId];
 
         let nuevoPrompt = formData.promptOriginal;
-        bloquesSugeridos.forEach(b => {
+        
+        // Unificar todos los bloques disponibles para inyectar el texto correcto
+        const todosLosBloques = Object.values(bloquesPorDimension).flat();
+        todosLosBloques.forEach(b => {
             if (nuevosBloques.includes(b.id)) {
                 nuevoPrompt += b.texto;
             }
@@ -220,7 +250,7 @@ const TallerMejoraAsegurar = ({ userData, API_URL, onNavigate }) => {
 
     // 🔹 GUARDAR EN EXCEL
     const handleFinalizar = async () => {
-        if (isReadOnly) return onNavigate('fase_asegurar'); // 🔹 Si ya existe, solo salimos
+        if (isReadOnly) return onNavigate('fase_asegurar');
 
         const { reflexion, estandares } = formData;
         if (!reflexion.q1 || !reflexion.q2 || !reflexion.q3 || !reflexion.q4 || estandares.length === 0) {
@@ -263,6 +293,11 @@ const TallerMejoraAsegurar = ({ userData, API_URL, onNavigate }) => {
 
     if (loading) return <div className="asegurar-upgrade-loading">Analizando riesgos de la práctica previa...</div>;
 
+    // Filtrar bloques sugeridos basados en las dimensiones donde el riesgo es bajo (puntaje <= 3)
+    const bloquesSugeridosFiltrados = Object.keys(bloquesPorDimension)
+        .filter(dim => formData.riesgoPrevio && formData.riesgoPrevio[dim] <= 3)
+        .flatMap(dim => bloquesPorDimension[dim]);
+
     return (
         <div className="asegurar-upgrade-wrapper">
             <header className="asegurar-upgrade-header">
@@ -279,7 +314,7 @@ const TallerMejoraAsegurar = ({ userData, API_URL, onNavigate }) => {
                 {/* PASO 1: VISUALIZACIÓN */}
                 <section className="asegurar-upgrade-section">
                     <div className="asegurar-upgrade-badge">Paso 1</div>
-                    <h3 className="asegurar-upgrade-title">Visualización Comparativa</h3>
+                    <h3 className="asegurar-upgrade-title">Visualización Comparativa y Hallazgos</h3>
                     <div className="asegurar-upgrade-grid-split">
                         <div className="asegurar-upgrade-panel original">
                             <label>Prompt Original (Identificado en Liderar)</label>
@@ -288,7 +323,7 @@ const TallerMejoraAsegurar = ({ userData, API_URL, onNavigate }) => {
                                 <div className="asegurar-upgrade-tags">
                                     {formData.alertasOriginal.length > 0 ? 
                                         formData.alertasOriginal.map(a => <span key={a} className="asegurar-upgrade-alert-tag">⚠ {a}</span>) :
-                                        <span className="asegurar-upgrade-safe-tag">Sin alertas graves identificadas</span>
+                                        <span className="asegurar-upgrade-safe-tag">Sin alertas críticas detectadas</span>
                                     }
                                 </div>
                             </div>
@@ -302,39 +337,44 @@ const TallerMejoraAsegurar = ({ userData, API_URL, onNavigate }) => {
                     </div>
                 </section>
 
-                {/* PASO 2: BLOQUES */}
+                {/* PASO 2: BLOQUES DINÁMICOS */}
                 <section className="asegurar-upgrade-section">
                     <div className="asegurar-upgrade-badge">Paso 2</div>
-                    <h3 className="asegurar-upgrade-title">Activar Sugerencias de Control Humano</h3>
+                    <h3 className="asegurar-upgrade-title">Inyectar Capas de Protección (Heurística Aplicada)</h3>
+                    <p className="asegurar-upgrade-subtitle">Selecciona los bloques para mitigar los riesgos detectados estructuralmente:</p>
                     <div className="asegurar-upgrade-blocks-container">
-                        {bloquesSugeridos.map(b => (
+                        {(bloquesSugeridosFiltrados.length > 0 ? bloquesSugeridosFiltrados : Object.values(bloquesPorDimension).flat()).map(b => (
                             <button 
                                 key={b.id} 
                                 className={`asegurar-upgrade-block-item ${formData.bloquesActivados.includes(b.id) ? 'active' : ''}`}
-                                onClick={() => toggleBloque(b)}
+                                onClick={() => toggleBloque(b.id)}
                                 disabled={isReadOnly}
                             >
                                 <span className="asegurar-upgrade-check">{formData.bloquesActivados.includes(b.id) ? "✅" : "➕"}</span>
-                                {b.label}
+                                <div className="asegurar-upgrade-block-info">
+                                    <span className="asegurar-upgrade-block-label">{b.label}</span>
+                                    <small className="asegurar-upgrade-block-preview">{b.texto.substring(0, 60)}...</small>
+                                </div>
                             </button>
                         ))}
                     </div>
                 </section>
 
-                {/* PASO 3: RIESGO */}
+                {/* PASO 3: RIESGO MULTICAPA */}
                 <section className="asegurar-upgrade-section">
                     <div className="asegurar-upgrade-badge">Paso 3</div>
-                    <h3 className="asegurar-upgrade-title">Impacto en la Calidad Ética</h3>
+                    <h3 className="asegurar-upgrade-title">Impacto en la Gobernanza y Calidad Ética</h3>
+                    
                     <div className="asegurar-upgrade-risk-meter">
                         <div className="asegurar-upgrade-risk-box">
-                            <span>Estado Anterior</span>
-                            <div className="asegurar-upgrade-risk-val high">RIESGO ALTO</div>
+                            <span>Riesgo Estructural Inicial</span>
+                            <div className="asegurar-upgrade-risk-val high">VULNERABILIDAD ALTA</div>
                         </div>
                         <div className="asegurar-upgrade-risk-arrow">➔</div>
                         <div className="asegurar-upgrade-risk-box">
-                            <span>Estado Actual</span>
+                            <span>Riesgo Residual Actual</span>
                             <div className={`asegurar-upgrade-risk-val ${formData.bloquesActivados.length >= 3 ? 'low' : 'mid'}`}>
-                                {formData.bloquesActivados.length >= 3 ? "RIESGO BAJO" : "RIESGO MODERADO"}
+                                {formData.bloquesActivados.length >= 3 ? "PRÁCTICA ASEGURADA" : "RIESGO EN MITIGACIÓN"}
                             </div>
                         </div>
                     </div>
@@ -343,22 +383,22 @@ const TallerMejoraAsegurar = ({ userData, API_URL, onNavigate }) => {
                 {/* PASO 4: REFLEXIÓN */}
                 <section className="asegurar-upgrade-section">
                     <div className="asegurar-upgrade-badge">Paso 4</div>
-                    <h3 className="asegurar-upgrade-title">Reflexión Crítica {isReadOnly ? "Realizada" : "Obligatoria"}</h3>
+                    <h3 className="asegurar-upgrade-title">Análisis de la Evolución Pedagógica</h3>
                     <div className="asegurar-upgrade-form-group">
                         <div className="asegurar-upgrade-input">
-                            <label>1️⃣ ¿Qué cambiaste específicamente en el prompt y por qué?</label>
+                            <label>1️⃣ ¿Cómo los cambios realizados protegen tu autonomía frente a la delegación funcional?</label>
                             <textarea readOnly={isReadOnly} value={formData.reflexion.q1} onChange={(e) => setFormData({...formData, reflexion: {...formData.reflexion, q1: e.target.value}})} />
                         </div>
                         <div className="asegurar-upgrade-input">
-                            <label>2️⃣ ¿Qué riesgo ético o de privacidad no habías notado antes?</label>
+                            <label>2️⃣ ¿Qué vulnerabilidades de gobernanza (supervisión humana) detectaste gracias al motor?</label>
                             <textarea readOnly={isReadOnly} value={formData.reflexion.q2} onChange={(e) => setFormData({...formData, reflexion: {...formData.reflexion, q2: e.target.value}})} />
                         </div>
                         <div className="asegurar-upgrade-input">
-                            <label>3️⃣ ¿Cómo garantizarás que la decisión final sea siempre humana?</label>
+                            <label>3️⃣ ¿De qué manera el prompt asegurado garantiza una evaluación más equitativa?</label>
                             <textarea readOnly={isReadOnly} value={formData.reflexion.q3} onChange={(e) => setFormData({...formData, reflexion: {...formData.reflexion, q3: e.target.value}})} />
                         </div>
                         <div className="asegurar-upgrade-input">
-                            <label>4️⃣ ¿Qué actividad cognitiva realizará el estudiante que antes se omitía?</label>
+                            <label>4️⃣ ¿Qué procesos cognitivos profundos recupera el estudiante con este nuevo diseño?</label>
                             <textarea readOnly={isReadOnly} value={formData.reflexion.q4} onChange={(e) => setFormData({...formData, reflexion: {...formData.reflexion, q4: e.target.value}})} />
                         </div>
                     </div>
@@ -367,14 +407,14 @@ const TallerMejoraAsegurar = ({ userData, API_URL, onNavigate }) => {
                 {/* PASO 5: ESTÁNDAR */}
                 <section className="asegurar-upgrade-section gold-card">
                     <div className="asegurar-upgrade-badge">Paso 5</div>
-                    <h3 className="asegurar-upgrade-title">Declaración de Estándar Profesional</h3>
-                    <p>{isReadOnly ? "Estándares cumplidos:" : "Selecciona los principios que guiarán tu práctica a partir de ahora:"}</p>
+                    <h3 className="asegurar-upgrade-title">Declaración de Estándar Profesional Docente</h3>
+                    <p>{isReadOnly ? "Compromisos adquiridos:" : "Selecciona los principios éticos que regirán esta práctica académica:"}</p>
                     <div className="asegurar-upgrade-checklist">
                         {[
-                            "Nunca delegaré la calificación final a una IA.",
-                            "Siempre incluiré una rúbrica explícita en mis instrucciones.",
-                            "Siempre informaré a mis estudiantes sobre el uso de herramientas IA.",
-                            "Siempre incorporaré una fase de revisión crítica de lo generado por la IA."
+                            "No delegaré el juicio sumativo ni la calificación final a sistemas automatizados.",
+                            "Garantizaré siempre la transparencia sobre el uso de IA en los procesos de aprendizaje.",
+                            "Inyectaré rúbricas y criterios de equidad para mitigar sesgos algorítmicos.",
+                            "Diseñaré actividades que prioricen el esfuerzo cognitivo humano sobre la sustitución técnica."
                         ].map(std => (
                             <label key={std} className="asegurar-upgrade-check-row">
                                 <input 
