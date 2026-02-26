@@ -122,7 +122,7 @@ const FaseAsegurar = ({ userData, API_URL, onNavigate, onRefreshProgreso }) => {
                             </div>
                             <p>
                                 {isDirectivo ? 
-                                "Mide gobernanza, responsabilidad y sostenibilidad institucional. No es innovación tecnológica, es gestión del riesgo." : 
+                                "Este ejercicio no evalúa innovación tecnológica. Evalúa la calidad de la gobernanza, el nivel de responsabilidad y la sostenibilidad institucional en la gestión del riesgo." : 
                                 "Reducir riesgos, estandarizar buenas prácticas y garantizar que el estudiante mantenga un rol cognitivo activo."}
                             </p>
                             <div className="unesco-stack">
@@ -152,7 +152,7 @@ const FaseAsegurar = ({ userData, API_URL, onNavigate, onRefreshProgreso }) => {
                                 <h3>{isDirectivo ? "Panorama Estratégico" : "Upgrade de Prácticas con IA"}</h3>
                                 <p className="text-muted-liderar">
                                     {isDirectivo ? 
-                                    "Analice los riesgos regulatorios, competencias docentes, ética y cultura institucional." : 
+                                    "Analice los riesgos regulatorios, el desarrollo de competencias docentes, la dimensión ética y la cultura institucional frente al uso de IA." : 
                                     "No vas a crear algo nuevo. Vas a mejorar y consolidar lo que ya estás usando para hacerlo infalible."}
                                 </p>
                             </div>
@@ -220,6 +220,7 @@ const FaseAsegurar = ({ userData, API_URL, onNavigate, onRefreshProgreso }) => {
                                     <p style={{fontSize: '0.9rem', color: '#666', marginTop: '10px'}}>
                                         Visualice el panorama docente, realice el cuestionario de gobernanza y genere su Plan de Acción IA v1.0.
                                     </p>
+                                    {/* CLAVE: Navegación al nuevo ModuloDirectivoEstrategico */}
                                     <button onClick={() => onNavigate('diagnostico_directivo')} className="btn-launch-mission">
                                         {statusAsegurar ? "Revisar Plan Institucional" : "Iniciar Diagnóstico"}
                                     </button>
@@ -235,7 +236,6 @@ const FaseAsegurar = ({ userData, API_URL, onNavigate, onRefreshProgreso }) => {
                                     <p style={{fontSize: '0.85rem', color: '#666', margin: '10px 0'}}>
                                         Refactoriza tu prompt previo para eliminar riesgos de agencia y privacidad.
                                     </p>
-                                    {/* CLAVE: Esta es la navegación al componente TallerMejoraAsegurar que creamos */}
                                     <button onClick={() => onNavigate('taller_asegurar')} className="btn-launch-mission">
                                         {statusAsegurar ? "Ver Mejora Realizada" : "Realizar Upgrade"}
                                     </button>

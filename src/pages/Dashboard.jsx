@@ -20,6 +20,8 @@ import RetosLiderar from "./RetosLiderar";
 import FaseAsegurar from "./FaseAsegurar"; 
 import TallerMejoraAsegurar from "./TallerMejoraAsegurar";
 
+import ModuloDirectivoEstrategico from "./ModuloDirectivoEstrategico"; 
+
 const API_URL = 'https://script.google.com/macros/s/AKfycbxcqIbNhC3H7za-GsBF9iuTU___o8OBCF8URGNxwdQm5q8pUd1vpgthbYyrBRkGXJ5Y8Q/exec';
 
 export const Dashboard = ({ onLogout }) => {
@@ -400,6 +402,13 @@ export const Dashboard = ({ onLogout }) => {
                     title: "Dashboard de Gobernanza",
                     subtitle: "Monitoreo Institucional de Riesgo Ético"
                 };
+            case "diagnostico_directivo":
+                return {
+                    title: "Diagnóstico de Gobernanza IA",
+                    subtitle: "A - Asegurar: Radar de Sostenibilidad Institucional"
+                };
+            case "fase_asegurar":
+                return { title: "Fase: Asegurar", subtitle: "Gobernanza y Sostenibilidad de la IA" };
                 const faseTxt = filterPhase === "A" ? "AUDITAR" : filterPhase === "T" ? "TRANSFORMAR" : "LIDERAR";
                 return { title: `Fase ${faseTxt}`, subtitle: `Instrumentos de la Etapa ${filterPhase}` };
             default: return { title: "Bienvenido al Marco ATLAS", subtitle: "Modelo de Madurez y Gobernanza en IA Educativa" };
@@ -1275,6 +1284,20 @@ export const Dashboard = ({ onLogout }) => {
                         API_URL={API_URL}
                         onNavigate={(tab) => {
                             // Si volvemos a la fase, refrescamos los puntos en el dashboard
+                            if (tab === "fase_asegurar" || tab === "overview") handleManualRefresh();
+                            switchTab(tab);
+                        }}
+                    />
+                )}
+
+                {/* --- RENDERIZADO DEL MÓDULO DIRECTIVO ESTRATÉGICO --- */}
+                {activeTab === "diagnostico_directivo" && (
+                    <ModuloDirectivoEstrategico
+                        userData={userData}
+                        API_URL={API_URL}
+                        onNavigate={(tab) => {
+                            // Si el directivo termina o cancela, lo devolvemos a la fase asegurar
+                            // y refrescamos para ver si hay nuevos estados de completado
                             if (tab === "fase_asegurar" || tab === "overview") handleManualRefresh();
                             switchTab(tab);
                         }}
