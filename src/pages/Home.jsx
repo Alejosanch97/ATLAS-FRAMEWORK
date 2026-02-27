@@ -232,8 +232,7 @@ export const Home = ({ onLoginSuccess }) => {
                             {/* TEXTO SUPERIOR: Centrado y con ancho controlado para lectura */}
                             <div className="intro-full-width">
                                 <p>
-                                    La inteligencia artificial no puede adoptarse sin criterios institucionales claros.
-                                    Sin alineación con procesos de calidad y aseguramiento, su uso pierde coherencia y aumenta los riesgos institucionales.
+                                    Sin criterios institucionales claros, el uso de la inteligencia artificial pierde coherencia y aumenta riesgos institucionales.
                                 </p>
                             </div>
 
@@ -329,7 +328,7 @@ export const Home = ({ onLoginSuccess }) => {
                             <h2 className="diff-main-title">COMPASS surge para aportar coherencia, responsabilidad y propósito</h2>
                             <div className="diff-accent-line"></div>
                             <p className="diff-description">
-                                COMPASS no es una plataforma tecnológica ni un programa de capacitación. Es un modelo de gobernanza institucional diseñado para asegurar que la adopción de la IA responda a criterios pedagógicos, éticos y estratégicos consistentes con estándares internacionales.</p>
+                                COMPASS no es una plataforma tecnológica, es un modelo de gobernanza institucional diseñado para asegurar que la adopción de la IA responda a criterios pedagógicos, éticos y estratégicos consistentes con estándares internacionales.</p>
                         </div>
 
                         {/* Bloque Derecho: Tarjeta Flotante (Glassmorphism) */}
@@ -381,7 +380,7 @@ export const Home = ({ onLoginSuccess }) => {
                             <h2 className="stk-title">Un marco estructurado y adaptable</h2>
                             <div className="stk-gold-line"></div>
                             <p className="stk-text-main">
-                                El COMPASS AI Framework, basado en el ATLAS Model, se organiza en cinco fases interdependientes que conforman un ciclo continuo de madurez institucional.
+                                El marco COMPASS de IA responsable se basa en el modelo ATLAS. Este se organiza en cinco fases interdependientes que conforman un ciclo continuo de madurez institucional.
                             </p>
                             <div className="stk-badge-info">
                                 Estas fases no constituyen servicios independientes, sino dimensiones articuladas de un mismo sistema de gobernanza.
@@ -426,9 +425,10 @@ export const Home = ({ onLoginSuccess }) => {
                             <h2 className="audience-main-title">Diseñado para comunidades educativas</h2>
                             <div className="audience-tags-cloud">
                                 <span className="tag-item">Directivos Escolares</span>
-                                <span className="tag-item">Rectores Universitarios.</span>
+                                <span className="tag-item">Rectores Universitarios</span>
                                 <span className="tag-item">Equipos de Calidad</span>
                                 <span className="tag-item">Consultores</span>
+                                <span className="tag-item">Docentes Innovadores</span>
                             </div>
                         </div>
 
@@ -468,7 +468,7 @@ export const Home = ({ onLoginSuccess }) => {
                                 </div>
                                 <div className="audience-info">
                                     <h4>Equipos de innovación</h4>
-                                    <p>Equipos que necesitan orden, visión estratégica y gobernanza para sus iniciativas tecnológicas.</p>
+                                    <p>Equipos que necesitan orden, visión estratégica y gobernanza para sus iniciativas tecnológicas con IA.</p>
                                 </div>
                             </div>
 
@@ -481,7 +481,7 @@ export const Home = ({ onLoginSuccess }) => {
                                 </div>
                                 <div className="audience-info">
                                     <h4>Educadores estratégicos</h4>
-                                    <p>Directivos y docentes que prefieren la estrategia antes que las herramientas, y la visión antes que las modas.</p>
+                                    <p>Directivos y docentes que prefieren la estrategia antes que las herramientas, y la visión antes que las tendencias.</p>
                                 </div>
                             </div>
                         </div>
@@ -559,14 +559,14 @@ export const Home = ({ onLoginSuccess }) => {
                             <h2 className="cert-title">Docentes, directivos e instituciones</h2>
                             <p className="cert-lead">Reconocemos el nivel de madurez alcanzado en la adopción responsable de la IA bajo estándares institucionales.</p>
                             <div className="cert-badge-note">
-                                <strong>Nota:</strong> Evalúa procesos, no herramientas.
+                                <strong>Nota:</strong> Evalúa procesos evidenciables, no herramientas de IA.
                             </div>
                         </div>
 
                         <div className="cert-cards-container">
                             {[
-                                { lvl: '1', name: 'Foundation', desc: 'Bases para la adopción responsable.', points: ['Diagnóstico inicial', 'Principios éticos', 'Sensibilización'] },
-                                { lvl: '2', name: 'Pro', desc: 'Integración en procesos académicos.', points: ['Enfoque pedagógico', 'Gobernanza IA', 'Rutas docentes'] },
+                                { lvl: '1', name: 'Foundation', desc: 'Bases para la adopción responsable.', points: ['Diagnóstico inicial', 'Sensibilización', 'Plan de acción institucional'] },
+                                { lvl: '2', name: 'Pro', desc: 'Integración en procesos académicos.', points: ['Enfoque pedagógico', 'Gobernanza IA', 'Principios éticos'] },
                                 { lvl: '3', name: 'Advanced', desc: 'Consolidación y sostenibilidad.', points: ['Planeación estratégica', 'Mejora continua', 'Gestión de riesgos'] }
                             ].map((cert, i) => (
                                 <div className={`cert-card-tier tier-${cert.lvl}`} key={i}>

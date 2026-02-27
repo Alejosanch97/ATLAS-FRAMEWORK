@@ -411,7 +411,7 @@ export const Dashboard = ({ onLogout }) => {
                 return { title: "Fase: Asegurar", subtitle: "Gobernanza y Sostenibilidad de la IA" };
                 const faseTxt = filterPhase === "A" ? "AUDITAR" : filterPhase === "T" ? "TRANSFORMAR" : "LIDERAR";
                 return { title: `Fase ${faseTxt}`, subtitle: `Instrumentos de la Etapa ${filterPhase}` };
-            default: return { title: "Bienvenido al Marco ATLAS", subtitle: "Modelo de Madurez y Gobernanza en IA Educativa" };
+            default: return { title: "Bienvenido al Marco COMPASS", subtitle: "Modelo de Madurez y Gobernanza en IA Educativa" };
         }
     };
 
@@ -543,7 +543,7 @@ export const Dashboard = ({ onLogout }) => {
                     onClick={() => switchTab("overview")}
                     style={{ cursor: 'pointer' }}
                 >
-                    <img src="./logo5.png" alt="Logo ATLAS" className="sidebar-logo-main" />
+                    <img src="./logo6.png" alt="Logo ATLAS" className="sidebar-logo-main" />
                 </div>
 
                 {/* SECCIÓN DE USUARIO */}
@@ -755,7 +755,7 @@ export const Dashboard = ({ onLogout }) => {
                                 <div className="compass-title-group-unique">
                                     <div className="compass-text-stack-unique">
                                         <h2 className="compass-h2-unique">¿Qué es el COMPASS de IA?</h2>
-                                        {!isCompassInfoExpanded && <p className="compass-tap-unique">Instrumento de madurez pedagógica ATLAS</p>}
+                                        {!isCompassInfoExpanded && <p className="compass-tap-unique">Instrumento de madurez pedagógica basado en el modelo ATLAS</p>}
                                     </div>
                                 </div>
                                 <div className={`compass-toggle-unique ${isCompassInfoExpanded ? 'active' : ''}`}>
@@ -767,7 +767,7 @@ export const Dashboard = ({ onLogout }) => {
                                 <div className="compass-body-interactive">
                                     <div className="compass-full-intro">
                                         <p>
-                                            El <strong>COMPASS de IA</strong> es el instrumento de madurez pedagógica del Marco ATLAS.
+                                            El <strong>COMPASS de IA</strong> es el instrumento de madurez pedagógica basado en el modelo ATLAS.
                                             No mide cuánto usas la inteligencia artificial; mide cómo la <strong>integras, la regulas y la documentas</strong> en tu práctica educativa.
                                         </p>
                                         <p>
@@ -805,7 +805,7 @@ export const Dashboard = ({ onLogout }) => {
                                     <div className="compass-dynamic-content fade-in">
                                         {infoSeccion === 'evalua' && (
                                             <div className="section-content">
-                                                <p className="section-intro-text">El COMPASS analiza tu práctica en cinco dimensiones del Marco ATLAS:</p>
+                                                <p className="section-intro-text">El COMPASS analiza tu práctica en cinco dimensiones del modelo ATLAS:</p>
                                                 <ul className="compass-list-clean">
                                                     <li><strong>• AUDITAR</strong> – Diagnóstico y conciencia crítica.</li>
                                                     <li><strong>• TRANSFORMAR</strong> – Rediseño pedagógico intencional.</li>
@@ -840,7 +840,7 @@ export const Dashboard = ({ onLogout }) => {
                                                     <li>• Identificar tu punto de partida.</li>
                                                     <li>• Fortalecer tu práctica con criterios claros.</li>
                                                     <li>• Documentar decisiones pedagógicas con respaldo.</li>
-                                                    <li>• Prepararte para procesos de validación o auditoría ATLAS.</li>
+                                                    <li>• Prepararte para procesos de validación o auditoría COMPASS.</li>
                                                 </ul>
                                                 <div className="accompaniment-badge">
                                                     Es una herramienta de acompañamiento, no de control.
