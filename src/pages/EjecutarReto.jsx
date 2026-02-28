@@ -72,7 +72,7 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
     const handleMatrizChange = (criterio, valor) => {
         const nuevosPuntos = { ...puntosMatriz, [criterio]: parseInt(valor) };
         setPuntosMatriz(nuevosPuntos);
-        
+
         if (retoId === 1) {
             const total = Object.values(nuevosPuntos).reduce((a, b) => a + b, 0);
             let sugerencia = "";
@@ -86,13 +86,11 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
     const saveReto = async (statusFinal = 'ENVIADO') => {
         // --- 1. VALIDACIONES DE RESPUESTAS CORRECTAS (SOLO SI ES ENVÍO FINAL) ---
         if (statusFinal === 'completed') {
-
             // --- VALIDACIÓN RETO 2 DIRECTIVO ---
             if (isDirectivo && parseInt(retoId) === 2) {
                 const esCorrectaDecision = formData.decisionEscenario === 'Implementar con evaluación de impacto previa';
                 const esCorrectoBiometricos = formData.sens_Datos_biométricos !== 'Baja';
 
-                // Verificamos el matching (basado en tu contexto técnico)
                 const esCorrectoMatching =
                     formData.match_Transparencia === "Comunicar uso a familias" &&
                     formData["match_Supervisión humana"] === "Designar responsable institucional";
@@ -127,7 +125,6 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
         // --- 2. INICIO DEL PROCESO DE GUARDADO ---
         setIsSaving(true);
 
-        // Nombres de retos dinámicos por Rol
         const nombresRetosDocente = ["", "Evaluación Ética", "Rediseño Human-Centred", "Diferenciación Inclusiva"];
         const nombresRetosDirectivo = ["", "Simulación de Riesgo", "Protocolo de Privacidad", "Gestión de Error Crítico"];
 
@@ -145,7 +142,6 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                 Fecha_Creacion: new Date().toISOString(),
                 Datos_JSON: JSON.stringify({ ...formData, puntosMatriz }),
                 Status_Reto: statusFinal === 'completed' ? "COMPLETADO" : "BORRADOR",
-                // Se marca completado en el Excel si tiene 3 o más checks
                 Autoevaluacion_Status: (formData.cumplimiento && formData.cumplimiento.length >= 3) ? "COMPLETADO" : "PENDIENTE"
             }
         };
@@ -161,16 +157,20 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
             const result = await response.json();
 
             if (result.status === "success") {
-                Swal.fire({
+                // --- MEJORA: Feedback rápido con timer ---
+                await Swal.fire({
                     title: statusFinal === 'completed' ? "¡Misión Enviada!" : "Borrador Guardado",
-                    text: statusFinal === 'completed'
-                        ? "Tu reto ha sido validado y sincronizado exitosamente."
-                        : "Tu progreso ha sido guardado. Puedes continuar después.",
+                    text: "Sincronización exitosa con ATLAS.",
                     icon: "success",
-                    confirmButtonColor: "#c5a059"
+                    confirmButtonColor: "#c5a059",
+                    timer: 1500, // Se cierra en 1.5 segundos
+                    showConfirmButton: false, // Oculta el botón para que sea más fluido
+                    timerProgressBar: true
                 });
 
                 if (statusFinal === 'completed') {
+                    // Navega de regreso a la zona de misiones
+                    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
                     onNavigate('fase_transformar');
                 }
             } else {
@@ -189,17 +189,17 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
         }
     };
 
-    if (loading) return (
-        <div className="atlas-loading-overlay">
-            <div className="atlas-sync-pill">
-                <span className="sync-icon">🔄</span>
-                <span className="sync-text">Preparando Consigna de Misión...</span>
-            </div>
-        </div>
-    );
-
     return (
         <div className="atlas-unique-page-wrapper">
+            {/* Solo sale el cartel si está cargando Y ya hay algo escrito (para no molestar en retos nuevos) */}
+            {loading && (formData.toolName || formData.cumplimiento?.length > 0 || formData.claseRiesgo) && (
+                <div className="atlas-sync-float">
+                    <div className="atlas-sync-pill">
+                        <span className="sync-icon">🔄</span>
+                        <span className="sync-text">Sincronizando datos previos...</span>
+                    </div>
+                </div>
+            )}
             <main className="atlas-unique-main-content">
                 
                 {/* CABECERA INTEGRADA */}
@@ -484,6 +484,7 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
 
                                     <section className="form-card highlight">
                                         <div className="form-section-title">3. MATRIZ DE ANÁLISIS ÉTICO – ATLAS (UNESCO)</div>
+                                        <label className="group-main-label">Asigne un puntaje de 0 (riesgo alto) a 4 (práctica sólida) en cada criterio.</label>
                                         <div className="table-responsive">
                                             <table className="matriz-table">
                                                 <thead>
@@ -601,6 +602,7 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
 
                                     <section className="form-card">
                                         <div className="form-section-title">4. Enfoque Human-Centred (Checklist)</div>
+                                        <label>Selecciona las acciones que incorporaste:</label>
                                         <div className="options-vertical-premium">
                                             {['Comparación humano vs IA', 'Defensa oral sin IA', 'Declaración obligatoria de uso', 'Reflexión metacognitiva', 'Evaluación sin IA', 'Análisis crítico del output', 'Identificación de sesgos', 'Ninguna de las anteriores'].map(c => (
                                                 <label key={c} className="check-label-row"><input type="checkbox" checked={(formData.checklistHuman || []).includes(c)} onChange={() => handleChecklist('checklistHuman', c)} /><span className="label-text">{c}</span></label>
@@ -654,9 +656,9 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                                     <section className="form-card">
                                         <div className="form-section-title">Reflexión Docente</div>
                                         <div className="textarea-group-premium">
-                                            <label>Mejora pedagógica principal:</label>
+                                            <label>La principal mejora pedagógica fue</label>
                                             <textarea maxLength={2000} placeholder="Describe la mejora..." value={formData.reflexionMejora || ""} onChange={(e) => handleInputChange('reflexionMejora', e.target.value)} />
-                                            <label>Mayor ajuste necesario:</label>
+                                            <label>El mayor ajuste que debo hacer es: </label>
                                             <textarea maxLength={2000} placeholder="Describe el ajuste..." value={formData.reflexionAjuste || ""} onChange={(e) => handleInputChange('reflexionAjuste', e.target.value)} />
                                         </div>
                                     </section>
@@ -683,6 +685,7 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
 
                                     <section className="form-card">
                                         <div className="form-section-title">2. Estrategia de Diferenciación</div>
+                                        <label>Tipo de diferenciación:</label>
                                         <div className="options-vertical-premium">
                                             {['Por nivel de complejidad', 'Por formato', 'Por ritmo', 'Por tipo de andamiaje', 'Por interés contextual', 'Combinada'].map(d => (
                                                 <label key={d} className="check-label-row"><input type="checkbox" checked={(formData.tipoDif || []).includes(d)} onChange={() => handleChecklist('tipoDif', d)} /><span className="label-text">{d}</span></label>
@@ -701,6 +704,7 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
 
                                     <section className="form-card">
                                         <div className="form-section-title">4. Protección de Equidad y Dignidad</div>
+                                        <label>Selecciona las acciones incorporadas:</label>
                                         <div className="options-vertical-premium">
                                             {['Todas las variantes conducen al mismo estándar final', 'No se comunica públicamente quién recibe apoyo adicional', 'Se mantienen expectativas altas para todos', 'Se evita etiquetamiento por nivel', 'Existe instancia común sin diferenciación', 'Supervisión docente activa en todas las variantes'].map(p => (
                                                 <label key={p} className="check-label-row"><input type="checkbox" checked={(formData.proteccion || []).includes(p)} onChange={() => handleChecklist('proteccion', p)} /><span className="label-text">{p}</span></label>
@@ -729,9 +733,9 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                                     <section className="form-card">
                                         <div className="form-section-title">7. Reflexión y Mitigación</div>
                                         <div className="textarea-group-premium">
-                                            <label>Principal aporte inclusivo:</label>
+                                            <label>El principal aporte inclusivo de esta estrategia es:</label>
                                             <textarea maxLength={500} placeholder="Escribe aquí..." value={formData.aporte3 || ""} onChange={(e) => handleInputChange('aporte3', e.target.value)} />
-                                            <label>Mayor riesgo que vigilar:</label>
+                                            <label>El mayor riesgo que debo vigilar es:</label>
                                             <textarea maxLength={500} placeholder="Escribe aquí..." value={formData.riesgoVigilar3 || ""} onChange={(e) => handleInputChange('riesgoVigilar3', e.target.value)} />
                                         </div>
                                     </section>
@@ -1096,12 +1100,16 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                             </div>
                             <button
                                 className="btn-finalizar-mision"
-                                // Se habilita si hay 3 o más elementos en cumplimiento
+                                // Se deshabilita si faltan checks o si ya se está guardando
                                 disabled={(formData.cumplimiento?.length < 3) || isSaving}
                                 onClick={() => saveReto('completed')}
                             >
-                                ENVIAR MISIÓN
-</button>
+                                {isSaving ? (
+                                    <>
+                                        <span className="spinner-mini"></span> Enviando respuestas...
+                                    </>
+                                ) : "ENVIAR MISIÓN"}
+                            </button>
                         </div>
                     </section>
                 </div>

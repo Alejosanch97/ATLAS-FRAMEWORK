@@ -2,21 +2,44 @@ import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import "../Styles/AsegurarUpgrade.css"; 
 
-const TallerMejoraAsegurar = ({ userData, API_URL, onNavigate }) => {
-    const [loading, setLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
-    const [isReadOnly, setIsReadOnly] = useState(false); 
+const TallerMejoraAsegurar = ({ userData, API_URL, onNavigate, datosIniciales }) => {
     
-    const [formData, setFormData] = useState({
-        promptOriginal: "",
-        promptMejorado: "",
-        alertasOriginal: [],
-        bloquesActivados: [],
-        reflexion: { q1: "", q2: "", q3: "", q4: "" },
-        estandares: [],
-        riesgoPrevio: null,
-        riesgoFinal: null
-    });
+    const prepararEstadoInicial = (datos) => {
+        if (!datos) {
+            return {
+                promptOriginal: "", promptMejorado: "", alertasOriginal: [],
+                bloquesActivados: [], reflexion: { q1: "", q2: "", q3: "", q4: "" },
+                estandares: [], riesgoPrevio: null, riesgoFinal: null
+            };
+        }
+
+        // Función auxiliar para parsear JSON de forma segura
+        const safeParse = (str) => {
+            try { return typeof str === 'string' ? JSON.parse(str) : str; }
+            catch (e) { return null; }
+        };
+
+        return {
+            promptOriginal: datos.Prompt_Original || "",
+            promptMejorado: datos.Prompt_Mejorado || "",
+            alertasOriginal: datos.Alertas_Detectadas ? datos.Alertas_Detectadas.split(", ") : [],
+            bloquesActivados: datos.Bloques_Activados ? datos.Bloques_Activados.split(", ") : [],
+            reflexion: {
+                q1: datos.Reflexion_1_Cambios || "",
+                q2: datos.Reflexion_2_Riesgos || "",
+                q3: datos.Reflexion_3_Supervision || "",
+                q4: datos.Reflexion_4_Cognicion || ""
+            },
+            estandares: datos.Estandar_Seleccionado ? datos.Estandar_Seleccionado.split(" | ") : [],
+            riesgoPrevio: safeParse(datos.Riesgo_Previo),
+            riesgoFinal: safeParse(datos.Riesgo_Final)
+        };
+    };
+    
+    const [formData, setFormData] = useState(prepararEstadoInicial);
+    const [loading, setLoading] = useState(!datosIniciales);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isReadOnly, setIsReadOnly] = useState(!!datosIniciales?.Status || !!datosIniciales?.ID_Asegurar);
 
     // 🔹 BLOQUES DE MEJORA DINÁMICOS (Categorizados por Dimensión Heurística)
     const bloquesPorDimension = {
@@ -175,52 +198,67 @@ const TallerMejoraAsegurar = ({ userData, API_URL, onNavigate }) => {
 
     // 🔹 EFECTO DE CARGA INICIAL
     useEffect(() => {
-        const cargarDatos = async () => {
-            setLoading(true);
-            try {
-                const resExistente = await fetch(`${API_URL}?sheet=ASEGURAR_Docentes&user_key=${userData.Teacher_Key}`);
-                const dataExistente = await resExistente.json();
+        if (datosIniciales) {
+            // Si ya vienen datos desde el Dashboard/Fase, los cargamos
+            const estadoCargado = prepararEstadoInicial(datosIniciales);
+            setFormData(estadoCargado);
+            setIsReadOnly(true);
+            setLoading(false);
+        } else {
+            // Si no hay datos iniciales, ejecutamos el plan de respaldo (fetch)
+            cargarDatosDesdeCero();
+        }
+    }, [datosIniciales]);
 
-                if (Array.isArray(dataExistente) && dataExistente.length > 0) {
-                    const reg = dataExistente[dataExistente.length - 1];
-                    setIsReadOnly(true); 
+    const cargarDatosDesdeCero = async () => {
+        setLoading(true);
+        try {
+            // 1. Intentar cargar datos de ASEGURAR (Si ya lo completó antes)
+            const resExistente = await fetch(`${API_URL}?sheet=ASEGURAR_Docentes&user_key=${userData.Teacher_Key}`);
+            const dataExistente = await resExistente.json();
+
+            // Buscamos el registro específico de este docente
+            const registroAsegurar = Array.isArray(dataExistente) 
+                ? dataExistente.find(d => d.Teacher_Key === userData.Teacher_Key) 
+                : null;
+
+            if (registroAsegurar) {
+                // Si existe, llenamos el formulario con los datos guardados en ASEGURAR_Docentes
+                setFormData(prepararEstadoInicial(registroAsegurar));
+                setIsReadOnly(true);
+            } else {
+                // 2. Si no ha hecho ASEGURAR, traemos su prompt de la fase anterior (LIDERAR)
+                const resLiderar = await fetch(`${API_URL}?sheet=Liderar_Prompts_Docentes&user_key=${userData.Teacher_Key}`);
+                const dataLiderar = await resLiderar.json();
+                
+                const registroLiderar = Array.isArray(dataLiderar)
+                    ? dataLiderar.find(d => d.Teacher_Key === userData.Teacher_Key)
+                    : null;
+
+                if (registroLiderar) {
+                    const original = registroLiderar.Prompt_Original;
+                    // Ejecutamos el motor heurístico sobre el prompt de Liderar para tener el punto de partida
+                    const analisis = analizarPromptHeuristico(original);
+                    
                     setFormData({
-                        promptOriginal: reg.Prompt_Original,
-                        promptMejorado: reg.Prompt_Mejorado,
-                        alertasOriginal: reg.Alertas_Detectadas ? reg.Alertas_Detectadas.split(", ") : [],
-                        bloquesActivados: reg.Bloques_Activados ? reg.Bloques_Activados.split(", ") : [],
-                        reflexion: {
-                            q1: reg.Reflexion_1_Cambios, q2: reg.Reflexion_2_Riesgos,
-                            q3: reg.Reflexion_3_Supervision, q4: reg.Reflexion_4_Cognicion
-                        },
-                        estandares: reg.Estandar_Seleccionado ? reg.Estandar_Seleccionado.split(" | ") : [],
-                        riesgoPrevio: reg.Riesgo_Previo ? JSON.parse(reg.Riesgo_Previo) : null,
-                        riesgoFinal: reg.Riesgo_Final ? JSON.parse(reg.Riesgo_Final) : null
+                        promptOriginal: original,
+                        promptMejorado: original, // Empezamos con el mismo para que el usuario lo mejore
+                        alertasOriginal: analisis.hallazgos,
+                        bloquesActivados: [],
+                        reflexion: { q1: "", q2: "", q3: "", q4: "" },
+                        estandares: [],
+                        riesgoPrevio: analisis,
+                        riesgoFinal: analisis
                     });
-                } else {
-                    const resOriginal = await fetch(`${API_URL}?sheet=Liderar_Prompts_Docentes&user_key=${userData.Teacher_Key}`);
-                    const dataOriginal = await resOriginal.json();
-                    if (Array.isArray(dataOriginal) && dataOriginal.length > 0) {
-                        const original = dataOriginal[dataOriginal.length - 1].Prompt_Original;
-                        const analisis = analizarPromptHeuristico(original);
-                        setFormData(prev => ({
-                            ...prev,
-                            promptOriginal: original,
-                            promptMejorado: original,
-                            alertasOriginal: analisis.hallazgos,
-                            riesgoPrevio: analisis,
-                            riesgoFinal: analisis
-                        }));
-                    }
+                    setIsReadOnly(false);
                 }
-            } catch (e) {
-                console.error("Error al cargar historial:", e);
-            } finally {
-                setLoading(false);
             }
-        };
-        cargarDatos();
-    }, [API_URL, userData.Teacher_Key]);
+        } catch (e) { 
+            console.error("Error en la carga de datos del Taller:", e); 
+        } finally { 
+            setLoading(false); 
+        }
+    };
 
     // 🔹 MANEJO DE BLOQUES DE MEJORA DINÁMICA
     const toggleBloque = (bloqueId) => {
@@ -291,8 +329,6 @@ const TallerMejoraAsegurar = ({ userData, API_URL, onNavigate }) => {
         }
     };
 
-    if (loading) return <div className="asegurar-upgrade-loading">Analizando riesgos de la práctica previa...</div>;
-
     // Filtrar bloques sugeridos basados en las dimensiones donde el riesgo es bajo (puntaje <= 3)
     const bloquesSugeridosFiltrados = Object.keys(bloquesPorDimension)
         .filter(dim => formData.riesgoPrevio && formData.riesgoPrevio[dim] <= 3)
@@ -300,6 +336,7 @@ const TallerMejoraAsegurar = ({ userData, API_URL, onNavigate }) => {
 
     return (
         <div className="asegurar-upgrade-wrapper">
+            {loading && !datosIniciales && <div className="loading-overlay">Sincronizando...</div>}
             <header className="asegurar-upgrade-header">
                 <div className="asegurar-upgrade-brand">
                     <button className="asegurar-upgrade-back-btn" onClick={() => onNavigate('fase_asegurar')}>←</button>

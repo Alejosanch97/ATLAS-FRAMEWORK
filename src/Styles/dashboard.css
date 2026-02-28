@@ -1431,6 +1431,7 @@
 .notification-badge-count {
     background: #1e293b;
     color: var(--primary);
+    color: #ffffff !important;
     padding: 4px 12px;
     border-radius: 50px;
     font-size: 0.75rem;

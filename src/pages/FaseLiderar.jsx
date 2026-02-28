@@ -9,6 +9,7 @@ const FaseLiderar = ({ userData, API_URL, onNavigate, onRefreshProgreso }) => {
     const [retosCompletados, setRetosCompletados] = useState([]);
     const [isSaving, setIsSaving] = useState(false);
     const [showIntro, setShowIntro] = useState(true);
+    const [isNavigating, setIsNavigating] = useState(false);
     
     // NUEVO ESTADO: Para mostrar el reporte directamente aquí sin navegar
     const [verReporte, setVerReporte] = useState(false);
@@ -19,32 +20,33 @@ const FaseLiderar = ({ userData, API_URL, onNavigate, onRefreshProgreso }) => {
 
     // CARGA DE DATOS
     useEffect(() => {
+        window.scrollTo(0, 0); // Ir arriba al entrar
         fetchData();
     }, []);
 
     const fetchData = async () => {
-        setLoading(true);
         try {
-            // 1. Obtener progreso general de la fase LIDERAR
-            const resProgreso = await fetch(`${API_URL}?sheet=Progreso_Fases_ATLAS&user_key=${userData.Teacher_Key}`);
-            const dataProgreso = await resProgreso.json();
-            const registro = Array.isArray(dataProgreso) ? dataProgreso.find(item => item.Fase === "LIDERAR") : null;
-            
-            if (registro) {
-                setProgreso(registro);
-            }
+            // LANZAMOS PETICIONES EN PARALELO
+            const [resProgreso, resRetos] = await Promise.all([
+                fetch(`${API_URL}?sheet=Progreso_Fases_ATLAS&user_key=${userData.Teacher_Key}`),
+                fetch(`${API_URL}?sheet=Liderar_Prompts_Docentes&user_key=${userData.Teacher_Key}`)
+            ]);
 
-            // 2. Obtener misiones desde la hoja de Prompts
-            const resRetos = await fetch(`${API_URL}?sheet=Liderar_Prompts_Docentes&user_key=${userData.Teacher_Key}`);
-            const dataRetos = await resRetos.json();
-            
+            const [dataProgreso, dataRetos] = await Promise.all([
+                resProgreso.json(),
+                resRetos.json()
+            ]);
+
+            // Procesar Progreso
+            const registro = Array.isArray(dataProgreso) ? dataProgreso.find(item => item.Fase === "LIDERAR") : null;
+            if (registro) setProgreso(registro);
+
+            // Procesar Misiones
             if (Array.isArray(dataRetos)) {
-                // Buscamos el registro específico de este usuario
                 const registroUser = dataRetos.find(r => r.Teacher_Key === userData.Teacher_Key);
-                
                 if (registroUser && registroUser.Status === 'completed') {
-                    setRetosCompletados([1, 2]); // Desbloqueamos ambos visualmente
-                    setDatosPrompt(registroUser); // Guardamos los datos para el semáforo
+                    setRetosCompletados([1, 2]); 
+                    setDatosPrompt(registroUser); 
                 }
             }
         } catch (e) {
@@ -155,9 +157,29 @@ const FaseLiderar = ({ userData, API_URL, onNavigate, onRefreshProgreso }) => {
         return textos[dimension].alto;
     };
 
+    const handleNavegacionSegura = (destino, id) => {
+    setIsNavigating(true); // El botón cambia a "Cargando..."
+
+    // 1. Primero vigilamos que 'loading' sea false (que los datos lleguen de la DB)
+        const verificarCarga = setInterval(() => {
+            if (!loading) {
+                clearInterval(verificarCarga); // Detenemos la vigilancia
+
+                // 2. AHORA AÑADIMOS EL TIEMPO EXTRA DE SEGURIDAD
+                // Cambia '1500' por '2000' si quieres que espere 2 segundos completos
+                setTimeout(() => {
+                    setIsNavigating(false);
+                    onNavigate(destino, id); // Navegamos después del tiempo extra
+                    window.scrollTo(0, 0);   // Aseguramos que entre desde arriba
+                }, 500);
+            }
+        }, 100);
+    };
+
     return (
         <div className="transformar-master-container">
-            {loading && (
+            {/* Solo sale si ya hay datos, para no bloquear la primera vista */}
+            {loading && (progreso || datosPrompt) && (
                 <div className="atlas-sync-float">
                     <div className="atlas-sync-pill">
                         <span className="sync-icon">🔄</span>
@@ -264,18 +286,25 @@ const FaseLiderar = ({ userData, API_URL, onNavigate, onRefreshProgreso }) => {
 
                     <section className="final-action-section">
                         <div className="action-button-wrapper">
-                            <button 
-                                className="btn-start-transformar-large" 
-                                onClick={handleAceptarFase} 
-                                disabled={isSaving}
+                            <button
+                                className={`btn-start-transformar-large ${progreso?.Capa_1_Sentido === 'COMPLETADO' ? 'btn-already-accepted' : ''}`}
+                                onClick={handleAceptarFase}
+                                disabled={isSaving || (loading && !progreso)}
                             >
-                                {isSaving ? "Registrando..." : (progreso?.Capa_1_Sentido === 'COMPLETADO' ? (isDirectivo ? "Ver Panel de Control" : "Ver Misiones de Liderazgo") : (isDirectivo ? "Activar Seguimiento Pedagógico" : "Activar Protocolo LIDERAR"))}
+                                {isSaving ? "Registrando..." : (
+                                    (loading && !progreso) ? "Sincronizando..." :
+                                        (progreso?.Capa_1_Sentido === 'COMPLETADO'
+                                            ? (isDirectivo ? "Ver Panel de Control" : "Ver Misiones de Liderazgo")
+                                            : (isDirectivo ? "Activar Seguimiento Pedagógico" : "Activar Protocolo LIDERAR"))
+                                )}
                             </button>
-                            <p className="helper-text">
-                                {isDirectivo 
-                                    ? "Al activar, habilitas la vista de dashboard institucional y protocolos de intervención focalizada."
-                                    : "Al activar, habilitas el Laboratorio de Prompt Ético y el sistema de Auditoría de Riesgo Pedagógico."}
-                            </p>
+                            {!loading && progreso?.Capa_1_Sentido !== 'COMPLETADO' && (
+                                <p className="helper-text">
+                                    {isDirectivo
+                                        ? "Al activar, habilitas la vista de dashboard institucional."
+                                        : "Al activar, habilitas el Laboratorio de Prompt Ético."}
+                                </p>
+                            )}
                         </div>
                     </section>
                 </div>
@@ -383,9 +412,29 @@ const FaseLiderar = ({ userData, API_URL, onNavigate, onRefreshProgreso }) => {
                                         <div className="reto-icon-box">🧪</div>
                                         <span className="reto-label">Misión 1</span>
                                         <h3>Laboratorio de Prompts</h3>
-                                        <button onClick={() => onNavigate('retos_liderar', 1)} className="btn-launch-mission">
-                                            {retosCompletados.includes(1) ? "Revisar Prompt" : "Abrir Laboratorio"}
-                                        </button>
+                                                    <button
+                                                        onClick={() => handleNavegacionSegura('retos_liderar', 1)}
+                                                        className="btn-launch-mission"
+                                                        // Bloqueamos el botón si ya está navegando o si está cargando inicialmente
+                                                        disabled={loading || isNavigating}
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            gap: '8px',
+                                                            cursor: (loading || isNavigating) ? 'wait' : 'pointer',
+                                                            opacity: (loading || isNavigating) ? 0.8 : 1
+                                                        }}
+                                                    >
+                                                        {(loading || isNavigating) ? (
+                                                            <>
+                                                                <span className="spinner-mini" style={{ animation: 'spin 1s linear infinite' }}></span>
+                                                                <span>Cargando datos...</span>
+                                                            </>
+                                                        ) : (
+                                                            retosCompletados.includes(1) ? "Revisar Prompt" : "Abrir Laboratorio"
+                                                        )}
+                                                    </button>
                                         {retosCompletados.includes(1) && <div className="badge-done">Completado</div>}
                                     </div>
 

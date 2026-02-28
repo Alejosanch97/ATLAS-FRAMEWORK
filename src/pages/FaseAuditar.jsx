@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import "../Styles/faseAuditar.css";
 
-export const FaseAuditar = ({ userData, API_URL, onNavigate }) => {
+export const FaseAuditar = ({ userData, API_URL, onNavigate, existingResponses = [], existingForms = [] }) => {
     const [progreso, setProgreso] = useState(null);
     const [loading, setLoading] = useState(true);
     const [reflexion, setReflexion] = useState("");
@@ -24,40 +24,50 @@ export const FaseAuditar = ({ userData, API_URL, onNavigate }) => {
     }, []);
 
     const fetchInitialData = async () => {
+        // Solo activamos loading si es la primera carga para evitar parpadeos
         if (!progreso) setLoading(true);
+
         try {
-            const resProgreso = await fetch(`${API_URL}?sheet=Progreso_Fases_ATLAS&user_key=${userData.Teacher_Key}`);
-            const dataProgreso = await resProgreso.json();
+            // 1. LANZAMOS TODO EN PARALELO (Ráfaga ATLAS)
+            const [resProgreso, resForms, resAnswers, resMicros] = await Promise.all([
+                fetch(`${API_URL}?sheet=Progreso_Fases_ATLAS&user_key=${userData.Teacher_Key}`),
+                fetch(`${API_URL}?sheet=Config_Formularios`),
+                fetch(`${API_URL}?sheet=Respuestas_Usuarios&user_key=${userData.Teacher_Key}`),
+                fetch(`${API_URL}?sheet=Progreso_Micromodulos&user_key=${userData.Teacher_Key}`)
+            ]);
+
+            // 2. PROCESAMOS JSON EN PARALELO
+            const [dataProgreso, allForms, allAnswers, allMicros] = await Promise.all([
+                resProgreso.json(),
+                resForms.json(),
+                resAnswers.json(),
+                resMicros.json()
+            ]);
+
+            // 3. ACTUALIZACIÓN DE ESTADOS (React agrupa estos cambios en un solo render)
+
+            // Registro de Fase
             const registroFase = Array.isArray(dataProgreso) ? dataProgreso.find(item => item.Fase === "AUDITAR") : null;
-            
             if (registroFase) {
                 setProgreso(registroFase);
                 setReflexion(registroFase.Capa_3_Hito_Texto || "");
             }
 
-            const resForms = await fetch(`${API_URL}?sheet=Config_Formularios`);
-            const allForms = await resForms.json();
+            // Filtrado de Formularios por Rol
             let formsFaseA = Array.isArray(allForms) ? allForms.filter(f => f.Fase_ATLAS === "A") : [];
-            
-            // --- CORRECCIÓN: FILTRADO POR ROL ---
-            if (userData.Rol === "DOCENTE") {
-                formsFaseA = formsFaseA.filter(f => f.ID_Form === "FORM-1770684713222");
-            } else if (userData.Rol === "DIRECTIVO") {
-                formsFaseA = formsFaseA.filter(f => f.ID_Form === "FORM-1770695655576");
+            const ID_RELEVANTE = userData.Rol === "DIRECTIVO" ? "FORM-1770695655576" : "FORM-1770684713222";
+
+            // Si es ADMIN verá ambos, si no, solo el de su rol
+            if (userData.Rol !== "ADMIN") {
+                formsFaseA = formsFaseA.filter(f => f.ID_Form === ID_RELEVANTE);
             }
 
             setFormulariosFase(formsFaseA);
-
-            const resAnswers = await fetch(`${API_URL}?sheet=Respuestas_Usuarios&user_key=${userData.Teacher_Key}`);
-            const allAnswers = await resAnswers.json();
             setRespuestasUsuario(Array.isArray(allAnswers) ? allAnswers : []);
-
-            const resMicros = await fetch(`${API_URL}?sheet=Progreso_Micromodulos&user_key=${userData.Teacher_Key}`);
-            const allMicros = await resMicros.json();
             setMicromodulosProgreso(Array.isArray(allMicros) ? allMicros : []);
 
         } catch (e) {
-            console.error("Error al cargar datos ATLAS:", e);
+            console.error("Error crítico en sincronización ATLAS:", e);
         } finally {
             setLoading(false);
         }

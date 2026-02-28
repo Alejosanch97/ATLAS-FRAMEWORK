@@ -670,6 +670,21 @@ input[type="range"] {
     font-weight: 400;
 }
 
+.textarea-group-premium {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* espacio uniforme entre TODOS los elementos */
+}
+
+.textarea-group-premium label {
+  margin-bottom: 4px; /* pequeño espacio entre label y textarea */
+  font-weight: 600;
+}
+
+.textarea-group-premium textarea {
+  margin-bottom: 16px; /* separación entre un bloque y el siguiente */
+}
+
 /* =========================================
    ATLAS RESPONSIVE OPTIMIZADO V3.0
    ========================================= */

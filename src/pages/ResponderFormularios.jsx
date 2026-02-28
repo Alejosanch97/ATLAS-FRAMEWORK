@@ -1,67 +1,66 @@
 import React, { useState, useEffect } from 'react';
 import '../Styles/responderFormularios.css'; 
 
-// Se agrega onNavigate a las props
-export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncing, filterPhase, onNavigate }) => {
+// Se agrega onNavigate y las props inyectadas (existingForms, existingResponses)
+export const ResponderFormularios = ({ 
+    userData, 
+    API_URL, 
+    setIsSyncing, 
+    isSyncing, 
+    filterPhase, 
+    onNavigate,
+    existingForms = [], 
+    existingResponses = [] 
+}) => {
     const [availableForms, setAvailableForms] = useState([]);
-    const [userAnswers, setUserAnswers] = useState([]);
+    const [userAnswers, setUserAnswers] = useState(existingResponses);
     const [selectedForm, setSelectedForm] = useState(null);
     const [currentResponses, setCurrentResponses] = useState({});
     const [activeTab, setActiveTab] = useState('pending');
 
     useEffect(() => {
         fetchInitialData();
-    }, [filterPhase]); // Recargar si cambia la fase seleccionada
+    }, [filterPhase, existingForms, existingResponses]); // Se dispara si cambia la fase o los datos base
 
     const fetchInitialData = async () => {
+        // Ya no hacemos fetch de Forms ni de Answers porque vienen por Props
         setIsSyncing(true);
         try {
-            const resForms = await fetch(`${API_URL}?sheet=Config_Formularios`);
-            const forms = await resForms.json();
-            const resAnswers = await fetch(`${API_URL}?sheet=Respuestas_Usuarios&user_key=${userData?.Teacher_Key}`);
-            const answers = await resAnswers.json();
+            let filtered = Array.isArray(existingForms) ? [...existingForms] : [];
 
-            if (Array.isArray(forms)) {
-                let filtered = forms;
+            // 1. Filtrado por Fase (A, T o L)
+            if (filterPhase) {
+                filtered = filtered.filter(f => f.Fase_ATLAS === filterPhase);
 
-                // 1. Filtrado por Fase (A, T o L)
-                if (filterPhase) {
-                    filtered = filtered.filter(f => f.Fase_ATLAS === filterPhase);
-
-                    // 2. FILTRADO ESPECIAL POR ROL (Solo para Fase AUDITAR)
-                    if (filterPhase === "A") {
-                        if (userData.Rol === "DOCENTE") {
-                            // Solo ve su formulario de diagnóstico
-                            filtered = filtered.filter(f => f.ID_Form === "FORM-1770684713222");
-                        } else if (userData.Rol === "DIRECTIVO") {
-                            // Solo ve el checklist institucional
-                            filtered = filtered.filter(f => f.ID_Form === "FORM-1770695655576");
-                        }
-                        // Nota: Si el rol es ADMIN, no entra en estos ifs y ve ambos formularios de la fase A.
+                // 2. FILTRADO ESPECIAL POR ROL (Solo para Fase AUDITAR)
+                if (filterPhase === "A") {
+                    if (userData.Rol === "DOCENTE") {
+                        filtered = filtered.filter(f => f.ID_Form === "FORM-1770684713222");
+                    } else if (userData.Rol === "DIRECTIVO") {
+                        filtered = filtered.filter(f => f.ID_Form === "FORM-1770695655576");
                     }
                 }
-
-                setAvailableForms(filtered);
             }
 
-            if (Array.isArray(answers)) {
-                setUserAnswers(answers);
-            }
+            setAvailableForms(filtered);
+            setUserAnswers(existingResponses);
+
         } catch (e) {
-            console.error("Error cargando datos:", e);
+            console.error("Error procesando datos locales:", e);
         } finally {
             setIsSyncing(false);
         }
     };
+
     const isFormAnswered = (formId) => userAnswers.some(ans => ans.ID_Form === formId);
     
-    // Estos arrays dependen de availableForms ya filtrado por fase
     const pendingForms = availableForms.filter(f => !isFormAnswered(f.ID_Form));
     const completedForms = availableForms.filter(f => isFormAnswered(f.ID_Form));
 
     const handleOpenForm = async (form) => {
         setIsSyncing(true);
         try {
+            // Este fetch se mantiene porque las preguntas son datos pesados que no están en el dashboard
             const res = await fetch(`${API_URL}?sheet=Config_Preguntas`);
             const allQuestions = await res.json();
             const filteredQuestions = allQuestions.filter(q => q.ID_Form === form.ID_Form);
@@ -103,6 +102,7 @@ export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncin
         const formToSave = { ...selectedForm };
         const responsesToSave = { ...currentResponses };
         
+        // --- ACTUALIZACIÓN OPTIMISTA ---
         setUserAnswers(prev => [...prev, { ID_Form: formToSave.ID_Form }]);
         setSelectedForm(null);
         setIsSyncing(true);
@@ -161,7 +161,6 @@ export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncin
     return (
         <div className="atlas-responder-container animate-fade-in">
             
-            {/* --- NUEVO BOTÓN DE REGRESAR --- */}
             <div className="nav-back-container" style={{ marginBottom: '20px' }}>
                 <button 
                     className="btn-back-minimal" 
@@ -205,8 +204,7 @@ export const ResponderFormularios = ({ userData, API_URL, setIsSyncing, isSyncin
             </div>
 
             <div className="forms-grid-responder">
-                {/* LÓGICA CORREGIDA: Solo muestra el mensaje si NO está sincronizando y el array está vacío */}
-                {isSyncing ? (
+                {isSyncing && availableForms.length === 0 ? (
                     <div className="loading-state-placeholder">
                         <p>Buscando instrumentos en la nube...</p>
                     </div>

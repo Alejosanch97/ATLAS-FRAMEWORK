@@ -15,39 +15,70 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
     // Identificación de Rol
     const isDirectivo = userData.Rol === "DIRECTIVO";
 
+    // --- MEJORA: Definición de retos estática para carga instantánea ---
+    const misionesConfig = isDirectivo ? [
+        { id: 1, title: "Uso de Alto Riesgo", level: "EU AI Act", icon: "⚖️", desc: "Clasificar un caso según el enfoque basado en riesgo y tomar una decisión." },
+        { id: 2, title: "Protocolo Privacidad", level: "Gobernanza", icon: "🔐", desc: "Diseñar la estructura de un protocolo institucional de privacidad de datos." },
+        { id: 3, title: "Gestión de Crisis", level: "Accountability", icon: "🚨", desc: "Gestionar un incidente crítico generado por un sistema de IA." }
+    ] : [
+        { id: 1, title: "Evaluación Ética", level: "Adquirir", icon: "⚖️", desc: "Comprender riesgos y fundamentos iniciales." },
+        { id: 2, title: "Rediseño Human-Centred", level: "Profundizar", icon: "🧠", desc: "Integrar la IA de manera crítica en tu planeación." },
+        { id: 3, title: "Diferenciación Inclusiva", level: "Crear", icon: "🌍", desc: "Diseñar prácticas innovadoras y responsables." }
+    ];
+
     useEffect(() => {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        // Si los datos ya cargaron y detectamos que el marco ya fue aceptado
+        if (!loading && progreso?.Capa_1_Sentido === 'COMPLETADO') {
+            setShowIntro(false);
+        }
+    }, [loading, progreso]);
+
     const fetchData = async () => {
-        setLoading(true);
+        // Solo activamos loading internamente, no bloqueamos el renderizado de los retos
         try {
-            // 1. Obtener progreso general de la fase
-            const resProgreso = await fetch(`${API_URL}?sheet=Progreso_Fases_ATLAS&user_key=${userData.Teacher_Key}`);
-            const dataProgreso = await resProgreso.json();
-            const registro = Array.isArray(dataProgreso) ? dataProgreso.find(item => item.Fase === "TRANSFORMAR") : null;
+            // 1. LANZAMOS PETICIONES EN PARALELO (Ráfaga)
+            const [resProgreso, resRetos] = await Promise.all([
+                fetch(`${API_URL}?sheet=Progreso_Fases_ATLAS&user_key=${userData.Teacher_Key}`),
+                fetch(`${API_URL}?sheet=Retos_Transformar_ATLAS&user_key=${userData.Teacher_Key}`)
+            ]);
+
+            // 2. PROCESAMOS JSON EN PARALELO
+            const [dataProgreso, dataRetos] = await Promise.all([
+                resProgreso.json(),
+                resRetos.json()
+            ]);
+
+            // 3. ACTUALIZACIÓN DE ESTADOS
+            
+            // Procesar Progreso General
+            const registro = Array.isArray(dataProgreso) 
+                ? dataProgreso.find(item => item.Fase === "TRANSFORMAR") 
+                : null;
             setProgreso(registro);
 
-            // 2. Obtener retos específicos de la nueva hoja
-            const resRetos = await fetch(`${API_URL}?sheet=Retos_Transformar_ATLAS&user_key=${userData.Teacher_Key}`);
-            const dataRetos = await resRetos.json();
-            
+            // Procesar Retos Completados
             if (Array.isArray(dataRetos)) {
-                // Filtramos por el string 'COMPLETADO' que es el que envía ejecutarReto
                 const completados = dataRetos
                     .filter(r => r.Status_Reto === 'COMPLETADO')
                     .map(r => parseInt(r.Numero_Reto));
                 setRetosCompletados(completados);
+            } else {
+                setRetosCompletados([]);
             }
+
         } catch (e) {
-            console.error("Error cargando Transformar:", e);
+            console.error("❌ Error en ráfaga Transformar:", e);
         } finally {
             setLoading(false);
         }
     };
 
     const handleAceptarFase = async () => {
-        // Si ya está completado, el botón simplemente nos lleva al dashboard
+        // 1. Si ya está completado, simplemente pasamos de vista sin preguntar
         if (progreso?.Capa_1_Sentido === 'COMPLETADO') {
             setShowIntro(false);
             return;
@@ -70,26 +101,33 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
         };
 
         try {
-            // Usamos text/plain para evitar problemas de CORS en el POST
+            // 2. Primero guardamos en la base de datos
             await fetch(API_URL, { 
                 method: "POST", 
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify(dataPayload) 
             });
 
-            setProgreso({ ...progreso, Capa_1_Sentido: 'COMPLETADO', ID_Progreso: nuevoID });
-            setShowIntro(false); // Al aceptar, vamos al dashboard
-            
-            Swal.fire({
+            // 3. Actualizamos el estado de progreso internamente
+            setProgreso(prev => ({ ...prev, Capa_1_Sentido: 'COMPLETADO', ID_Progreso: nuevoID }));
+
+            // 4. Mostramos el mensaje y ESPERAMOS (await) a que el usuario termine de leerlo
+            await Swal.fire({
                 title: isDirectivo ? "¡Liderazgo Activado!" : "¡Marco Activado!",
                 text: isDirectivo 
                     ? "Has formalizado tu inicio en las decisiones de gobernanza responsable." 
                     : "Has formalizado tu inicio en la fase TRANSFORMAR. Los retos están listos.",
                 icon: "success",
-                confirmButtonColor: "#c5a059"
+                confirmButtonColor: "#c5a059",
+                timer: 3000, 
+                timerProgressBar: true
             });
+
+            // 5. Una vez cerrado el mensaje, cambiamos la vista a los retos
+            setShowIntro(false); 
+
         } catch (e) {
-            Swal.fire("Error", "No se pudo registrar el progreso.", "error");
+            Swal.fire("Error", "No se pudo sincronizar el inicio de fase.", "error");
         } finally {
             setIsSaving(false);
         }
@@ -100,15 +138,15 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
 
     return (
         <div className="transformar-master-container">
-            {/* LOADER FLOTANTE (Imagen 3) - No bloquea la carga del contenido */}
-            {loading && (
+            {/* CORRECCIÓN: Se quita el loader duplicado para mejorar la experiencia visual */}
+            {/* loading && (
                 <div className="atlas-sync-float">
                     <div className="atlas-sync-pill">
                         <span className="sync-icon">🔄</span>
                         <span className="sync-text">Sincronizando Sistema...</span>
                     </div>
                 </div>
-            )}
+            ) */}
 
             {/* Renderizado condicional de Vistas */}
             {renderIntro ? (
@@ -277,14 +315,19 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                         </div>
                         
                         <div className="action-button-wrapper">
-                            <button 
-                                className="btn-start-transformar-large" 
+                            <button
+                                className={`btn-start-transformar-large ${progreso?.Capa_1_Sentido === 'COMPLETADO' ? 'btn-already-accepted' : ''}`}
                                 onClick={handleAceptarFase}
-                                disabled={isSaving}
+                                disabled={isSaving || loading} // Deshabilitado mientras sincroniza
                             >
-                                {isSaving ? "Registrando..." : (progreso?.Capa_1_Sentido === 'COMPLETADO' ? "Ver Misiones de Retos" : "Aceptar Marco y Comenzar Retos")}
+                                {isSaving ? "Registrando..." : (
+                                    loading ? "Sincronizando estado..." :
+                                        (progreso?.Capa_1_Sentido === 'COMPLETADO' ? "Ver Misiones de Retos" : "Aceptar Marco y Comenzar Retos")
+                                )}
                             </button>
-                            {progreso?.Capa_1_Sentido !== 'COMPLETADO' && (
+
+                            {/* Solo mostramos el texto de ayuda si NO ha aceptado el marco */}
+                            {progreso?.Capa_1_Sentido !== 'COMPLETADO' && !loading && (
                                 <p className="helper-text">Al aceptar, certificas que has comprendido la base ética y conceptual de la fase.</p>
                             )}
                         </div>
@@ -295,7 +338,6 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                 <div className="transformar-dashboard animate-fade-in">
                     <div className="dashboard-header-flex">
                             <div className="title-area">
-                                {/* CORREGIDO: Este te regresa a la sección del video (Intro) */}
                                 <button
                                     className="btn-back-atlas"
                                     onClick={() => setShowIntro(true)}
@@ -311,15 +353,7 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                     </div>
 
                     <div className="retos-roadmap-v2">
-                        {(isDirectivo ? [
-                            { id: 1, title: "Uso de Alto Riesgo", level: "EU AI Act", icon: "⚖️", desc: "Clasificar un caso según el enfoque basado en riesgo y tomar una decisión." },
-                            { id: 2, title: "Protocolo Privacidad", level: "Gobernanza", icon: "🔐", desc: "Diseñar la estructura de un protocolo institucional de privacidad de datos." },
-                            { id: 3, title: "Gestión de Crisis", level: "Accountability", icon: "🚨", desc: "Gestionar un incidente crítico generado por un sistema de IA." }
-                        ] : [
-                            { id: 1, title: "Evaluación Ética", level: "Adquirir", icon: "⚖️", desc: "Comprender riesgos y fundamentos iniciales." },
-                            { id: 2, title: "Rediseño Human-Centred", level: "Profundizar", icon: "🧠", desc: "Integrar la IA de manera crítica en tu planeación." },
-                            { id: 3, title: "Diferenciación Inclusiva", level: "Crear", icon: "🌍", desc: "Diseñar prácticas innovadoras y responsables." }
-                        ]).map((reto) => {
+                        {misionesConfig.map((reto) => {
                             const isCompleted = retosCompletados.includes(reto.id);
                             const isLocked = reto.id > 1 && !retosCompletados.includes(reto.id - 1);
 

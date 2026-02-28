@@ -2,34 +2,67 @@ import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import "../Styles/faseTransformar.css"; // Reutilizamos los estilos base por consistencia visual
 
-const FaseAsegurar = ({ userData, API_URL, onNavigate, onRefreshProgreso }) => {
+const FaseAsegurar = ({ userData, API_URL, onNavigate, onRefreshProgreso, datosExistentes, existingResponses }) => {
     const [progreso, setProgreso] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [showIntro, setShowIntro] = useState(true);
     const [statusAsegurar, setStatusAsegurar] = useState(null);
+    const [isNavigating, setIsNavigating] = useState(false);
 
     const isDirectivo = userData.Rol === "DIRECTIVO";
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        const sincronizarDatos = async () => {
+            let datosCargados = false;
+
+            // 1. Prioridad: Datos que vienen por Props (Carga instantánea)
+            if (datosExistentes) {
+                setStatusAsegurar(datosExistentes);
+                datosCargados = true;
+            }
+
+            if (existingResponses && Array.isArray(existingResponses)) {
+                const registro = existingResponses.find(item => item.Fase === "ASEGURAR");
+                if (registro) {
+                    setProgreso(registro);
+                    datosCargados = true;
+                }
+            }
+
+            // 2. Respaldo: Solo si el Dashboard no mandó nada
+            if (!datosCargados) {
+                await fetchData();
+            } else {
+                // Si ya cargamos por props, quitamos el loading de una vez
+                setLoading(false);
+            }
+        };
+
+        sincronizarDatos();
+    }, [datosExistentes, existingResponses]);
 
     const fetchData = async () => {
+        if (progreso && statusAsegurar) return;
+
         setLoading(true);
         try {
-            // 1. Obtener progreso de fase ASEGURAR
-            const resProgreso = await fetch(`${API_URL}?sheet=Progreso_Fases_ATLAS&user_key=${userData.Teacher_Key}`);
+            const [resProgreso, resStatus] = await Promise.all([
+                fetch(`${API_URL}?sheet=Progreso_Fases_ATLAS&user_key=${userData.Teacher_Key}`),
+                fetch(`${API_URL}?sheet=${isDirectivo ? "ASEGURAR_Directivos_Plan_Accion" : "ASEGURAR_Docentes"}&user_key=${userData.Teacher_Key}`)
+            ]);
+
             const dataProgreso = await resProgreso.json();
-            const registro = Array.isArray(dataProgreso) ? dataProgreso.find(item => item.Fase === "ASEGURAR") : null;
+            const dataStatus = await resStatus.json();
+
+            const registro = Array.isArray(dataProgreso)
+                ? dataProgreso.find(item => item.Fase === "ASEGURAR" && item.Teacher_Key === userData.Teacher_Key)
+                : null;
+
             if (registro) setProgreso(registro);
 
-            // 2. Verificar si ya completó el Taller o el Diagnóstico Directivo
-            const hoja = isDirectivo ? "ASEGURAR_Directivos_Plan_Accion" : "ASEGURAR_Docentes";
-            const resStatus = await fetch(`${API_URL}?sheet=${hoja}&user_key=${userData.Teacher_Key}`);
-            const dataStatus = await resStatus.json();
             if (Array.isArray(dataStatus) && dataStatus.length > 0) {
-                // Buscamos el registro específico de este usuario
+                // Buscamos el registro específico de este usuario en el taller
                 const userStatus = dataStatus.find(d => d.Teacher_Key === userData.Teacher_Key);
                 if (userStatus) setStatusAsegurar(userStatus);
             }
@@ -41,8 +74,7 @@ const FaseAsegurar = ({ userData, API_URL, onNavigate, onRefreshProgreso }) => {
     };
 
     const handleAceptarFase = async () => {
-        // Si ya está completada la capa de sentido, solo pasamos a la vista de misiones
-        if (progreso?.Capa_1_Sentido === 'COMPLETADO') {
+        if (progreso?.Capa_1_Sentido === 'COMPLETADO' || statusAsegurar) {
             setShowIntro(false);
             return;
         }
@@ -70,8 +102,11 @@ const FaseAsegurar = ({ userData, API_URL, onNavigate, onRefreshProgreso }) => {
                 body: JSON.stringify(dataPayload) 
             });
 
+            // Actualización optimista del estado local
             setProgreso({ ...progreso, Capa_1_Sentido: 'COMPLETADO', ID_Progreso: nuevoID });
             setShowIntro(false); 
+            
+            // Avisar al Dashboard que actualice sus datos globales
             if (onRefreshProgreso) await onRefreshProgreso();
 
             Swal.fire({
@@ -87,17 +122,28 @@ const FaseAsegurar = ({ userData, API_URL, onNavigate, onRefreshProgreso }) => {
         }
     };
 
+    const handleNavegacionSegura = (destino, id = null) => {
+        setIsNavigating(true); // El botón cambia a "Cargando datos..."
+
+        // 1. Vigilamos que 'loading' sea false (que los datos ya estén listos)
+        const verificarCarga = setInterval(() => {
+            if (!loading) {
+                clearInterval(verificarCarga); // Detenemos la vigilancia al confirmar carga
+
+                // 2. Tiempo extra de seguridad para asegurar la persistencia del estado
+                setTimeout(() => {
+                    setIsNavigating(false);
+                    // Pasamos destino, id y el status actual para que el Dashboard lo reciba
+                    onNavigate(destino, id, statusAsegurar);
+                    window.scrollTo(0, 0); // Entrada limpia desde arriba
+                }, 600); // 600ms de "respiro" visual
+            }
+        }, 100);
+    };
+
     return (
         <div className="transformar-master-container">
-            {loading && (
-                <div className="atlas-sync-float">
-                    <div className="atlas-sync-pill">
-                        <span className="sync-icon">🛡️</span>
-                        <span className="sync-text">Cargando Protocolos de Seguridad...</span>
-                    </div>
-                </div>
-            )}
-
+            
             {showIntro ? (
                 /* --- VISTA INTRODUCTORIA (CAPA DE SENTIDO) --- */
                 <div className="transformar-intro-container animate-fade-in">
@@ -183,12 +229,17 @@ const FaseAsegurar = ({ userData, API_URL, onNavigate, onRefreshProgreso }) => {
 
                     <section className="final-action-section">
                         <div className="action-button-wrapper">
-                            <button 
-                                className="btn-start-transformar-large" 
-                                onClick={handleAceptarFase} 
-                                disabled={isSaving}
+                            <button
+                                className={`btn-start-transformar-large ${progreso?.Capa_1_Sentido === 'COMPLETADO' ? 'btn-already-accepted' : ''}`}
+                                onClick={handleAceptarFase}
+                                disabled={isSaving || (loading && !progreso)}
                             >
-                                {isSaving ? "Iniciando..." : (progreso?.Capa_1_Sentido === 'COMPLETADO' ? (isDirectivo ? "Ir al Diagnóstico Directivo" : "Ir al Taller de Mejora") : "Activar Fase ASEGURAR")}
+                                {isSaving ? "Sincronizando..." : (
+                                    (loading && !progreso) ? "Cargando..." :
+                                        (progreso?.Capa_1_Sentido === 'COMPLETADO' || statusAsegurar
+                                            ? (isDirectivo ? "Ir al Diagnóstico Directivo" : "Ir al Taller de Mejora")
+                                            : "Activar Fase ASEGURAR")
+                                )}
                             </button>
                             <p className="helper-text">
                                 {isDirectivo ? "Accederá al radar institucional y al constructor de plan estratégico." : "Accederá a la interfaz de comparativa y refactor de prompts éticos."}
@@ -236,26 +287,41 @@ const FaseAsegurar = ({ userData, API_URL, onNavigate, onRefreshProgreso }) => {
                                     <p style={{fontSize: '0.85rem', color: '#666', margin: '10px 0'}}>
                                         Refactoriza tu prompt previo para eliminar riesgos de agencia y privacidad.
                                     </p>
-                                    <button onClick={() => onNavigate('taller_asegurar')} className="btn-launch-mission">
-                                        {statusAsegurar ? "Ver Mejora Realizada" : "Realizar Upgrade"}
-                                    </button>
+                                            <button
+                                                onClick={() => handleNavegacionSegura('taller_asegurar')}
+                                                className="btn-launch-mission"
+                                                // Bloqueamos el botón si está cargando el fetch inicial o si ya hizo clic para navegar
+                                                disabled={loading || isNavigating}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '8px',
+                                                    minWidth: '200px', // Un poco más ancho para que el texto no salte
+                                                    cursor: (loading || isNavigating) ? 'wait' : 'pointer',
+                                                    opacity: (loading || isNavigating) ? 0.8 : 1,
+                                                    transition: 'all 0.3s ease'
+                                                }}
+                                            >
+                                                {(loading || isNavigating) ? (
+                                                    <>
+                                                        {/* Spinner animado consistente con tu estilo global */}
+                                                        <span className="spinner-mini" style={{
+                                                            animation: 'spin 1s linear infinite',
+                                                            border: '2px solid rgba(255,255,255,0.3)',
+                                                            borderTop: '2px solid #fff',
+                                                            borderRadius: '50%',
+                                                            width: '14px',
+                                                            height: '14px'
+                                                        }}></span>
+                                                        <span>Cargando datos...</span>
+                                                    </>
+                                                ) : (
+                                                    /* Estado dinámico: Si existe registro en statusAsegurar significa que ya lo hizo */
+                                                    statusAsegurar ? "Ver Mejora Realizada" : "Realizar Upgrade"
+                                                )}
+                                            </button>
                                     {statusAsegurar && <div className="badge-done">Completado</div>}
-                                </div>
-
-                                <div className={`reto-card-premium ${statusAsegurar ? 'active' : 'locked'}`}>
-                                    <div className="reto-icon-box">📄</div>
-                                    <span className="reto-label">Misión 2</span>
-                                    <h3>Estándar de Uso Responsable</h3>
-                                    <p style={{fontSize: '0.85rem', color: '#666', margin: '10px 0'}}>
-                                        Obtén tu declaración jurada de ética docente para el Logbook.
-                                    </p>
-                                    {!statusAsegurar ? (
-                                        <div className="lock-indicator">🔒 Requiere Upgrade</div>
-                                    ) : (
-                                        <button onClick={() => onNavigate('ver_estandar_asegurar')} className="btn-launch-mission">
-                                            Ver Documento Final
-                                        </button>
-                                    )}
                                 </div>
                             </>
                         )}

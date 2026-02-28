@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import "../Styles/LaboratorioEtico.css"; 
 
-const RetosLiderar = ({ userData, API_URL, retoId, onNavigate }) => {
+const RetosLiderar = ({ userData, API_URL, retoId, onNavigate, datosIniciales }) => {
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [esPublico, setEsPublico] = useState(false); 
@@ -336,8 +336,61 @@ const RetosLiderar = ({ userData, API_URL, retoId, onNavigate }) => {
     };
 
     // --- PERSISTENCIA Y CARGA (CORREGIDO PARA MARCAR RESPUESTAS) ---
+    // 1. FUNCIÓN MAESTRA DE CARGA (Para reutilizar lógica)
+    const cargarDatosEnFormulario = (registro) => {
+        if (!registro) return;
+
+        setAnalisisFinal(registro);
+        setEsPublico(registro.Es_Publico === "SÍ");
+        setHaInteractuadoP2(true);
+
+        let respuestasCargadas = { q1: null, q2: null, q3: null, q4: null, q5: null };
+        
+        // Limpieza de respuestas (JSON o String)
+        if (registro.Detalle_Respuestas) {
+            try {
+                const parsed = JSON.parse(registro.Detalle_Respuestas);
+                if (parsed.respuestas) {
+                    Object.keys(parsed.respuestas).forEach(key => {
+                        respuestasCargadas[key] = limpiarTextoRespuesta(parsed.respuestas[key]);
+                    });
+                }
+            } catch (e) { console.error("Error parseando respuestas JSON:", e); }
+        } else if (registro.Clasificacion_Riesgo && registro.Clasificacion_Riesgo.includes("|")) {
+            const partes = registro.Clasificacion_Riesgo.split("|");
+            partes.forEach(p => {
+                if (p.includes("R1:")) respuestasCargadas.q1 = limpiarTextoRespuesta(p.split("R1:")[1]);
+                if (p.includes("R2:")) respuestasCargadas.q2 = limpiarTextoRespuesta(p.split("R2:")[1]);
+                if (p.includes("R3:")) respuestasCargadas.q3 = limpiarTextoRespuesta(p.split("R3:")[1]);
+                if (p.includes("R4:")) respuestasCargadas.q4 = limpiarTextoRespuesta(p.split("R4:")[1]);
+                if (p.includes("R5:")) respuestasCargadas.q5 = limpiarTextoRespuesta(p.split("R5:")[1]);
+            });
+        }
+
+        setFormData({
+            promptReal: registro.Prompt_Original || "",
+            analisisAuto: analizarPromptHeuristico(registro.Prompt_Original || ""),
+            rubricaAuto: {
+                etica: parseInt(registro.Puntaje_Etica) || 3,
+                privacidad: parseInt(registro.Puntaje_Privacidad) || 3,
+                agencia: parseInt(registro.Puntaje_Agencia) || 3,
+                cognitiva: parseInt(registro.Puntaje_Dependencia) || 3,
+            },
+            respuestasSimulador: respuestasCargadas
+        });
+    };
+
+    // 2. EFECTO DE CARGA INICIAL (Prioriza datos de Props)
     useEffect(() => {
         const fetchDatos = async () => {
+            // SI YA TENEMOS DATOS INICIALES DEL PADRE, NO HACEMOS FETCH
+            if (datosIniciales) {
+                cargarDatosEnFormulario(datosIniciales);
+                setLoading(false);
+                return;
+            }
+
+            // SOLO SI NO HAY PROPS, BUSCAMOS EN LA DB
             setLoading(true);
             try {
                 const params = new URLSearchParams({ sheet: "Liderar_Prompts_Docentes", user_key: userData.Teacher_Key });
@@ -345,65 +398,30 @@ const RetosLiderar = ({ userData, API_URL, retoId, onNavigate }) => {
                 const data = await res.json();
                 if (Array.isArray(data) && data.length > 0) {
                     const registro = data.find(r => r.Teacher_Key === userData.Teacher_Key);
-                    if (registro) {
-                        setAnalisisFinal(registro);
-                        setEsPublico(registro.Es_Publico === "SÍ");
-                        setHaInteractuadoP2(true);
-
-                        let respuestasCargadas = { q1: null, q2: null, q3: null, q4: null, q5: null };
-                        
-                        // Lógica para procesar las respuestas y limpiar prefijos R1:, R2:, etc.
-                        if (registro.Detalle_Respuestas) {
-                            try {
-                                const parsed = JSON.parse(registro.Detalle_Respuestas);
-                                if (parsed.respuestas) {
-                                    Object.keys(parsed.respuestas).forEach(key => {
-                                        respuestasCargadas[key] = limpiarTextoRespuesta(parsed.respuestas[key]);
-                                    });
-                                }
-                            } catch (e) { console.error("Error parseando respuestas JSON:", e); }
-                        } else if (registro.Clasificacion_Riesgo) {
-                            // Si no hay JSON, intentamos extraer del string de clasificación (como el que mostraste)
-                            const stringRiesgo = registro.Clasificacion_Riesgo;
-                            if (stringRiesgo.includes("|")) {
-                                const partes = stringRiesgo.split("|");
-                                partes.forEach(p => {
-                                    if (p.includes("R1:")) respuestasCargadas.q1 = limpiarTextoRespuesta(p.split("R1:")[1]);
-                                    if (p.includes("R2:")) respuestasCargadas.q2 = limpiarTextoRespuesta(p.split("R2:")[1]);
-                                    if (p.includes("R3:")) respuestasCargadas.q3 = limpiarTextoRespuesta(p.split("R3:")[1]);
-                                    if (p.includes("R4:")) respuestasCargadas.q4 = limpiarTextoRespuesta(p.split("R4:")[1]);
-                                    if (p.includes("R5:")) respuestasCargadas.q5 = limpiarTextoRespuesta(p.split("R5:")[1]);
-                                });
-                            }
-                        }
-
-                        setFormData({
-                            promptReal: registro.Prompt_Original || "",
-                            analisisAuto: analizarPromptHeuristico(registro.Prompt_Original || ""),
-                            rubricaAuto: {
-                                etica: parseInt(registro.Puntaje_Etica) || 3,
-                                privacidad: parseInt(registro.Puntaje_Privacidad) || 3,
-                                agencia: parseInt(registro.Puntaje_Agencia) || 3,
-                                cognitiva: parseInt(registro.Puntaje_Dependencia) || 3,
-                            },
-                            respuestasSimulador: respuestasCargadas
-                        });
-                    }
+                    if (registro) cargarDatosEnFormulario(registro);
                 }
-            } catch (e) { console.error(e); } finally { setLoading(false); }
+            } catch (e) { 
+                console.error("Error en Fetch Retos:", e); 
+            } finally { 
+                setLoading(false); 
+            }
         };
-        if (userData?.Teacher_Key) fetchDatos();
-    }, [userData.Teacher_Key, API_URL]);
 
+        if (userData?.Teacher_Key) fetchDatos();
+    }, [userData.Teacher_Key, API_URL, datosIniciales]); // Agregamos datosIniciales aquí
+
+    // 3. EFECTO DEL TIMER (Se mantiene igual)
     useEffect(() => {
         const timer = setTimeout(() => {
             if (formData.promptReal) {
-                setFormData(prev => ({ ...prev, analisisAuto: analizarPromptHeuristico(formData.promptReal) }));
+                setFormData(prev => ({ 
+                    ...prev, 
+                    analisisAuto: analizarPromptHeuristico(formData.promptReal) 
+                }));
             }
         }, 800);
         return () => clearTimeout(timer);
     }, [formData.promptReal]);
-
     // --- FUNCIÓN DE GUARDADO ---
     const handleSave = async (statusFinal = 'non completed') => {
         if (isSaving) return; 
@@ -467,10 +485,16 @@ const RetosLiderar = ({ userData, API_URL, retoId, onNavigate }) => {
     const infoRubrica = getEstadoRubrica();
     const riesgoGlobal = getAnalisisRiesgo();
 
-    if (loading) return <div className="latlab-sync-pill">Cargando Laboratorio...</div>;
-
     return (
         <div className="latlab-unique-wrapper">
+            {loading && formData.promptReal && (
+                <div className="atlas-sync-float">
+                    <div className="atlas-sync-pill">
+                        <span className="sync-icon">🔄</span>
+                        <span className="sync-text">Sincronizando Laboratorio...</span>
+                    </div>
+                </div>
+            )}
             <header className="latlab-main-header">
                 <div className="latlab-header-brand">
                     <button className="latlab-btn-back" onClick={() => onNavigate('fase_liderar')}>← Atras</button>
