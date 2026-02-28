@@ -328,7 +328,12 @@ const ModuloDirectivoEstrategico = ({ userData, API_URL, onNavigate }) => {
         return { nivel: "EMERGENTE", color: "#e53e3e" };
     };
 
-    if (loading) return <div className="loader-directivo">Sincronizando Inteligencia Institucional...</div>;
+    if (loading) return (
+        <div className="dash-lider-2026-loader">
+            <div className="dash-lider-2026-spinner"></div>
+            <p>SINCRONIZANDO INTELIGENCIA INSTITUCIONAL...</p>
+        </div>
+    );
 
     return (
         <div className="directivo-wrapper">

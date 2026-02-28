@@ -341,6 +341,40 @@
     color: #ef4444;
 }
 
+/* --- LOADER ESTRUCTURADO --- */
+.dash-lider-2026-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 60vh; /* Ajustado para que no ocupe toda la pantalla si está dentro de un contenedor */
+    width: 100%;
+}
+
+.dash-lider-2026-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(197, 160, 89, 0.1); /* Fondo del círculo muy tenue */
+    border-top: 5px solid #c5a059; /* El color dorado de tu marca */
+    border-radius: 50%;
+    animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+    margin-bottom: 20px;
+}
+
+.dash-lider-2026-loader p {
+    font-family: 'Montserrat', sans-serif; /* O la que uses en tu app */
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #c5a059;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+@keyframes spin { 
+    0% { transform: rotate(0deg); } 
+    100% { transform: rotate(360deg); } 
+}
+
 /* =============================================
    ANIMACIONES Y RESPONSIVE
    ============================================= */
