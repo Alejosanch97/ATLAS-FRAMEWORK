@@ -1,0 +1,286 @@
+/* =========================================
+   MODULO SOSTENER - DOCENTE (ESTÁNDAR ATLAS)
+   ========================================= */
+.sostener-page-wrapper {
+    --primary: #c5a059;
+    --primary-dark: #a8894a;
+    --bg: #f8fafc;
+    --white: #ffffff;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --gold-light: rgba(197, 160, 89, 0.1);
+    
+    background-color: var(--bg);
+    min-height: 100vh;
+    padding: 30px;
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+}
+
+/* Animaciones */
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- VISTA: MENU PRINCIPAL --- */
+.sostener-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 20px;
+}
+
+.sostener-header h2 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text);
+    margin: 0;
+}
+
+.btn-back-atlas {
+    background: var(--white);
+    border: 1px solid var(--border);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-back-atlas:hover {
+    background: #f1f5f9;
+}
+
+.sostener-grid-menu {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.sos-card-main {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.sos-card-main:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+}
+
+.sos-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.sos-card-main h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.sos-card-main p {
+    color: var(--text-muted);
+    margin-bottom: 30px;
+}
+
+.sos-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.btn-sos-primary {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-sos-secondary {
+    background: #f1f5f9;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 12px 25px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.is-locked {
+    opacity: 0.6;
+    filter: grayscale(1);
+    cursor: not-allowed;
+}
+
+/* --- VISTA: CUESTIONARIO --- */
+.sos-form-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+}
+
+.sos-dim-group {
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #f8fafc;
+}
+
+.sos-dim-group h3 {
+    color: var(--primary-dark);
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.sos-q-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #f1f5f9;
+    gap: 20px;
+}
+
+.sos-q-item span {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.sos-likert {
+    display: flex;
+    gap: 8px;
+}
+
+.sos-likert button {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: white;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.sos-likert button.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    transform: scale(1.1);
+}
+
+.btn-sos-submit {
+    width: 100%;
+    margin-top: 20px;
+    background: var(--text);
+    color: white;
+    padding: 18px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 1.1rem;
+    border: none;
+    cursor: pointer;
+}
+
+/* --- VISTA: DASHBOARD --- */
+.sos-dash-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    max-width: 1100px;
+    margin: 20px auto;
+}
+
+.sos-dash-top {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1fr;
+    gap: 20px;
+}
+
+.sos-stat-card {
+    background: white;
+    padding: 25px;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.sos-stat-card.gold {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: white;
+    border: none;
+    text-align: center;
+}
+
+.sos-stat-card h4 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 15px;
+}
+
+.sos-stat-card.gold h4 { color: rgba(255,255,255,0.6); }
+
+.sos-big-val {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin: 10px 0;
+}
+
+.sos-alert-pill {
+    background: #fff1f2;
+    color: #be123c;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.sos-history-chart {
+    background: white;
+    padding: 30px;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+}
+
+/* Mobile Responsive */
+@media (max-width: 900px) {
+    .sos-dash-top {
+        grid-template-columns: 1fr;
+    }
+    
+    .sos-q-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .sostener-grid-menu {
+        grid-template-columns: 1fr;
+    }
+}

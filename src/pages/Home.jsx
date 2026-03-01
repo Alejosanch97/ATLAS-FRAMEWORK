@@ -129,7 +129,7 @@ export const Home = ({ onLoginSuccess }) => {
                             </div>
                             <form onSubmit={handleSubmit} className="atlas-form">
                                 <div className="input-field">
-                                    <label>Teacher Key</label>
+                                    <label>Usuario</label>
                                     <input type="text" name="user_key" placeholder="Ingresa tu clave" value={credentials.user_key} onChange={handleInputChange} required />
                                 </div>
                                 <div className="input-field">

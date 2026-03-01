@@ -22,6 +22,12 @@ import TallerMejoraAsegurar from "./TallerMejoraAsegurar";
 
 import ModuloDirectivoEstrategico from "./ModuloDirectivoEstrategico"; 
 
+import FaseSostener from "./FaseSostener"; 
+import ModuloSostener from "./ModuloSostener";
+import ModuloSostenerDirectivo from "./ModuloSostenerDirectivo";
+
+
+
 const API_URL = 'https://script.google.com/macros/s/AKfycbxcqIbNhC3H7za-GsBF9iuTU___o8OBCF8URGNxwdQm5q8pUd1vpgthbYyrBRkGXJ5Y8Q/exec';
 
 export const Dashboard = ({ onLogout }) => {
@@ -60,6 +66,8 @@ export const Dashboard = ({ onLogout }) => {
     const [showImprovement, setShowImprovement] = useState(false);
     const [seguimientoData, setSeguimientoData] = useState([]);
     const [datosCacheAsegurar, setDatosCacheAsegurar] = useState(null);
+    const [datosSostener, setDatosSostener] = useState(null);
+    const [datosSostenerDir, setDatosSostenerDir] = useState([]);
 
     // 1. Definimos cuál está abierto (empezamos con 'consola')
     const [openMenu, setOpenMenu] = useState('consola');
@@ -94,7 +102,9 @@ export const Dashboard = ({ onLogout }) => {
                 fetch(`${API_URL}?sheet=Respuestas_Usuarios&user_key=${key}`),
                 fetch(`${API_URL}?sheet=Liderar_Prompts_Docentes&user_key=${key}`),
                 fetch(`${API_URL}?sheet=Liderar_Seguimiento_Directivo`).catch(() => null),
-                fetch(`${API_URL}?sheet=ASEGURAR_Docentes&user_key=${key}`)
+                fetch(`${API_URL}?sheet=ASEGURAR_Docentes&user_key=${key}`),
+                fetch(`${API_URL}?sheet=SOSTENER_Docentes&user_key=${key}`),
+                fetch(`${API_URL}?sheet=SOSTENER_Directivo`).catch(() => null)
             ];
 
             // Si es admin/directivo, agregamos la carga de usuarios al lote inicial
@@ -118,6 +128,8 @@ export const Dashboard = ({ onLogout }) => {
                 dataLiderar,
                 dataSeguimiento,
                 dataAsegurar,
+                dataSostener,
+                dataSostenerDir,
                 dataUsers // Este será undefined si no es admin
             ] = dataResults;
 
@@ -131,6 +143,8 @@ export const Dashboard = ({ onLogout }) => {
             if (Array.isArray(dataAsegurar) && dataAsegurar.length > 0) {
                 setDatosCacheAsegurar(dataAsegurar[dataAsegurar.length - 1]);
             }
+            setDatosSostener(Array.isArray(dataSostener) ? dataSostener[dataSostener.length - 1] : null);
+            setDatosSostenerDir(Array.isArray(dataSostenerDir) ? dataSostenerDir : []);
 
             if (dataUsers && Array.isArray(dataUsers)) {
                 setAllUsers(dataUsers);
@@ -244,7 +258,7 @@ export const Dashboard = ({ onLogout }) => {
         if (tab === 'ejecutar_reto') {
             // Si vamos a ejecutar un reto, el 'extra' es el número del reto (1, 2, 3)
             setActiveRetoId(extra);
-        } else if (tab === 'fase_auditar' || tab === 'fase_transformar') {
+        } else if (tab === 'fase_auditar' || tab === 'fase_transformar' || tab === 'fase_sostener') {
             // Secciones directas, no requieren 'filterPhase' obligatorio pero 
             // reseteamos el extra por seguridad
             setFilterPhase("");
@@ -395,6 +409,10 @@ export const Dashboard = ({ onLogout }) => {
                 return { title: "Fase: Asegurar", subtitle: "Gobernanza y Sostenibilidad de la IA" };
             case "taller_asegurar":
                 return { title: "Taller de Mejora Guiada", subtitle: "Refactorización Ética de Prácticas" };
+            case "fase_sostener":
+                return { title: "Fase: Sostener", subtitle: "S - Sostener: Radar de Madurez y Diario Reflexivo" };
+            case "modulo_sostener_directivo":
+                return { title: "Panel de Impacto", subtitle: "S - Sostener: Proyección y Sostenibilidad Institucional" };
             case "analisis_liderazgo":
                 return {
                     title: "Dashboard de Gobernanza",
@@ -494,7 +512,9 @@ export const Dashboard = ({ onLogout }) => {
                 body: `Tu COMPASS de IA indica que has alcanzado un nivel de integración pedagógica avanzada y coherente. 
             Has demostrado evidencia sólida en las cinco fases: AUDITAR, TRANSFORMAR, LEDERAR, ASEGURAR y SOSTENER. 
             La inteligencia artificial en tu práctica está mediada por criterio profesional, alineada con estándares de calidad y documentada.`,
-                footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de validación de coherencia e impacto.",
+                /*
+footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de validación de coherencia e impacto.",
+*/
                 howToImprove: [
                     "Evidencia transversal en las cinco fases.",
                     "Coherencia entre práctica declarada y práctica observada.",
@@ -703,10 +723,29 @@ export const Dashboard = ({ onLogout }) => {
                             </div>
                         )}
                     </div>
+                    {/* --- SECCIÓN S - SOSTENER --- */}
                     <div className="atlas-nav-group">
-                        <div className="atlas-group-header" style={{ opacity: 0.5 }}>
-                            <span className="marco-letter">S</span> SOSTENER
+                        <div
+                            className={`atlas-group-header clickable ${openMenu === 'sostener' ? 'active-group' : ''}`}
+                            onClick={() => toggleMenu('sostener')}
+                        >
+                            <div><span className="marco-letter">S</span> SOSTENER</div>
+                            <span className="menu-arrow">{openMenu === 'sostener' ? "▾" : "▸"}</span>
                         </div>
+                        {openMenu === 'sostener' && (
+                            <div className="nav-submenu">
+                                <button
+                                    className={(activeTab === "fase_sostener" || activeTab === "modulo_sostener_directivo") ? "active-phase" : "phase-btn"}
+                                    onClick={() => {
+                                        // Si es directivo, va a su panel especial, si no, al normal
+                                        const destino = userData.Rol === "DIRECTIVO" ? "modulo_sostener_directivo" : "fase_sostener";
+                                        switchTab(destino);
+                                    }}
+                                >
+                                    {userData.Rol === "DIRECTIVO" ? "Impacto Institucional" : "Radar y Huella"}
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                 </nav>
@@ -761,7 +800,7 @@ export const Dashboard = ({ onLogout }) => {
                                         </p>
                                         <p>
                                             Funciona como una brújula profesional: te orienta sobre el nivel de coherencia, evidencia y criterio con el que estás tomando decisiones frente a la IA en el aula.
-                                            Cada avance se basa en <strong>evidencia demostrada</strong>, no en tiempo invertido ni en cantidad de herramientas utilizadas.
+                                            Cada avance se basa en <strong>evidencia demostrada</strong>, no en tiempo invertido ni en cantidad de herramientas utilizadas. Alineado con estándares internacionales de IA confiable y gobernanza educativa.
                                         </p>
                                     </div>
 
@@ -1309,6 +1348,40 @@ export const Dashboard = ({ onLogout }) => {
                             if (tab === "fase_asegurar" || tab === "overview") handleManualRefresh();
                             switchTab(tab);
                         }}
+                    />
+                )}
+
+                {/* --- SECCIÓN S - SOSTENER (SOLUCIÓN AL NOT FOUND) --- */}
+                
+                {/* 1. Vista principal de la fase para Docentes */}
+                {activeTab === "fase_sostener" && (
+                    <FaseSostener 
+                        userData={userData}
+                        API_URL={API_URL}
+                        onNavigate={switchTab}
+                        onRefreshProgreso={handleManualRefresh}
+                        datosExistentes={datosSostener} 
+                        existingResponses={userResponses}
+                    />
+                )}
+
+                {/* 2. El Radar y la Huella (Módulo detallado) */}
+                {activeTab === "modulo_sostener" && (
+                    <ModuloSostener 
+                        userData={userData}
+                        API_URL={API_URL}
+                        onNavigate={switchTab}
+                        datosExistentes={datosSostener}
+                    />
+                )}
+
+                {/* 3. Vista para Directivos (Impacto Institucional) */}
+                {activeTab === "modulo_sostener_directivo" && (
+                    <ModuloSostenerDirectivo 
+                        userData={userData}
+                        API_URL={API_URL}
+                        onNavigate={switchTab}
+                        datosSostener={datosSostenerDir}
                     />
                 )}
 
