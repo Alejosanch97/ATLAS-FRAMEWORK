@@ -81,7 +81,7 @@ export const FaseAuditar = ({ userData, API_URL, onNavigate, existingResponses =
         return Math.max(...Object.values(intentosMap));
     };
 
-    const puntajeFinal = obtenerPuntajeDirecto();
+    const puntajeFinal = React.useMemo(() => obtenerPuntajeDirecto(), [respuestasUsuario, userData.Rol]);
 
     const getCompassData = (score) => {
         if (score >= 90) return {
@@ -157,7 +157,136 @@ Estás en el inicio del camino ATLAS.`
         };
     };
 
-    const compass = getCompassData(puntajeFinal);
+    const getCompassDataDirectivo = (score) => {
+        if (score >= 90) return {
+            nivel: "Gobernanza alineada internacionalmente",
+            rango: "90–100",
+            desc: `Tu puntaje refleja el nivel actual de madurez institucional en gobernanza de IA educativa.
+
+No mide adopción tecnológica.
+Mide coherencia, supervisión, gestión de riesgo y alineación con estándares internacionales.
+
+En este nivel la institución demuestra una madurez alta en gobernanza de IA, alineada con principios internacionales de ética, supervisión humana, protección de datos y rendición de cuentas.
+
+Evidencias:
+• Existen políticas formales y monitoreo sistemático.
+• Se realizan evaluaciones de riesgo antes de implementar.
+• Se documenta impacto y decisiones automatizadas.
+• Hay mecanismos claros de reclamación y revisión.
+• La cultura institucional incorpora criterios éticos y pedagógicos explícitos.
+
+La IA no es solo una herramienta.
+Es un componente regulado dentro de la arquitectura institucional.
+
+El desafío en este nivel no es crecer, sino sostener coherencia y liderazgo.
+
+Te invitamos a avanzar en el modelo ATLAS y consolidar la gobernanza de IA responsable en tu institución.
+
+Este diagnóstico es una fotografía del momento actual.
+La meta no es alcanzar 100 por cumplimiento.
+La meta es asegurar que la adopción de IA ocurra con coherencia pedagógica, responsabilidad ética y solidez institucional.`
+        };
+
+        if (score >= 75) return {
+            nivel: "Gobernanza consolidada",
+            rango: "75–89",
+            desc: `Tu puntaje refleja el nivel actual de madurez institucional en gobernanza de IA educativa.
+
+La IA estaría integrada dentro de una arquitectura institucional coherente.
+
+En este nivel existen protocolos formales, responsabilidades definidas, supervisión humana obligatoria y evaluación de impacto periódica.
+
+Evidencias de gobernanza:
+• Hay comité o instancia de seguimiento.
+• Se documentan decisiones relevantes.
+• Se gestionan riesgos de manera preventiva.
+• Hay transparencia hacia la comunidad educativa.
+
+La institución no solo regula el uso de IA: lo gobierna.
+
+El siguiente paso es asegurar sostenibilidad y mejora continua.
+
+Recuerda:
+Este diagnóstico es una fotografía del momento actual.
+La meta es fortalecer coherencia, responsabilidad ética y solidez institucional.`
+        };
+
+        if (score >= 60) return {
+            nivel: "Gobernanza estructurada",
+            rango: "60–74",
+            desc: `Tu puntaje refleja el nivel actual de madurez institucional en gobernanza de IA educativa.
+
+Según tu diagnóstico como directivo, la institución parece contar con política formal y criterios explícitos sobre el uso de IA.
+
+Recuerda que en este nivel:
+• Hay lineamientos escritos.
+• Se consideran riesgos éticos y de datos.
+• Existe revisión antes de escalar implementación.
+• Hay formación docente estructurada.
+
+Se deberían poder evidenciar prácticas de supervisión humana significativa, revisión de riesgos y documentación de procesos.
+
+Sin embargo, el monitoreo aún puede no ser sistemático o la evaluación de impacto no estar completamente integrada.
+
+A este punto la institución ya no improvisa: organiza.
+
+Este diagnóstico es una fotografía del momento actual.
+El desafío ahora es avanzar hacia monitoreo sistemático y mejora continua.`
+        };
+
+        if (score >= 40) return {
+            nivel: "Gobernanza emergente",
+            rango: "40–59",
+            desc: `Tu puntaje refleja el nivel actual de madurez institucional en gobernanza de IA educativa.
+
+La institución parece haber iniciado conversaciones y posiblemente tiene lineamientos preliminares sobre el uso de IA, pero estos no parecen estar completamente formalizados ni monitoreados.
+
+En este nivel:
+• Podría existir política escrita, pero sin seguimiento estructurado.
+• La supervisión humana no parece ser consistente.
+• La gestión de riesgo sería parcial.
+• No habría evaluación sistemática de impacto.
+
+Existe intención estratégica, pero aún no parece evidenciarse arquitectura consolidada.
+
+El desafío ahora es pasar de intención a institucionalización.
+
+Recuerda:
+La meta no es adoptar más herramientas, sino construir coherencia institucional, responsabilidad ética y estructuras claras de gobernanza.`
+        };
+
+        return {
+            nivel: "Gobernanza inexistente",
+            rango: "0–39",
+            desc: `Tu puntaje refleja el nivel actual de madurez institucional en gobernanza de IA educativa.
+
+Actualmente la institución parece no contar con una estructura formal de gobernanza para el uso de IA.
+
+Puede haber uso aislado de herramientas, pero no se detectan lineamientos institucionales claros, supervisión estructurada ni protocolos de gestión de riesgo documentados.
+
+En este nivel:
+• No parece haber política formal.
+• No habría evaluación sistemática de riesgos.
+• No se encontrarían mecanismos claros de rendición de cuentas.
+• El uso dependería de decisiones individuales.
+
+El principal riesgo no es tecnológico, sino institucional: desarticulación y exposición jurídica.
+
+El siguiente paso no es prohibir ni adoptar más herramientas, sino establecer principios básicos, responsabilidades explícitas y criterios institucionales claros.
+
+Este diagnóstico es una fotografía del momento actual.
+Es el punto de partida para construir una gobernanza sólida y responsable.`
+        };
+    };
+
+
+    
+
+    const compass = React.useMemo(() => {
+        return userData.Rol === "DIRECTIVO"
+            ? getCompassDataDirectivo(puntajeFinal)
+            : getCompassData(puntajeFinal);
+    }, [puntajeFinal, userData.Rol]);
 
     const calcularNotaReal = (moduloId) => {
         const idFormBuscado = FORM_IDS_MAP[moduloId];
@@ -187,11 +316,12 @@ Estás en el inicio del camino ATLAS.`
     const isProcessComplete = progreso?.Capa_1_Sentido === 'COMPLETADO' && formsCompletos;
 
     useEffect(() => {
-        // Solo mostrar alerta de nivel si es DOCENTE
-        if (isProcessComplete && !loading && userData.Rol === "DOCENTE") {
+        if (isProcessComplete && !loading) {
             Swal.fire({
                 title: `Nivel: ${compass.nivel}`,
-                text: "Has completado con éxito la primera etapa de Auditoría ATLAS.",
+                text: userData.Rol === "DIRECTIVO"
+                    ? "Se ha completado el diagnóstico de gobernanza institucional."
+                    : "Has completado con éxito la primera etapa de Auditoría ATLAS.",
                 icon: "success",
                 confirmButtonColor: "#c5a059",
                 timer: 5000,
@@ -287,12 +417,10 @@ Estás en el inicio del camino ATLAS.`
                         <p>Diagnóstico</p>
                     </div>
                     {/* PASO 3 SOLO PARA DOCENTE */}
-                    {userData.Rol === "DOCENTE" && (
-                        <div className={`step-item ${isProcessComplete ? 'done' : ''}`}>
-                            <span className="step-num">{isProcessComplete ? "✓" : "3"}</span>
-                            <p>Resultado</p>
-                        </div>
-                    )}
+                    <div className={`step-item ${isProcessComplete ? 'done' : (formsCompletos ? 'active' : '')}`}>
+                        <span className="step-num">{isProcessComplete ? "✓" : "3"}</span>
+                        <p>{userData.Rol === "DIRECTIVO" ? "Gobernanza" : "Resultado"}</p>
+                    </div>
                 </div>
             </div>
 
@@ -331,7 +459,7 @@ Estás en el inicio del camino ATLAS.`
             </div>
 
             {/* --- CAPA 3: RESULTADOS COMPASS SOLO PARA DOCENTES --- */}
-            {isProcessComplete && userData.Rol === "DOCENTE" && (
+            {isProcessComplete && (
                 <div className="layer-card-result-full animate-slide-up">
                     <div className="layer-badge-gold">A3</div>
                     
@@ -351,7 +479,7 @@ Estás en el inicio del camino ATLAS.`
                         <div className="result-details-grid">
                             <article className="interpretation-column">
                                 <h4 className="detail-title">Interpretación de Resultados</h4>
-                                <p className="description-text">
+                                <p className="description-text" style={{ whiteSpace: 'pre-line' }}>
                                     {compass.desc}
                                 </p>
                                 <aside className="disclaimer-note">
@@ -371,15 +499,6 @@ Estás en el inicio del camino ATLAS.`
                             </article>
                         </div>
                     </div>
-                </div>
-            )}
-            
-            {/* Si es DIRECTIVO y terminó, mostramos el botón de finalizar fuera de la Capa 3 */}
-            {isProcessComplete && userData.Rol === "DIRECTIVO" && (
-                <div style={{ textAlign: 'center', marginTop: '30px' }}>
-                    <button className="btn-go-diagnostic" style={{ padding: '15px 40px' }} onClick={() => onNavigate('overview')}>
-                        Finalizar Fase Auditoría
-                    </button>
                 </div>
             )}
         </div>
