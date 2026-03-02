@@ -84,8 +84,18 @@ export const Dashboard = ({ onLogout }) => {
 
     // Función auxiliar para verificar si una fase está bloqueada
     const isLocked = (nivelRequerido) => {
-        // El ADMIN siempre tiene todo desbloqueado
+        // 1. El ADMIN siempre tiene todo desbloqueado
         if (userData?.Rol === "ADMIN") return false;
+
+        // 2. EXCEPCIÓN: Usuarios de prueba o VIP (Acceso total)
+        const usuariosVIP = ["1DOCENTE", "1DIRECTIVO"];
+        const miKey = String(userData?.Teacher_Key || "").trim();
+
+        if (usuariosVIP.includes(miKey)) {
+            return false; // No se bloquea nada para ellos
+        }
+
+        // 3. Para el resto de usuarios, se aplica la restricción por tiempo
         return faseDisponible < nivelRequerido;
     };
 
@@ -217,7 +227,7 @@ export const Dashboard = ({ onLogout }) => {
                     const config = allFormsInfo.find(f => f.ID_Form === idBuscado);
                     const maximo = parseFloat(config?.Puntos_Maximos || 100);
                     // Proporción sobre el 20%
-                    pAuditar = (puntosFormulario / maximo) * 20;
+                    pAuditar = (puntosFormulario / maximo) * 10;
                 }
 
                 // --- 2. LIDERAR (8%) ---
