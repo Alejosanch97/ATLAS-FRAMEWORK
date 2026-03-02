@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../Styles/responderFormularios.css'; 
+import Swal from "sweetalert2";
 
 // Se agrega onNavigate y las props inyectadas (existingForms, existingResponses)
 export const ResponderFormularios = ({ 
@@ -78,8 +79,16 @@ export const ResponderFormularios = ({
         return text.split(/(?<!\d),/).map(opt => opt.trim());
     };
 
-    const handleInputChange = (questionId, value, isCheckbox = false) => {
-        if (isCheckbox) {
+    const handleInputChange = (questionId, value, isCheckbox = false, isOrdering = false) => {
+        if (isOrdering) {
+            setCurrentResponses(prev => {
+                const prevOrder = prev[questionId] || [];
+                const newOrder = prevOrder.includes(value)
+                    ? prevOrder.filter(v => v !== value)
+                    : [...prevOrder, value];
+                return { ...prev, [questionId]: newOrder };
+            });
+        } else if (isCheckbox) {
             setCurrentResponses(prev => {
                 const prevValues = prev[questionId] || [];
                 const newValues = prevValues.includes(value)
@@ -99,6 +108,26 @@ export const ResponderFormularios = ({
 
     const handleSubmitAnswers = async (e) => {
         e.preventDefault();
+
+        // --- VALIDACIÓN DE FORMULARIO COMPLETO ---
+        const totalQuestions = selectedForm.questions.length;
+        const answeredQuestions = Object.keys(currentResponses).filter(key => {
+            const val = currentResponses[key];
+            if (Array.isArray(val)) return val.length > 0;
+            return val !== undefined && val !== null && val !== "";
+        }).length;
+
+        if (answeredQuestions < totalQuestions) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Formulario Incompleto',
+                text: `Has respondido ${answeredQuestions} de ${totalQuestions} preguntas. Por favor, completa todo el instrumento antes de enviar.`,
+                confirmButtonColor: '#c5a059',
+                confirmButtonText: 'Entendido'
+            });
+            return;
+        }
+
         const formToSave = { ...selectedForm };
         const responsesToSave = { ...currentResponses };
         
@@ -115,7 +144,10 @@ export const ResponderFormularios = ({
             let answerString = "";
             let totalPoints = 0;
 
-            if (Array.isArray(rawValue)) {
+            if (q.Tipo_Respuesta === "ORDENAR") {
+                answerString = (rawValue || []).map((v, i) => `${i + 1}. ${cleanOptionText(v)}`).join(", ");
+                totalPoints = parseFloat(q.Puntaje_Asociado || 0);
+            } else if (Array.isArray(rawValue)) {
                 answerString = rawValue.map(v => cleanOptionText(v)).join(", ");
                 rawValue.forEach(v => {
                     const match = String(v).match(/\(([^)]+)\)$/);
@@ -150,9 +182,22 @@ export const ResponderFormularios = ({
                 mode: 'no-cors', 
                 body: JSON.stringify({ action: 'create_batch', sheet: 'Respuestas_Usuarios', data: batchData })
             });
+            
+            Swal.fire({
+                icon: 'success',
+                title: '¡Enviado!',
+                text: 'Tus respuestas han sido sincronizadas correctamente.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+
         } catch (err) {
             console.error("Error:", err);
-            alert("Error al sincronizar.");
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de Sincronización',
+                text: 'No pudimos guardar tus datos. Inténtalo de nuevo.'
+            });
         } finally {
             setIsSyncing(false);
         }
@@ -269,6 +314,54 @@ export const ResponderFormularios = ({
                                                         <span className="radio-label-text">{cleanOptionText(opt)}</span>
                                                     </label>
                                                 ))}
+                                            </div>
+                                        )}
+
+                                        {q.Tipo_Respuesta === "ORDENAR" && (
+                                            <div className="options-vertical">
+                                                <p style={{fontSize: '0.7rem', color: '#c5a059', marginBottom: '8px'}}>Selecciona las opciones en orden de importancia (1 es mayor prioridad):</p>
+                                                {splitOptions(q.Opciones_Seleccion).map(opt => {
+                                                    const orderIndex = (currentResponses[q.ID_Pregunta] || []).indexOf(opt);
+                                                    return (
+                                                        <button 
+                                                            key={opt} 
+                                                            type="button" 
+                                                            className={`custom-radio-row ${orderIndex !== -1 ? 'active-order' : ''}`}
+                                                            onClick={() => handleInputChange(q.ID_Pregunta, opt, false, true)}
+                                                            style={{
+                                                                display: 'flex',
+                                                                justifyContent: 'space-between',
+                                                                alignItems: 'center',
+                                                                cursor: 'pointer',
+                                                                width: '100%',
+                                                                padding: '12px',
+                                                                textAlign: 'left',
+                                                                background: orderIndex !== -1 ? '#fdf8ee' : 'white',
+                                                                border: orderIndex !== -1 ? '1px solid #c5a059' : '1px solid #e2e8f0',
+                                                                borderRadius: '8px',
+                                                                marginBottom: '6px'
+                                                            }}
+                                                        >
+                                                            <span className="radio-label-text">{cleanOptionText(opt)}</span>
+                                                            {orderIndex !== -1 && (
+                                                                <span style={{
+                                                                    backgroundColor: '#c5a059',
+                                                                    color: 'white',
+                                                                    borderRadius: '50%',
+                                                                    width: '22px',
+                                                                    height: '22px',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    fontSize: '0.75rem',
+                                                                    fontWeight: 'bold'
+                                                                }}>
+                                                                    {orderIndex + 1}
+                                                                </span>
+                                                            )}
+                                                        </button>
+                                                    );
+                                                })}
                                             </div>
                                         )}
 

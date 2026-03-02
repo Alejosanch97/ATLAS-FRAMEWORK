@@ -1522,6 +1522,17 @@
     font-size: 0.9rem;
 }
 
+.fase-bloqueada {
+    opacity: 0.6;
+    cursor: not-allowed !important;
+    filter: grayscale(0.8);
+    pointer-events: all; /* Permitimos eventos para que el alert funcione */
+}
+
+.fase-bloqueada .atlas-group-header:hover {
+    background: rgba(255, 0, 0, 0.05); /* Un sutil rojo al pasar el mouse por bloqueado */
+}
+
 /* =========================================
    CORRECCIÓN DE RESPONSIVIDAD ATLAS (ACTUALIZADO 2026)
    ========================================= */

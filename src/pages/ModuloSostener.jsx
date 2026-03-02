@@ -6,11 +6,11 @@ import {
 import Swal from "sweetalert2";
 import "../Styles/moduloSostener.css"; 
 
-const ModuloSostener = ({ userData, API_URL, onNavigate, dataSostener }) => {
+const ModuloSostener = ({ userData, API_URL, onNavigate, datosExistentes }) => {
     const [view, setView] = useState("menu"); 
     const [respuestas, setRespuestas] = useState({});
     const [loading, setLoading] = useState(false);
-    const [historial, setHistorial] = useState(dataSostener || []);
+    const [historial, setHistorial] = useState(datosExistentes || []);
     
     // Estados para la integración de Retos y Prompts
     const [retos, setRetos] = useState([]);
@@ -69,13 +69,127 @@ const ModuloSostener = ({ userData, API_URL, onNavigate, dataSostener }) => {
     // Asegúrate de tener este estado declarado arriba de tus funciones
     const [respuestasAuditarReal, setRespuestasAuditarReal] = useState([]);
 
+    const generarDiagnostico = (puntaje) => {
+        const p = parseFloat(puntaje);
+
+        if (p >= 90) return {
+            nivel: "Referente Institucional de Vanguardia",
+            texto: `
+Tu perfil refleja una integración madura, ética y estratégicamente documentada de la inteligencia artificial.
+
+No solo utilizas IA con intención pedagógica clara, sino que ejerces supervisión humana explícita, evalúas impacto en aprendizaje y contribuyes activamente a la gobernanza institucional.
+
+Tu práctica ya no es instrumental: es sistémica. Existe coherencia entre propósito curricular, protección de datos, evaluación crítica y desarrollo profesional continuo.
+
+Este nivel indica que tu uso de IA es sostenible en el tiempo y puede convertirse en modelo replicable dentro de tu institución.
+        `,
+            implicacion: `
+La institución puede apoyarse en tu experiencia para fortalecer lineamientos, acompañar a otros docentes y consolidar procesos de certificación o validación externa.
+        `,
+            accion: `
+• Liderar comunidades de práctica.
+• Documentar casos de impacto medible.
+• Diseñar microformaciones internas.
+• Participar en construcción de política institucional de IA.
+        `
+        };
+
+        if (p >= 80) return {
+            nivel: "Docente Estratégico Consolidado",
+            texto: `
+Tu integración de IA es sólida y coherente con objetivos de aprendizaje. 
+
+Existe intención pedagógica clara, revisión crítica de resultados generados y conciencia ética en el manejo de datos y posibles sesgos.
+
+Estás operando en un nivel donde la IA deja de ser herramienta aislada y se convierte en recurso estratégico dentro de tu diseño didáctico.
+        `,
+            implicacion: `
+El siguiente paso no es usar más tecnología, sino medir con mayor precisión el impacto en autonomía, pensamiento crítico y diferenciación pedagógica.
+        `,
+            accion: `
+• Implementar métricas comparativas antes/después.
+• Profundizar en personalización avanzada.
+• Sistematizar evidencias de mejora.
+        `
+        };
+
+        if (p >= 60) return {
+            nivel: "Integrador en Evolución",
+            texto: `
+Has superado la fase meramente instrumental. La IA ya forma parte de tu práctica con intención pedagógica identificable.
+
+Sin embargo, aún existen oportunidades para fortalecer la dimensión ética, la documentación de impacto y la sistematicidad del proceso.
+
+Tu integración es funcional, pero puede volverse más estratégica y medible.
+        `,
+            implicacion: `
+El crecimiento en este nivel depende de consolidar supervisión humana explícita, fortalecer protección de datos y evaluar resultados de aprendizaje más allá de la eficiencia operativa.
+        `,
+            accion: `
+• Diseñar secuencias didácticas donde la IA tenga rol definido y evaluable.
+• Revisar políticas institucionales de protección de datos.
+• Iniciar registro estructurado de experiencias.
+        `
+        };
+
+        if (p >= 40) return {
+            nivel: "Explorador Inicial",
+            texto: `
+Te encuentras en una fase de aproximación activa a la inteligencia artificial.
+
+El uso actual muestra interés y apertura, pero aún predomina un enfoque funcional u ocasional. La integración no es completamente sistemática ni alineada con objetivos curriculares explícitos.
+
+Existe riesgo de automatización sin evaluación profunda del impacto pedagógico.
+        `,
+            implicacion: `
+El desafío en esta etapa no es incorporar más herramientas, sino comprender mejor cuándo, cómo y para qué usarlas dentro de un marco ético y estratégico.
+        `,
+            accion: `
+• Formular objetivos de aprendizaje antes de usar IA.
+• Practicar revisión crítica sistemática de resultados generados.
+• Participar en formación específica sobre ética y sesgos.
+        `
+        };
+
+        return {
+            nivel: "Fase de Alfabetización Instrumental",
+            texto: `
+Actualmente el uso de IA en tu práctica es limitado o principalmente operativo.
+
+No se evidencia aún una integración pedagógica estructurada ni una conciencia consolidada sobre riesgos de privacidad, sesgos o dependencia automatizada.
+
+Este resultado no representa una debilidad, sino un punto de partida claro para iniciar un proceso formativo consciente.
+        `,
+            implicacion: `
+El progreso dependerá de fortalecer comprensión conceptual antes de escalar el uso con estudiantes.
+        `,
+            accion: `
+• Comprender principios básicos de protección de datos.
+• Explorar casos de uso pedagógico con acompañamiento.
+• Reflexionar sobre el rol insustituible del criterio docente.
+        `
+        };
+    };
+
+    useEffect(() => {
+        if (datosExistentes) {
+            setHistorial([datosExistentes]);
+            const mapaRespuestas = {};
+            for (let i = 1; i <= 24; i++) {
+                const dimPrefix = i <= 6 ? "D1_P" : i <= 12 ? "D2_P" : i <= 18 ? "D3_P" : "D4_P";
+                const valor = datosExistentes[`${dimPrefix}${i}`];
+                if (valor) mapaRespuestas[i] = Number(valor);
+            }
+            setRespuestas(mapaRespuestas);
+        }
+    }, [datosExistentes]);
+
     useEffect(() => {
         const integrarFases = async () => {
             const tKey = userData?.Teacher_Key;
             if(!tKey) return;
 
             try {
-                // Llamamos a la data filtrada por tu Teacher_Key para asegurar que vemos TUS respuestas
                 const [resAuditar, resRetos, resLiderar] = await Promise.all([
                     fetch(`${API_URL}?sheet=Respuestas_Usuarios&user_key=${tKey}`), 
                     fetch(`${API_URL}?sheet=Retos_Transformar_ATLAS&Teacher_Key=${tKey}`),
@@ -86,56 +200,59 @@ const ModuloSostener = ({ userData, API_URL, onNavigate, dataSostener }) => {
                 const dRetos = await resRetos.json();
                 const dLiderar = await resLiderar.json();
 
-                // --- LÓGICA DE EXTRACCIÓN DE TU AUDITAR REAL (FORM-1770684713222) ---
-                // Filtramos por el ID de formulario que contiene tus textos y niveles
+                // Auditoría Real (Filtro por el ID de formulario específico)
                 const idAuditarCorrecto = "FORM-1770684713222"; 
-                const misDatosReales = dAuditar.filter(r => r.ID_Form === idAuditarCorrecto);
-                
-                // Guardamos los datos literales (Textos, Niveles, etc.)
+                const misDatosReales = Array.isArray(dAuditar) ? dAuditar.filter(r => r.ID_Form === idAuditarCorrecto) : [];
                 setRespuestasAuditarReal(misDatosReales);
 
-                // Calculamos métricas para el mini-panel de adopción si hay datos
                 if (misDatosReales.length > 0) {
-                    const puntajes = misDatosReales
-                        .map(r => Number(r.Puntos_Ganados || 0))
-                        .filter(p => p > 0); // Solo los que sumen puntos
+                    const puntajes = misDatosReales.map(r => Number(r.Puntos_Ganados || 0));
+                    const n = puntajes.length;
 
-                    const promedio = puntajes.length > 0 
-                        ? (puntajes.reduce((a, b) => a + b, 0) / puntajes.length).toFixed(2)
-                        : "0.00";
+                    // 1. MEDIA REAL
+                    const media = puntajes.reduce((a, b) => a + b, 0) / n;
+
+                    // 2. MODA REAL (El valor que más se repite)
+                    const frecuencias = {};
+                    puntajes.forEach(p => frecuencias[p] = (frecuencias[p] || 0) + 1);
+                    const moda = Object.keys(frecuencias).reduce((a, b) => frecuencias[a] > frecuencias[b] ? a : b);
+
+                    // 3. DESVIACIÓN ESTÁNDAR REAL
+                    const varianza = puntajes.reduce((acc, p) => acc + Math.pow(p - media, 2), 0) / n;
+                    const desviacion = Math.sqrt(varianza);
 
                     setSelectedFormReal({
-                        promedio: (promedio * 20).toFixed(1), // Ajuste a escala 100%
-                        analisis: { 
-                            nivel: "Datos de Auditoría Cargados", 
-                            color: "#1a237e" 
-                        }
+                        promedio: (media * 20).toFixed(1),      // Escala 0-100
+                        modaValue: (Number(moda) * 20).toFixed(1), // Escala 0-100
+                        desviacion: desviacion.toFixed(2),       // Dispersión real
+                        analisis: { nivel: "Evidencia de Auditoría", color: "#4c51bf" }
                     });
                 }
-                // --- FIN PROCESAMIENTO AUDITAR ---
 
-                if (Array.isArray(dRetos)) setRetos(dRetos);
-                
+                if (Array.isArray(dRetos)) {
+                    const misRetosFiltrados = dRetos.filter(r => r.Teacher_Key === tKey);
+                    setRetos(misRetosFiltrados);
+                }
                 if (Array.isArray(dLiderar)) {
                     setPromptData(dLiderar.find(p => p.Status === 'completed') || dLiderar[0]);
                 }
 
-                // Lógica de Balance (Antes vs Después)
+                // Cálculo de Balance Global
                 const scoreIni = misDatosReales.length > 0 
                     ? (misDatosReales.reduce((acc, r) => acc + Number(r.Puntos_Ganados || 0), 0) / misDatosReales.length)
                     : 0;
 
                 const ultimoSostener = historial[0];
-                const scoreActual = ultimoSostener ? Number(ultimoSostener.Promedio_Global) * 20 : scoreIni;
+                const scoreActual = ultimoSostener ? Number(ultimoSostener.Promedio_Global) : (scoreIni * 1); // Mantener en escala 1-5
 
                 setBalanceGlobal({
                     antes: { nivel: scoreIni > 4 ? "Estratégico" : "Exploratorio", puntaje: (scoreIni * 20).toFixed(1) },
-                    ahora: { nivel: ultimoSostener?.Nivel_Calculado || "En Proceso", puntaje: scoreActual.toFixed(1) },
+                    ahora: { nivel: ultimoSostener?.Nivel_Calculado || "En Proceso", puntaje: (scoreActual * 20).toFixed(1) },
                     evidencias: { 
                         retos: Array.isArray(dRetos) ? dRetos.filter(r => r.Status_Reto === 'COMPLETADO').length : 0, 
                         notasLiderar: dLiderar[0] || null 
                     },
-                    crecimiento: (scoreActual - (scoreIni * 20)).toFixed(1)
+                    crecimiento: ((scoreActual * 20) - (scoreIni * 20)).toFixed(1)
                 });
 
             } catch (e) { 
@@ -186,10 +303,14 @@ const ModuloSostener = ({ userData, API_URL, onNavigate, dataSostener }) => {
     const handleSave = async () => {
         const res = calcularResultados();
         if (!res) return Swal.fire("Incompleto", "Responde todas las preguntas.", "warning");
+        
         setLoading(true);
         const tKey = userData?.Teacher_Key || "KEY-NOT-FOUND";
-        const instKey = userData?.Institucion_Key || "INST-GENERAL";
-        const idUnico = `SOS-${tKey}-${Date.now()}`;
+        
+        // Si ya hay un historial, usamos ese ID para que la base de datos sepa que es una actualización
+        const esUpdate = historial.length > 0;
+        const idAUsar = esUpdate ? historial[0].ID_Sostener : `SOS-${tKey}-${Date.now()}`;
+
         const respuestasMapeadas = {};
         for (let i = 1; i <= 24; i++) {
             let dimPrefix = i <= 6 ? "D1_P" : i <= 12 ? "D2_P" : i <= 18 ? "D3_P" : "D4_P";
@@ -197,20 +318,42 @@ const ModuloSostener = ({ userData, API_URL, onNavigate, dataSostener }) => {
         }
 
         const excelData = {
-            ID_Sostener: idUnico, Teacher_Key: tKey, Fecha_Evaluacion: new Date().toLocaleDateString('es-ES'),
-            Periodo: "2026-1", Institucion_Key: instKey, ...respuestasMapeadas,
-            Promedio_Global: res.promedioGlobal.toFixed(2), Nivel_Calculado: res.nivel,
+            ID_Sostener: idAUsar, 
+            Teacher_Key: tKey, 
+            Fecha_Evaluacion: new Date().toLocaleDateString('es-ES'),
+            Periodo: "2026-1", 
+            Institucion_Key: userData?.Institucion_Key || "INST-GENERAL", 
+            ...respuestasMapeadas,
+            Promedio_Global: res.promedioGlobal.toFixed(2), 
+            Nivel_Calculado: res.nivel,
             "Promedio_D1, Promedio_D2, Promedio_D3, Promedio_D4": `${res.promediosD[0].promedio}, ${res.promediosD[1].promedio}, ${res.promediosD[2].promedio}, ${res.promediosD[3].promedio}`,
-            Alertas_Activas: res.alertas.join(" | ") || "Sin Alertas", Reflexion_Antes: "", Reflexion_Despues: "", Aprendizaje_Clave: "",
-            Porcentaje_Crecimiento: `${balanceGlobal.crecimiento}%`, Prioridad_Sostener: "Media", Compromiso_Accion: "", Evidencia_Mejora: "", Fecha_Revision_Plan: ""
+            Alertas_Activas: res.alertas.join(" | ") || "Sin Alertas",
+            Porcentaje_Crecimiento: `${balanceGlobal.crecimiento}%`, 
+            Reflexion_Antes: "", Reflexion_Despues: "", Aprendizaje_Clave: "", 
+            Prioridad_Sostener: "Media", Compromiso_Accion: "", Evidencia_Mejora: "", Fecha_Revision_Plan: ""
         };
 
         try {
-            await fetch(API_URL, { method: "POST", mode: 'no-cors', headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "create", sheet: "SOSTENER_Docentes", data: excelData }) });
-            setHistorial([excelData, ...historial]);
+            await fetch(API_URL, { 
+                method: "POST", 
+                headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                body: JSON.stringify({ 
+                    action: esUpdate ? "update" : "create", 
+                    sheet: "SOSTENER_Docentes", 
+                    idField: "ID_Sostener",
+                    idValue: idAUsar,
+                    data: excelData 
+                }) 
+            });
+            
+            setHistorial([excelData]); // Actualizamos el historial local
             setView("dashboard");
-            Swal.fire("Éxito", "Evaluación guardada.", "success");
-        } catch (e) { Swal.fire("Error", "Error de conexión.", "error"); } finally { setLoading(false); }
+            Swal.fire("Éxito", "Evaluación sincronizada.", "success");
+        } catch (e) { 
+            Swal.fire("Error", "Error al guardar en la nube.", "error"); 
+        } finally { 
+            setLoading(false); 
+        }
     };
 
     const toPct = (val) => ((val / 5) * 100).toFixed(1);
@@ -234,8 +377,22 @@ const ModuloSostener = ({ userData, API_URL, onNavigate, dataSostener }) => {
                             <h3>Radar de Autoevaluación</h3>
                             <p>Análisis de dimensiones pedagógicas y éticas 2026.</p>
                             <div className="sos-actions">
-                                <button onClick={() => setView("cuestionario")} className="btn-sos-primary">{historial.length > 0 ? "Nueva Evaluación" : "Iniciar"}</button>
-                                {historial.length > 0 && <button onClick={() => setView("dashboard")} className="btn-sos-secondary">Ver Balance</button>}
+                                {/* Si ya hay historial, el botón principal es ver el Balance */}
+                                {historial.length > 0 ? (
+                                    <>
+                                        <button onClick={() => setView("dashboard")} className="btn-sos-primary">
+                                            Ver Mi Análisis
+                                        </button>
+                                        <button onClick={() => setView("cuestionario")} className="btn-sos-secondary">
+                                            Revisar Autoevaluación
+                                        </button>
+                                    </>
+                                ) : (
+                                    /* Si no hay datos, el botón es Iniciar */
+                                    <button onClick={() => setView("cuestionario")} className="btn-sos-primary">
+                                        Iniciar Autoevaluación
+                                    </button>
+                                )}
                             </div>
                         </div>
                         <div className={`sos-card-main ${historial.length > 0 ? '' : 'is-locked'}`}>
@@ -281,22 +438,38 @@ const ModuloSostener = ({ userData, API_URL, onNavigate, dataSostener }) => {
                         <div className="sos-dash-top">
                             <div className="sos-stat-card gold">
                                 <span className="dash-lider-2026-panel-id">Panel 1</span>
-                                <h4>Nivel Alcanzado</h4>
-                                <div className="sos-big-val">{toPct(historial[0].Promedio_Global)}%</div>
-                                <div className="sos-level-badge">{historial[0].Nivel_Calculado}</div>
-                                <div className="sos-dims-grid">
-                                    <div className="dim-item"><span>Uso:</span> <strong>{toPct(pD[0])}%</strong></div>
-                                    <div className="dim-item"><span>Ética:</span> <strong>{toPct(pD[1])}%</strong></div>
-                                    <div className="dim-item"><span>Imp:</span> <strong>{toPct(pD[2])}%</strong></div>
-                                    <div className="dim-item"><span>Des:</span> <strong>{toPct(pD[3])}%</strong></div>
+                                <h4>Índice de Sostenibilidad</h4>
+                                <div className="sos-big-val" style={{ fontSize: '3rem', margin: '20px 0' }}>
+                                    {toPct(historial[0].Promedio_Global)}%
                                 </div>
-                                <button className="atl-an-btn-main" style={{marginTop: '10px'}} onClick={() => setShowModal(true)}>Diagnóstico Detallado</button>
+
+                                <button
+                                    className="atl-an-btn-main"
+                                    style={{ marginTop: '10px', width: '100%', background: 'var(--primary)', color: '#000' }}
+                                    onClick={() => setShowModal(true)}
+                                >
+                                    Ver Análisis Maestro
+                                </button>
                             </div>
+
                             <div className="sos-stat-card radar-cont">
                                 <h4>Radar de Sostenibilidad</h4>
-                                <ResponsiveContainer width="100%" height={220}>
-                                    <RadarChart data={[{ s: 'Uso', A: pD[0] },{ s: 'Ética', A: pD[1] },{ s: 'Imp', A: pD[2] },{ s: 'Des', A: pD[3] }]}>
-                                        <PolarGrid /><PolarAngleAxis dataKey="s" /><Radar dataKey="A" stroke="#c5a059" fill="#c5a059" fillOpacity={0.5} />
+                                <ResponsiveContainer width="100%" height={250}>
+                                    <RadarChart data={[
+                                        { s: 'Uso', A: pD[0] },
+                                        { s: 'Ética', A: pD[1] },
+                                        { s: 'Impacto', A: pD[2] },
+                                        { s: 'Desarrollo', A: pD[3] }
+                                    ]}>
+                                        <PolarGrid stroke="#e2e8f0" />
+                                        <PolarAngleAxis dataKey="s" tick={{ fill: '#64748b', fontSize: 12 }} />
+                                        <Radar
+                                            name="Nivel Actual"
+                                            dataKey="A"
+                                            stroke="var(--primary)"
+                                            fill="var(--primary)"
+                                            fillOpacity={0.5}
+                                        />
                                     </RadarChart>
                                 </ResponsiveContainer>
                             </div>
@@ -313,7 +486,7 @@ const ModuloSostener = ({ userData, API_URL, onNavigate, dataSostener }) => {
                                     <span style={{ display: 'block', fontSize: '1.8rem', fontWeight: 'bold', color: '#1a202c' }}>
                                         {respuestasAuditarReal.length}
                                     </span>
-                                    <span style={{ fontSize: '0.7rem', color: '#718096', textTransform: 'uppercase' }}>Muestras (N)</span>
+                                    <span style={{ fontSize: '0.7rem', color: '#718096', textTransform: 'uppercase' }}>Preguntas</span>
                                 </div>
                                 <div className="atl-an-mini-box" style={{ flex: 1, textAlign: 'center', background: '#f8fafc', padding: '15px', borderRadius: '12px' }}>
                                     <span style={{ display: 'block', fontSize: '1.8rem', fontWeight: 'bold', color: '#1a202c' }}>
@@ -324,89 +497,87 @@ const ModuloSostener = ({ userData, API_URL, onNavigate, dataSostener }) => {
                             </div>
 
                             <button className="atl-an-btn-main" style={{ width: '100%', marginTop: '20px', background: '#4c51bf' }}>
-                                Ver Diagnóstico Grupal
+                                Ver Diagnóstico
                             </button>
                         </div>
 
                         {/* MODAL ESPECÍFICO PARA AUDITORÍA REAL */}
                         {showModalReal && (
                             <div className="atl-an-overlay" style={{ zIndex: 9999 }}>
-                                <div className="atl-an-modal wide animate-fade-in">
+                                <div className="atl-an-modal wide animate-fade-in" style={{ maxWidth: '850px' }}>
                                     <div className="atl-an-modal-head">
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <h3>Reporte ATLAS: Diagnóstico Pedagógico</h3>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                                            <div>
+                                                <h3 style={{ margin: 0 }}>Reporte ATLAS: Diagnóstico Real</h3>
+                                                <p style={{ fontSize: '0.8rem', color: 'gray', margin: 0 }}>Datos sincronizados desde Fase de Auditoría</p>
+                                            </div>
                                             <button className="atl-an-close" onClick={() => setShowModalReal(false)}>✕</button>
                                         </div>
-                                        <div className="modal-tabs">
-                                            <button className={viewModeReal === 'stats' ? 'active' : ''} onClick={() => setViewModeReal('stats')}>📊 Interpretación Grupal</button>
-                                            <button className={viewModeReal === 'survey' ? 'active' : ''} onClick={() => setViewModeReal('survey')}>📝 Evidencias por Pregunta</button>
+                                        <div className="modal-tabs" style={{ marginTop: '20px' }}>
+                                            <button className={viewModeReal === 'stats' ? 'active' : ''} onClick={() => setViewModeReal('stats')}>📊 Resumen Estadístico</button>
+                                            <button className={viewModeReal === 'survey' ? 'active' : ''} onClick={() => setViewModeReal('survey')}>📝 Análisis por Indicador</button>
                                         </div>
                                     </div>
 
-                                    <div className="atl-an-modal-body">
+                                    <div className="atl-an-modal-body" style={{ padding: '25px' }}>
                                         {viewModeReal === 'stats' ? (
                                             <div className="stats-view">
-                                                <div className="atl-an-metrics-grid">
+                                                <div className="atl-an-metrics-grid" style={{ marginBottom: '30px' }}>
                                                     <div className="atl-an-mini-box dark">
-                                                        <span className="atl-an-val blue">{selectedFormReal?.promedio}%</span>
+                                                        <span className="atl-an-val" style={{ color: '#63b3ed' }}>{selectedFormReal?.promedio}%</span>
                                                         <span className="atl-an-lbl">MEDIA (M)</span>
                                                     </div>
                                                     <div className="atl-an-mini-box dark">
-                                                        <span className="atl-an-val green">{selectedFormReal?.modaValue || selectedFormReal?.promedio}%</span>
+                                                        <span className="atl-an-val" style={{ color: '#68d391' }}>{selectedFormReal?.modaValue || selectedFormReal?.promedio}%</span>
                                                         <span className="atl-an-lbl">MODA (MO)</span>
                                                     </div>
                                                     <div className="atl-an-mini-box dark">
-                                                        <span className="atl-an-val gold">{selectedFormReal?.desviacion || '1.88'}</span>
-                                                        <span className="atl-an-lbl">DESV. (Σ)</span>
+                                                        <span className="atl-an-val" style={{ color: '#f6ad55' }}>{selectedFormReal?.desviacion || '1.88'}</span>
+                                                        <span className="atl-an-lbl">DESVIACIÓN (Σ)</span>
                                                     </div>
                                                 </div>
 
-                                                <div className="atl-an-progress-section" style={{ margin: '25px 0' }}>
-                                                    <div className="atl-an-bar-label-row">
-                                                        <span className="atl-an-lbl">POSICIONAMIENTO EN CURVA</span>
-                                                        <span className="atl-an-lbl">{selectedFormReal?.promedio}%</span>
-                                                    </div>
-                                                    <div className="atl-an-bar-bg">
-                                                        <div className="atl-an-bar-fill" style={{ width: `${selectedFormReal?.promedio}%` }}></div>
-                                                    </div>
-                                                </div>
-
-                                                <div className="atl-an-insight-card" style={{ borderLeft: '5px solid #d69e2e' }}>
-                                                    <p className="atl-an-nivel" style={{ color: '#d69e2e', fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '10px' }}>
-                                                        Capacidad ATLAS demostrada
-                                                    </p>
-                                                    <p className="atl-an-desc">
-                                                        Tu nivel de práctica se ubica mayoritariamente alineada y consciente. Este resultado evidencia un uso intencional de la IA, acompañado de reflexión pedagógica y criterios éticos claros.
+                                                <div className="atl-an-insight-card" style={{ borderLeft: '5px solid #4c51bf', background: '#f8fafc', padding: '20px' }}>
+                                                    <h4 style={{ color: '#4c51bf', marginBottom: '10px', fontSize: '1rem' }}>Capacidad ATLAS Demostrada</h4>
+                                                    <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: '#4a5568' }}>
+                                                        Basado en las <strong>{respuestasAuditarReal.length}</strong> evidencias recolectadas, su práctica se ubica mayoritariamente alineada. Este resultado refleja un uso intencional de la IA, con criterios éticos aplicados en tiempo real.
                                                     </p>
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="survey-view" style={{ maxHeight: '500px', overflowY: 'auto' }}>
-                                                {respuestasAuditarReal.map((q, idx) => (
-                                                    <div key={idx} className="pregunta-detalle-card" style={{ padding: '15px', borderBottom: '1px solid #edf2f7' }}>
-                                                        <div style={{ marginBottom: '10px' }}>
-                                                            <small style={{ color: '#718096', fontSize: '0.65rem' }}>{q.ID_Pregunta}</small>
-                                                            <p style={{ margin: '5px 0', fontSize: '0.9rem', color: '#2d3748', lineHeight: '1.5' }}>
-                                                                {/* Aquí podrías poner un mapeo de ID a texto de pregunta si lo tienes */}
-                                                                Respuesta registrada:
-                                                            </p>
-                                                        </div>
-                                                        <div style={{ background: '#f7fafc', padding: '12px', borderRadius: '8px', fontStyle: 'italic', color: '#4a5568', fontSize: '0.85rem' }}>
-                                                            "{q.Valor_Respondido}"
-                                                        </div>
-                                                        {q.Puntos_Ganados && (
-                                                            <div style={{ textAlign: 'right', marginTop: '8px' }}>
-                                                                <span style={{ fontSize: '0.7rem', color: '#48bb78', fontWeight: 'bold' }}>Puntaje: {q.Puntos_Ganados}</span>
+                                            <div className="survey-view" style={{ maxHeight: '450px', overflowY: 'auto', paddingRight: '10px' }}>
+                                                <h4 style={{ marginBottom: '20px', fontSize: '0.9rem', color: '#718096' }}>DESGLOSE DE PUNTUACIONES POR ITEM</h4>
+                                                {respuestasAuditarReal.map((q, idx) => {
+                                                    // Calculamos el porcentaje por pregunta (asumiendo base 5)
+                                                    const valorPregunta = (Number(q.Puntos_Ganados || 0) * 20);
+                                                    return (
+                                                        <div key={idx} className="atl-an-bar-container" style={{ marginBottom: '18px' }}>
+                                                            <div className="atl-an-bar-label-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                                                <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#2d3748' }}>
+                                                                    {q.Valor_Respondido || `Indicador ${idx + 1}`}
+                                                                </span>
+                                                                <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#4c51bf' }}>{valorPregunta}%</span>
                                                             </div>
-                                                        )}
-                                                    </div>
-                                                ))}
+                                                            <div className="atl-an-bar-bg" style={{ height: '10px', background: '#edf2f7', borderRadius: '10px' }}>
+                                                                <div className="atl-an-bar-fill" style={{
+                                                                    width: `${valorPregunta}%`,
+                                                                    height: '100%',
+                                                                    borderRadius: '10px',
+                                                                    backgroundColor: valorPregunta > 75 ? '#48bb78' : valorPregunta > 45 ? '#ecc94b' : '#f56565',
+                                                                    transition: 'width 1s ease-in-out'
+                                                                }}></div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         )}
                                     </div>
 
-                                    <div className="modal-footer">
-                                        <button className="atl-an-btn-main" onClick={() => setShowModalReal(false)}>Cerrar Reporte</button>
+                                    <div className="modal-footer" style={{ borderTop: '1px solid #edf2f7', padding: '15px' }}>
+                                        <button className="atl-an-btn-main" onClick={() => setShowModalReal(false)} style={{ background: '#1e293b', width: '200px' }}>
+                                            Cerrar Reporte
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -467,10 +638,16 @@ const ModuloSostener = ({ userData, API_URL, onNavigate, dataSostener }) => {
             {/* MODAL DE DIAGNÓSTICO INDIVIDUAL */}
             {showModal && (
                 <div className="atl-an-overlay">
-                    <div className="atl-an-modal wide animate-fade-in">
+                    <div className="atl-an-modal wide animate-fade-in" style={{ maxWidth: '900px' }}>
                         <div className="atl-an-modal-head">
-                            <h3>Reporte Individual: {userData.Nombre}</h3>
-                            <div className="modal-tabs">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                                <div>
+                                    <h3>Reporte Individual: {userData.Nombre}</h3>
+                                    <p style={{ color: 'gray', fontSize: '0.8rem', margin: 0 }}>Marco COMPASS - Ciclo Sostener 2026</p>
+                                </div>
+                                <button className="atl-an-close" onClick={() => setShowModal(false)}>✕</button>
+                            </div>
+                            <div className="modal-tabs" style={{ marginTop: '15px' }}>
                                 <button className={viewModeModal === 'stats' ? 'active' : ''} onClick={() => setViewModeModal('stats')}>Análisis</button>
                                 <button className={viewModeModal === 'survey' ? 'active' : ''} onClick={() => setViewModeModal('survey')}>Dimensiones</button>
                             </div>
@@ -479,25 +656,52 @@ const ModuloSostener = ({ userData, API_URL, onNavigate, dataSostener }) => {
                             {viewModeModal === 'stats' ? (
                                 <div className="stats-view">
                                     <div className="atl-an-metrics-grid">
-                                        <div className="atl-an-mini-box dark"><span className="atl-an-val">{toPct(historial[0].Promedio_Global)}%</span><span className="atl-an-lbl">MEDIA GLOBAL</span></div>
+                                        <div className="atl-an-mini-box dark">
+                                            <span className="atl-an-val" style={{ color: 'var(--primary)' }}>{toPct(historial[0].Promedio_Global)}%</span>
+                                            <span className="atl-an-lbl">MEDIA GLOBAL</span>
+                                        </div>
+                                        <div className="atl-an-mini-box dark">
+                                            <span className="atl-an-val" style={{ fontSize: '1.1rem' }}>{generarDiagnostico(toPct(historial[0].Promedio_Global)).nivel}</span>
+                                            <span className="atl-an-lbl">NIVEL ACTUAL</span>
+                                        </div>
                                     </div>
-                                    <div className="atl-an-insight-card">
-                                        <p><strong>Nivel:</strong> {historial[0].Nivel_Calculado}</p>
-                                        <p><strong>Alertas:</strong> {historial[0].Alertas_Activas}</p>
+
+                                    {/* BLOQUE DE ANÁLISIS DINÁMICO */}
+                                    <div className="atl-an-insight-card" style={{ marginTop: '20px', textAlign: 'left', borderLeft: '4px solid var(--primary)', padding: '20px', background: '#f8fafc' }}>
+                                        <h4 style={{ marginBottom: '10px', color: '#1e293b' }}>💡 Diagnóstico Pedagógico</h4>
+                                        <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: '#475569', whiteSpace: 'pre-line' }}>
+                                            {generarDiagnostico(toPct(historial[0].Promedio_Global)).texto}
+                                        </p>
+
+                                        <h4 style={{ marginTop: '20px', marginBottom: '10px', color: 'var(--primary-dark)', fontSize: '0.9rem' }}>🔍 Implicación</h4>
+                                        <p style={{ fontSize: '0.9rem', color: '#64748b' }}>
+                                            {generarDiagnostico(toPct(historial[0].Promedio_Global)).implicacion}
+                                        </p>
+                                    </div>
+
+                                    <div style={{ marginTop: '15px' }}>
+                                        <p style={{ fontSize: '0.8rem', color: 'gray' }}><strong>Alertas Activas:</strong> {historial[0].Alertas_Activas}</p>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="survey-view">
                                     {dimensiones.map((d, i) => (
-                                        <div key={d.id} className="atl-an-bar-container">
-                                            <div className="atl-an-bar-label-row"><span>{d.nombre}</span><span>{toPct(pD[i])}%</span></div>
-                                            <div className="atl-an-bar-bg"><div className="atl-an-bar-fill" style={{width: `${toPct(pD[i])}%`}}></div></div>
+                                        <div key={d.id} className="atl-an-bar-container" style={{ marginBottom: '15px' }}>
+                                            <div className="atl-an-bar-label-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                                                <span style={{ fontWeight: '600' }}>{d.nombre}</span>
+                                                <span>{toPct(pD[i])}%</span>
+                                            </div>
+                                            <div className="atl-an-bar-bg" style={{ background: '#f1f5f9', borderRadius: '5px', height: '10px' }}>
+                                                <div className="atl-an-bar-fill" style={{ width: `${toPct(pD[i])}%`, background: 'var(--primary)', height: '100%', borderRadius: '5px', transition: 'width 1s ease' }}></div>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
                             )}
                         </div>
-                        <div className="modal-footer"><button className="atl-an-btn-main" onClick={() => setShowModal(false)}>Cerrar</button></div>
+                        <div className="modal-footer">
+                            <button className="atl-an-btn-main" onClick={() => setShowModal(false)} style={{ width: '100%' }}>Cerrar Reporte de Sostenibilidad</button>
+                        </div>
                     </div>
                 </div>
             )}

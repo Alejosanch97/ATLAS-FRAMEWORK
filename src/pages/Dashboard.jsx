@@ -7,6 +7,7 @@ import { Analisis } from "./Analisis";
 import { FaseAuditar } from "./FaseAuditar"; // Importante: Asegúrate de que el archivo existe
 import { MicromodulosPage } from "./MicromodulosPage";
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import Swal from "sweetalert2";
 
 
 import { FaseTransformar } from "./FaseTransformar";
@@ -71,6 +72,39 @@ export const Dashboard = ({ onLogout }) => {
 
     // 1. Definimos cuál está abierto (empezamos con 'consola')
     const [openMenu, setOpenMenu] = useState('consola');
+    // Define la fecha de inicio del proceso (puedes traerla de userData si la tienes en el Excel)
+    // --- LÓGICA DE ACTIVACIÓN EN CASCADA (1 FASE POR SEMANA) ---
+    const FECHA_INICIO_ATLAS = new Date("2026-03-01T00:00:00"); // Fecha de lanzamiento
+    const hoy = new Date();
+    const diferenciaMs = hoy - FECHA_INICIO_ATLAS;
+    const semanasTranscurridas = Math.floor(diferenciaMs / (1000 * 60 * 60 * 24 * 7));
+
+    // Definimos el orden de las fases (0: Auditar, 1: Transformar, 2: Liderar, 3: Asegurar, 4: Sostener)
+    const faseDisponible = semanasTranscurridas < 0 ? -1 : semanasTranscurridas;
+
+    // Función auxiliar para verificar si una fase está bloqueada
+    const isLocked = (nivelRequerido) => {
+        // El ADMIN siempre tiene todo desbloqueado
+        if (userData?.Rol === "ADMIN") return false;
+        return faseDisponible < nivelRequerido;
+    };
+
+    // Función para mostrar alerta de bloqueo
+    // Función con SweetAlert2
+    const handleLockedClick = (semanasFaltantes) => {
+        Swal.fire({
+            title: 'Fase Bloqueada',
+            text: `Esta etapa del Marco ATLAS se activará en ${semanasFaltantes} semana(s). Continúa documentando tus evidencias actuales.`,
+            icon: 'info',
+            confirmButtonColor: '#1e293b',
+            confirmButtonText: 'Entendido',
+            background: '#ffffff',
+            customClass: {
+                title: 'atlas-swal-title',
+                popup: 'atlas-swal-popup'
+            }
+        });
+    };
 
     // 2. Función que apaga todos y prende solo el que clickeamos
     const toggleMenu = (menuName) => {
@@ -617,18 +651,20 @@ footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de
 
                     <div className="nav-section">MARCO ATLAS</div>
 
-                    {/* --- SECCIÓN A - AUDITAR --- */}
-                    <div className="atlas-nav-group">
+                    {/* --- SECCIÓN A - AUDITAR (Semana 0 - Disponible desde el inicio) --- */}
+                    <div className={`atlas-nav-group ${isLocked(0) ? 'fase-bloqueada' : ''}`}>
                         <div
                             className={`atlas-group-header clickable ${openMenu === 'auditar' ? 'active-group' : ''}`}
-                            onClick={() => toggleMenu('auditar')}
+                            onClick={() => isLocked(0) ? handleLockedClick(1) : toggleMenu('auditar')}
                         >
-                            <div><span className="marco-letter">A</span> AUDITAR</div>
+                            <div>
+                                <span className="marco-letter">A</span> AUDITAR
+                                {isLocked(0) && <span style={{ fontSize: '10px', marginLeft: '5px' }}>🔒</span>}
+                            </div>
                             <span className="menu-arrow">{openMenu === 'auditar' ? "▾" : "▸"}</span>
                         </div>
-                        {openMenu === 'auditar' && (
+                        {openMenu === 'auditar' && !isLocked(0) && (
                             <div className="nav-submenu">
-                                {/* DOCENTE y DIRECTIVO ven Diagnóstico */}
                                 {(userData.Rol === "DOCENTE" || userData.Rol === "DIRECTIVO") && (
                                     <button
                                         className={activeTab === "fase_auditar" ? "active-phase" : "phase-btn"}
@@ -649,49 +685,50 @@ footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de
                         )}
                     </div>
 
-                    {/* --- SECCIÓN T - TRANSFORMAR --- */}
-                    <div className="atlas-nav-group">
+                    {/* --- SECCIÓN T - TRANSFORMAR (Semana 1) --- */}
+                    <div className={`atlas-nav-group ${isLocked(1) ? 'fase-bloqueada' : ''}`}>
                         <div
                             className={`atlas-group-header clickable ${openMenu === 'transformar' ? 'active-group' : ''}`}
-                            onClick={() => toggleMenu('transformar')}
+                            onClick={() => isLocked(1) ? handleLockedClick(1 - semanasTranscurridas) : toggleMenu('transformar')}
                         >
-                            <div><span className="marco-letter">T</span> TRANSFORMAR</div>
+                            <div>
+                                <span className="marco-letter">T</span> TRANSFORMAR
+                                {isLocked(1) && <span style={{ fontSize: '10px', marginLeft: '5px' }}>🔒</span>}
+                            </div>
                             <span className="menu-arrow">{openMenu === 'transformar' ? "▾" : "▸"}</span>
                         </div>
-                        {openMenu === 'transformar' && (
+                        {openMenu === 'transformar' && !isLocked(1) && (
                             <div className="nav-submenu">
-                                {/* NUEVO BOTÓN: Misiones de Transformación (Aparece de primero) */}
                                 <button
                                     className={(activeTab === "fase_transformar" || activeTab === "ejecutar_reto") ? "active-phase" : "phase-btn"}
                                     onClick={() => switchTab("fase_transformar")}
                                 >
                                     Misiones de Transformación
                                 </button>
-
-                                {/* TUS BOTONES EXISTENTES (SE MANTIENEN IGUAL) */}
                                 <button
                                     className={activeTab === "retos" ? "active" : "phase-btn"}
                                     onClick={() => switchTab("retos")}
                                 >
                                     Mis Retos Estratégicos
                                 </button>
-
                             </div>
                         )}
                     </div>
 
-                    {/* --- SECCIÓN L - LIDERAR --- */}
-                    <div className="atlas-nav-group">
+                    {/* --- SECCIÓN L - LIDERAR (Semana 2) --- */}
+                    <div className={`atlas-nav-group ${isLocked(2) ? 'fase-bloqueada' : ''}`}>
                         <div
                             className={`atlas-group-header clickable ${openMenu === 'liderar' ? 'active-group' : ''}`}
-                            onClick={() => toggleMenu('liderar')}
+                            onClick={() => isLocked(2) ? handleLockedClick(2 - semanasTranscurridas) : toggleMenu('liderar')}
                         >
-                            <div><span className="marco-letter">L</span> LIDERAR</div>
+                            <div>
+                                <span className="marco-letter">L</span> LIDERAR
+                                {isLocked(2) && <span style={{ fontSize: '10px', marginLeft: '5px' }}>🔒</span>}
+                            </div>
                             <span className="menu-arrow">{openMenu === 'liderar' ? "▾" : "▸"}</span>
                         </div>
-                        {openMenu === 'liderar' && (
+                        {openMenu === 'liderar' && !isLocked(2) && (
                             <div className="nav-submenu">
-                                {/* BOTÓN PRINCIPAL DE LA FASE */}
                                 <button
                                     className={(activeTab === "fase_liderar" || activeTab === "retos_liderar") ? "active-phase" : "phase-btn"}
                                     onClick={() => switchTab("fase_liderar")}
@@ -702,17 +739,19 @@ footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de
                         )}
                     </div>
 
-                    {/* SECCIONES PENDIENTES */}
-                    {/* --- SECCIÓN A - ASEGURAR (ACTIVA) --- */}
-                    <div className="atlas-nav-group">
+                    {/* --- SECCIÓN A - ASEGURAR (Semana 3) --- */}
+                    <div className={`atlas-nav-group ${isLocked(3) ? 'fase-bloqueada' : ''}`}>
                         <div
                             className={`atlas-group-header clickable ${openMenu === 'asegurar' ? 'active-group' : ''}`}
-                            onClick={() => toggleMenu('asegurar')}
+                            onClick={() => isLocked(3) ? handleLockedClick(3 - semanasTranscurridas) : toggleMenu('asegurar')}
                         >
-                            <div><span className="marco-letter">A</span> ASEGURAR</div>
+                            <div>
+                                <span className="marco-letter">A</span> ASEGURAR
+                                {isLocked(3) && <span style={{ fontSize: '10px', marginLeft: '5px' }}>🔒</span>}
+                            </div>
                             <span className="menu-arrow">{openMenu === 'asegurar' ? "▾" : "▸"}</span>
                         </div>
-                        {openMenu === 'asegurar' && (
+                        {openMenu === 'asegurar' && !isLocked(3) && (
                             <div className="nav-submenu">
                                 <button
                                     className={(activeTab === "fase_asegurar" || activeTab === "taller_asegurar") ? "active-phase" : "phase-btn"}
@@ -723,21 +762,24 @@ footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de
                             </div>
                         )}
                     </div>
-                    {/* --- SECCIÓN S - SOSTENER --- */}
-                    <div className="atlas-nav-group">
+
+                    {/* --- SECCIÓN S - SOSTENER (Semana 4) --- */}
+                    <div className={`atlas-nav-group ${isLocked(4) ? 'fase-bloqueada' : ''}`}>
                         <div
                             className={`atlas-group-header clickable ${openMenu === 'sostener' ? 'active-group' : ''}`}
-                            onClick={() => toggleMenu('sostener')}
+                            onClick={() => isLocked(4) ? handleLockedClick(4 - semanasTranscurridas) : toggleMenu('sostener')}
                         >
-                            <div><span className="marco-letter">S</span> SOSTENER</div>
+                            <div>
+                                <span className="marco-letter">S</span> SOSTENER
+                                {isLocked(4) && <span style={{ fontSize: '10px', marginLeft: '5px' }}>🔒</span>}
+                            </div>
                             <span className="menu-arrow">{openMenu === 'sostener' ? "▾" : "▸"}</span>
                         </div>
-                        {openMenu === 'sostener' && (
+                        {openMenu === 'sostener' && !isLocked(4) && (
                             <div className="nav-submenu">
                                 <button
                                     className={(activeTab === "fase_sostener" || activeTab === "modulo_sostener_directivo") ? "active-phase" : "phase-btn"}
                                     onClick={() => {
-                                        // Si es directivo, va a su panel especial, si no, al normal
                                         const destino = userData.Rol === "DIRECTIVO" ? "modulo_sostener_directivo" : "fase_sostener";
                                         switchTab(destino);
                                     }}

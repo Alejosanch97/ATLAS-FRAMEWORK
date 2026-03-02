@@ -523,6 +523,206 @@
     filter: grayscale(1) opacity(0.6);
 }
 
+/* =========================================
+   CAPA 3 - RESULTADOS COMPASS (FINALIZACIÓN)
+   ========================================= */
+
+.layer-card-result-full {
+    grid-column: 1 / -1; /* Ocupa todo el ancho */
+    background: var(--atlas-white);
+    border-radius: 35px;
+    border: 1px solid #eef2f6;
+    border-top: 6px solid var(--atlas-gold); /* Mantiene la jerarquía dorada */
+    box-shadow: 0 20px 40px rgba(0,0,0,0.04);
+    position: relative;
+    overflow: hidden;
+    margin-top: 20px;
+    animation: slideUp 0.8s ease-out;
+}
+
+/* Badge específica para el Hito A3 */
+.layer-badge-gold {
+    position: absolute;
+    top: 0;
+    right: 40px;
+    background: var(--atlas-gold);
+    color: var(--atlas-blue-dark);
+    padding: 10px 25px;
+    border-radius: 0 0 15px 15px;
+    font-weight: 900;
+    font-size: 1rem;
+    box-shadow: 0 5px 15px rgba(197, 160, 89, 0.2);
+    z-index: 10;
+}
+
+.result-main-content {
+    padding: 50px;
+}
+
+/* Encabezado del Resultado */
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #f8fafc;
+    padding-bottom: 30px;
+    margin-bottom: 35px;
+    gap: 20px;
+}
+
+.result-subtitle {
+    font-size: 0.95rem;
+    color: #64748b;
+    margin: 0;
+    font-weight: 600;
+}
+
+.result-level-name {
+    font-size: 2.4rem;
+    color: var(--atlas-blue-dark);
+    margin: 10px 0;
+    font-weight: 900;
+    line-height: 1.1;
+}
+
+.result-range-tag {
+    display: inline-block;
+    background: #fdf8ee;
+    color: var(--atlas-gold);
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    border: 1px solid rgba(197, 160, 89, 0.2);
+}
+
+/* Tarjeta de Puntaje */
+.result-score-card {
+    text-align: center;
+    background: var(--atlas-blue-dark);
+    color: white;
+    padding: 20px;
+    border-radius: 22px;
+    min-width: 140px;
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.15);
+}
+
+.score-number {
+    font-size: 2.8rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.score-label {
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    font-weight: 700;
+    margin-top: 5px;
+    opacity: 0.8;
+}
+
+/* Grid de Detalles */
+.result-details-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 40px;
+}
+
+.detail-title, .next-steps-title {
+    font-size: 1.1rem;
+    color: var(--atlas-blue-dark);
+    font-weight: 800;
+    margin-bottom: 20px;
+}
+
+/* Texto de la descripción (RESPETA SALTOS DE LÍNEA) */
+.description-text {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--atlas-text-main);
+    white-space: pre-line; /* Clave para leer los saltos de línea de JS */
+    margin-bottom: 25px;
+}
+
+/* Nota de pie estilo ATLAS */
+.disclaimer-note {
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 18px;
+    font-size: 0.9rem;
+    color: #64748b;
+    line-height: 1.6;
+    border-left: 4px solid var(--atlas-gold);
+}
+
+/* Columna de Pasos a Seguir */
+.next-steps-column {
+    background: #fdfbf7;
+    padding: 35px;
+    border-radius: 28px;
+    border: 1px solid #f9f1e3;
+    display: flex;
+    flex-direction: column;
+}
+
+.next-steps-text {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #7a6336;
+    margin-bottom: 25px;
+}
+
+.btn-finish-fase {
+    width: 100%;
+    padding: 18px;
+    background: var(--atlas-blue-dark);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: auto;
+}
+
+.btn-finish-fase:hover {
+    background: var(--atlas-gold);
+    color: var(--atlas-blue-dark);
+    transform: translateY(-2px);
+}
+
+.ready-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-weight: 900;
+    color: var(--atlas-gold);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Responsividad para la Capa 3 */
+@media (max-width: 900px) {
+    .result-details-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .result-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .result-main-content {
+        padding: 30px 20px;
+    }
+
+    .result-level-name {
+        font-size: 1.8rem;
+    }
+}
+
 /* =======================================================
    SISTEMA DE RESPONSIVIDAD INTEGRAL - FASE AUDITAR
    ======================================================= */

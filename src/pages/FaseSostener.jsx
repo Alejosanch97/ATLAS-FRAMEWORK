@@ -12,12 +12,14 @@ const FaseSostener = ({ userData, API_URL, onNavigate, onRefreshProgreso, datosE
 
     const isDirectivo = userData.Rol === "DIRECTIVO";
 
+    // --- CAMBIO TÉCNICO: SINCRONIZACIÓN REFORZADA ---
     useEffect(() => {
         const sincronizarDatos = async () => {
+            setLoading(true);
             let datosCargados = false;
 
             // 1. Prioridad: Datos que vienen por Props (Carga instantánea)
-            if (datosExistentes) {
+            if (datosExistentes && Object.keys(datosExistentes).length > 0) {
                 setStatusSostener(datosExistentes);
                 datosCargados = true;
             }
@@ -26,26 +28,19 @@ const FaseSostener = ({ userData, API_URL, onNavigate, onRefreshProgreso, datosE
                 const registro = existingResponses.find(item => item.Fase === "SOSTENER");
                 if (registro) {
                     setProgreso(registro);
-                    datosCargados = true;
+                    if (registro.Capa_1_Sentido === 'COMPLETADO') setShowIntro(false);
                 }
             }
 
-            // 2. Respaldo: Solo si el Dashboard no mandó nada
-            if (!datosCargados) {
-                await fetchData();
-            } else {
-                setLoading(false);
-                // Si ya aceptó la fase previamente, saltamos la intro
-                if (progreso?.Capa_1_Sentido === 'COMPLETADO') setShowIntro(false);
-            }
+            // 2. Respaldo: Si no hay datos (por refresco), forzamos fetchData sin bloqueos
+            await fetchData();
         };
 
         sincronizarDatos();
-    }, [datosExistentes, existingResponses, progreso?.Capa_1_Sentido]);
+    }, [userData.Teacher_Key]); // Dependencia clave para identificar al usuario
 
+    // --- CAMBIO TÉCNICO: FETCH SIN BLOQUEOS ---
     const fetchData = async () => {
-        if (progreso && statusSostener) return;
-
         setLoading(true);
         try {
             const [resProgreso, resStatus] = await Promise.all([
@@ -125,17 +120,12 @@ const FaseSostener = ({ userData, API_URL, onNavigate, onRefreshProgreso, datosE
 
     const handleNavegacionSegura = (destino, id = null) => {
         setIsNavigating(true);
-        const verificarCarga = setInterval(() => {
-            if (!loading) {
-                clearInterval(verificarCarga);
-                setTimeout(() => {
-                    setIsNavigating(false);
-                    // Pasamos statusSostener como data adicional a la navegación
-                    onNavigate(destino, id, statusSostener);
-                    window.scrollTo(0, 0);
-                }, 600);
-            }
-        }, 100);
+        // Usamos un timeout más eficiente que el setInterval anterior
+        setTimeout(() => {
+            setIsNavigating(false);
+            onNavigate(destino, id, statusSostener);
+            window.scrollTo(0, 0);
+        }, 500);
     };
 
     return (
