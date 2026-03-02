@@ -1674,6 +1674,30 @@
     .user-scroll-list {
         overflow-x: auto;
     }
+
+        /* Brillo optimizado para móvil */
+        @keyframes atlasSheen {
+            0% {
+                transform: translateX(-150%) rotate(25deg);
+            }
+    
+            100% {
+                transform: translateX(150%) rotate(25deg);
+            }
+        }
+    
+        /* Ondas optimizadas (usando transform en lugar de solo 'd' de path si es posible) */
+        @keyframes waveFrontLogic {
+    
+            0%,
+            100% {
+                transform: translateX(-2px) scaleY(1);
+            }
+    
+            50% {
+                transform: translateX(2px) scaleY(1.05);
+            }
+        }
 }
 
 /* 5. Ajustes finales para Celulares Pequeños (480px o menos) */
@@ -1978,5 +2002,35 @@
         padding: 80px 15px 20px !important; /* Más padding arriba */
         width: 100%;
         overflow-x: hidden;
+    }
+}
+
+/* --- OPTIMIZACIÓN DE ANIMACIONES PARA MÓVIL --- */
+@media (max-width: 1024px) {
+    /* 1. Asegurar que las ondas de la 'A' sigan moviéndose */
+    .wave-logic.front, 
+    .wave-logic.back {
+        display: block !important; /* Evita que el navegador las oculte */
+        visibility: visible !important;
+        /* Forzamos el uso de la tarjeta de video del celular */
+        transform: translate3d(0, 0, 0); 
+    }
+
+    /* 2. El brillo (Sheen) de la 'A' a veces se corta en móvil, aquí lo fijamos */
+    .atlas-a-container::after {
+        content: "";
+        display: block !important;
+        animation: atlasSheen 4s infinite linear !important; /* Forzamos animación */
+    }
+
+    /* 3. Animaciones de entrada (Fade In) */
+    .fade-in, .improvement-dropdown.fade-in {
+        animation: fadeIn 0.5s ease-out forwards !important;
+    }
+
+    /* 4. Sincronización del líquido */
+    .liquid-group {
+        /* Hacemos que la transición de subida/bajada del puntaje sea más rápida en móvil */
+        transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 }
