@@ -66,6 +66,77 @@ const ModuloSostener = ({ userData, API_URL, onNavigate, datosExistentes }) => {
         ]}
     ];
 
+    const getCompassData = (score) => {
+        if (score >= 90) return {
+            nivel: "Gobernanza madura",
+            rango: "90–100",
+            desc: `Tu integración de IA va más allá del aula.
+            
+Estás aplicando supervisión humana significativa, documentando decisiones, evaluando impacto y contribuyendo a lineamientos institucionales.
+
+Tu práctica está alineada con principios internacionales de IA confiable, ética y gobernanza educativa. No solo usas IA con intención pedagógica. Participas en la construcción de una cultura institucional responsable.
+
+El desafío en este nivel no es usar más IA, sino sostener calidad, coherencia y liderazgo. Puedes avanzar las demás fases y convertirte en un gran referente en el ecosistema ATLAS.`
+        };
+
+        if (score >= 75) return {
+            nivel: "Integración estratégica",
+            rango: "75–89",
+            desc: `La IA está integrada de manera coherente y estratégica en tu práctica.
+            
+No solo la utilizas con intención curricular, sino que también incorporas criterios de uso responsable, supervisión humana explícita y evaluación ajustada. Existe conciencia institucional en tu práctica. Posiblemente ya influyes en otros colegas y contribuyes a conversaciones sobre lineamientos.
+
+Tu resto ahora es avanzar hacia gobernanza:
+• Documentar procesos.
+• Escalar dilemas éticos cuando sea necesario.
+• Contribuir activamente a la construcción de criterios institucionales.
+
+Tu práctica es consistente y replicable.`
+        };
+
+        if (score >= 60) return {
+            nivel: "Integración pedagógica",
+            rango: "60–74",
+            desc: `La IA ya forma parte de tu diseño pedagógico con intención clara.
+            
+Estás vinculando su uso con objetivos curriculares específicos y realizando ajustes en evaluación. Además, demuestras conciencia sobre riesgos éticos y aplicas supervisión humana en tus decisiones. Tu práctica refleja alineación con estándares internacionales de integración pedagógica responsable.
+
+Sin embargo, aún puedes fortalecer:
+• La documentación de tus decisiones.
+• La articulación con lineamientos institucionales.
+• La evaluación del impacto real del uso de IA en el aprendizaje.
+
+Ya no estás experimentando. Estás integrando.`
+        };
+
+        if (score >= 40) return {
+            nivel: "Uso incipiente",
+            rango: "40–59",
+            desc: `Ya estás utilizando IA en tu práctica, pero principalmente de forma instrumental u ocasional.
+            
+Tu uso muestra intención, aunque aún no es completamente sistemático en términos de evaluación, documentación o criterios éticos explícitos. Probablemente ya reconoces algunos riesgos y tienes nociones básicas de supervisión humana, pero todavía no hay una integración estructurada con lineamientos institucionales o impacto medible.
+
+Tu siguiente paso es avanzar de la eficiencia a la coherencia pedagógica. Pregúntate:
+• ¿Estoy ajustando mis criterios de evaluación cuando uso IA?
+• ¿Estoy comunicando claramente límites y riesgos a mis estudiantes?
+• ¿Estoy documentando mis decisiones?
+
+Estás construyendo bases importantes.`
+        };
+
+        return {
+            nivel: "Exploración",
+            rango: "0–39",
+            desc: `Hoy te encuentras en una etapa inicial de aproximación a la inteligencia artificial en educación.
+            
+Esto significa que el uso de IA en tu práctica es limitado o aún no está integrado de manera estructurada al currículo, la evaluación o los principios éticos. Puede que exista interés o curiosidad, pero todavía no se evidencia una integración pedagógica planificada ni una comprensión sólida de los riesgos y responsabilidades asociados.
+
+Este resultado no es una debilidad.
+
+Estás en el inicio del camino ATLAS.`
+        };
+    };
+
     // Asegúrate de tener este estado declarado arriba de tus funciones
     const [respuestasAuditarReal, setRespuestasAuditarReal] = useState([]);
 
@@ -187,11 +258,11 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
     useEffect(() => {
         const integrarFases = async () => {
             const tKey = userData?.Teacher_Key;
-            if(!tKey) return;
+            if (!tKey) return;
 
             try {
                 const [resAuditar, resRetos, resLiderar] = await Promise.all([
-                    fetch(`${API_URL}?sheet=Respuestas_Usuarios&user_key=${tKey}`), 
+                    fetch(`${API_URL}?sheet=Respuestas_Usuarios&user_key=${tKey}`),
                     fetch(`${API_URL}?sheet=Retos_Transformar_ATLAS&Teacher_Key=${tKey}`),
                     fetch(`${API_URL}?sheet=Liderar_Prompts_Docentes&Teacher_Key=${tKey}`)
                 ]);
@@ -200,63 +271,80 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
                 const dRetos = await resRetos.json();
                 const dLiderar = await resLiderar.json();
 
-                // Auditoría Real (Filtro por el ID de formulario específico)
-                const idAuditarCorrecto = "FORM-1770684713222"; 
+                // 1. Auditoría Real (Filtro por ID de formulario específico)
+                const idAuditarCorrecto = "FORM-1770684713222";
                 const misDatosReales = Array.isArray(dAuditar) ? dAuditar.filter(r => r.ID_Form === idAuditarCorrecto) : [];
                 setRespuestasAuditarReal(misDatosReales);
 
+                // Variables para el balance global
+                let scoreIniBase5 = 0;
+
                 if (misDatosReales.length > 0) {
-                    const puntajes = misDatosReales.map(r => Number(r.Puntos_Ganados || 0));
+                    // Convertimos Puntos_Ganados a números (manejando comas si existen)
+                    const puntajes = misDatosReales.map(r => {
+                        const p = String(r.Puntos_Ganados || "0").replace(',', '.');
+                        return parseFloat(p);
+                    });
+
                     const n = puntajes.length;
 
-                    // 1. MEDIA REAL
-                    const media = puntajes.reduce((a, b) => a + b, 0) / n;
+                    // MEDIA REAL (0-5)
+                    const mediaPuntos = puntajes.reduce((a, b) => a + b, 0) / n;
+                    scoreIniBase5 = mediaPuntos;
 
-                    // 2. MODA REAL (El valor que más se repite)
+                    // MODA REAL (El valor de puntos más frecuente)
                     const frecuencias = {};
                     puntajes.forEach(p => frecuencias[p] = (frecuencias[p] || 0) + 1);
                     const moda = Object.keys(frecuencias).reduce((a, b) => frecuencias[a] > frecuencias[b] ? a : b);
 
-                    // 3. DESVIACIÓN ESTÁNDAR REAL
-                    const varianza = puntajes.reduce((acc, p) => acc + Math.pow(p - media, 2), 0) / n;
+                    // DESVIACIÓN ESTÁNDAR REAL
+                    const varianza = puntajes.reduce((acc, p) => acc + Math.pow(p - mediaPuntos, 2), 0) / n;
                     const desviacion = Math.sqrt(varianza);
 
+                    // Guardamos para el Modal Real
                     setSelectedFormReal({
-                        promedio: (media * 20).toFixed(1),      // Escala 0-100
-                        modaValue: (Number(moda) * 20).toFixed(1), // Escala 0-100
-                        desviacion: desviacion.toFixed(2),       // Dispersión real
+                        puntosMedia: mediaPuntos.toFixed(2),
+                        puntosModa: parseFloat(moda).toFixed(2),
+                        promedioEscala100: (mediaPuntos * 20).toFixed(1), // Para getCompassData
+                        desviacion: desviacion.toFixed(2),
+                        totalItems: n,
                         analisis: { nivel: "Evidencia de Auditoría", color: "#4c51bf" }
                     });
                 }
 
+                // 2. Procesamiento de Retos
                 if (Array.isArray(dRetos)) {
                     const misRetosFiltrados = dRetos.filter(r => r.Teacher_Key === tKey);
                     setRetos(misRetosFiltrados);
                 }
+
+                // 3. Procesamiento de Liderar (Prompts)
                 if (Array.isArray(dLiderar)) {
                     setPromptData(dLiderar.find(p => p.Status === 'completed') || dLiderar[0]);
                 }
 
-                // Cálculo de Balance Global
-                const scoreIni = misDatosReales.length > 0 
-                    ? (misDatosReales.reduce((acc, r) => acc + Number(r.Puntos_Ganados || 0), 0) / misDatosReales.length)
-                    : 0;
-
+                // 4. Cálculo de Balance Global (Comparativa Antes vs Ahora)
                 const ultimoSostener = historial[0];
-                const scoreActual = ultimoSostener ? Number(ultimoSostener.Promedio_Global) : (scoreIni * 1); // Mantener en escala 1-5
+                const scoreActualBase5 = ultimoSostener ? parseFloat(ultimoSostener.Promedio_Global) : scoreIniBase5;
 
                 setBalanceGlobal({
-                    antes: { nivel: scoreIni > 4 ? "Estratégico" : "Exploratorio", puntaje: (scoreIni * 20).toFixed(1) },
-                    ahora: { nivel: ultimoSostener?.Nivel_Calculado || "En Proceso", puntaje: (scoreActual * 20).toFixed(1) },
-                    evidencias: { 
-                        retos: Array.isArray(dRetos) ? dRetos.filter(r => r.Status_Reto === 'COMPLETADO').length : 0, 
-                        notasLiderar: dLiderar[0] || null 
+                    antes: {
+                        nivel: scoreIniBase5 >= 4 ? "Estratégico" : scoreIniBase5 >= 2.5 ? "Integrador" : "Exploratorio",
+                        puntaje: (scoreIniBase5 * 20).toFixed(1)
                     },
-                    crecimiento: ((scoreActual * 20) - (scoreIni * 20)).toFixed(1)
+                    ahora: {
+                        nivel: ultimoSostener?.Nivel_Calculado || "En Proceso",
+                        puntaje: (scoreActualBase5 * 20).toFixed(1)
+                    },
+                    evidencias: {
+                        retos: Array.isArray(dRetos) ? dRetos.filter(r => r.Status_Reto === 'COMPLETADO').length : 0,
+                        notasLiderar: dLiderar[0] || null
+                    },
+                    crecimiento: ((scoreActualBase5 * 20) - (scoreIniBase5 * 20)).toFixed(1)
                 });
 
-            } catch (e) { 
-                console.error("Error integrando balance:", e); 
+            } catch (e) {
+                console.error("Error integrando balance:", e);
             }
         };
         integrarFases();
@@ -367,17 +455,12 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
                         <button className="btn-back-atlas" onClick={() => onNavigate('overview')}>⬅ Mapa ATLAS</button>
                         <h2>Misiones de Sostenibilidad</h2>
                     </div>
-                    <div className="balance-global-mini-card">
-                        <div className="mini-stat"><span>Crecimiento Total</span><strong>{balanceGlobal.crecimiento}%</strong></div>
-                        <div className="mini-stat"><span>Retos Transformar</span><strong>{balanceGlobal.evidencias.retos} Logrados</strong></div>
-                    </div>
                     <div className="sostener-grid-menu">
                         <div className={`sos-card-main ${historial.length > 0 ? 'is-done' : ''}`}>
                             <div className="sos-icon">📊</div>
                             <h3>Radar de Autoevaluación</h3>
                             <p>Análisis de dimensiones pedagógicas y éticas 2026.</p>
                             <div className="sos-actions">
-                                {/* Si ya hay historial, el botón principal es ver el Balance */}
                                 {historial.length > 0 ? (
                                     <>
                                         <button onClick={() => setView("dashboard")} className="btn-sos-primary">
@@ -388,7 +471,6 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
                                         </button>
                                     </>
                                 ) : (
-                                    /* Si no hay datos, el botón es Iniciar */
                                     <button onClick={() => setView("cuestionario")} className="btn-sos-primary">
                                         Iniciar Autoevaluación
                                     </button>
@@ -417,15 +499,23 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
                                     <div key={p.id} className="sos-q-item">
                                         <span>{p.text}</span>
                                         <div className="sos-likert">
-                                            {[1,2,3,4,5].map(v => (
-                                                <button key={v} className={respuestas[p.id] === v ? 'active' : ''} onClick={() => setRespuestas({...respuestas, [p.id]: v})}>{v}</button>
+                                            {[1, 2, 3, 4, 5].map(v => (
+                                                <button
+                                                    key={v}
+                                                    className={respuestas[p.id] === v ? 'active' : ''}
+                                                    onClick={() => setRespuestas({ ...respuestas, [p.id]: v })}
+                                                >
+                                                    {v}
+                                                </button>
                                             ))}
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         ))}
-                        <button className="btn-sos-submit" onClick={handleSave} disabled={loading}>{loading ? "Sincronizando..." : "Finalizar Evaluación"}</button>
+                        <button className="btn-sos-submit" onClick={handleSave} disabled={loading}>
+                            {loading ? "Sincronizando..." : "Finalizar Evaluación"}
+                        </button>
                     </div>
                 </div>
             )}
@@ -439,13 +529,12 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
                             <div className="sos-stat-card gold">
                                 <span className="dash-lider-2026-panel-id">Panel 1</span>
                                 <h4>Índice de Sostenibilidad</h4>
-                                <div className="sos-big-val" style={{ fontSize: '3rem', margin: '20px 0' }}>
+                                <div className="sos-big-val">
                                     {toPct(historial[0].Promedio_Global)}%
                                 </div>
 
                                 <button
                                     className="atl-an-btn-main"
-                                    style={{ marginTop: '10px', width: '100%', background: 'var(--primary)', color: '#000' }}
                                     onClick={() => setShowModal(true)}
                                 >
                                     Ver Análisis Maestro
@@ -476,95 +565,92 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
                         </div>
 
                         {/* PANEL 1.2: EVIDENCIA INSTITUCIONAL REAL (CARD BOTÓN) */}
-                        <div className="sos-stat-card real-evidence" style={{ background: '#fff', border: '1px solid #e2e8f0', cursor: 'pointer', transition: 'transform 0.2s' }}
-                            onClick={() => setShowModalReal(true)}>
-                            <span className="dash-lider-2026-panel-id">Fase: AUDITAR</span>
-                            <h4 style={{ color: '#1e293b', marginTop: '10px' }}>Diagnóstico Pedagógico Institucional</h4>
+                        <div className="sos-stat-card real-evidence" onClick={() => setShowModalReal(true)}>
+                            <span className="dash-lider-2026-panel-id">Panel 2: Fase: AUDITAR</span>
+                            <h4>Diagnóstico Pedagógico Institucional</h4>
 
-                            <div className="atl-an-metrics-grid" style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
-                                <div className="atl-an-mini-box" style={{ flex: 1, textAlign: 'center', background: '#f8fafc', padding: '15px', borderRadius: '12px' }}>
-                                    <span style={{ display: 'block', fontSize: '1.8rem', fontWeight: 'bold', color: '#1a202c' }}>
+                            <div className="atl-an-metrics-grid">
+                                <div className="atl-an-mini-box">
+                                    <span className="atl-an-mini-box-val">
                                         {respuestasAuditarReal.length}
                                     </span>
-                                    <span style={{ fontSize: '0.7rem', color: '#718096', textTransform: 'uppercase' }}>Preguntas</span>
+                                    <span className="atl-an-mini-box-lbl">Preguntas</span>
                                 </div>
-                                <div className="atl-an-mini-box" style={{ flex: 1, textAlign: 'center', background: '#f8fafc', padding: '15px', borderRadius: '12px' }}>
-                                    <span style={{ display: 'block', fontSize: '1.8rem', fontWeight: 'bold', color: '#1a202c' }}>
-                                        {selectedFormReal?.promedio || 0}%
+                                <div className="atl-an-mini-box">
+                                    <span className="atl-an-mini-box-val">
+                                        {selectedFormReal?.puntosMedia || "0.00"}
                                     </span>
-                                    <span style={{ fontSize: '0.7rem', color: '#718096', textTransform: 'uppercase' }}>Media (M)</span>
+                                    <span className="atl-an-mini-box-lbl">
+                                        Puntos Media ({selectedFormReal?.promedioEscala100 || 0}%)
+                                    </span>
                                 </div>
                             </div>
 
-                            <button className="atl-an-btn-main" style={{ width: '100%', marginTop: '20px', background: '#4c51bf' }}>
+                            <button className="atl-an-btn-main-alt">
                                 Ver Diagnóstico
                             </button>
                         </div>
 
                         {/* MODAL ESPECÍFICO PARA AUDITORÍA REAL */}
                         {showModalReal && (
-                            <div className="atl-an-overlay" style={{ zIndex: 9999 }}>
-                                <div className="atl-an-modal wide animate-fade-in" style={{ maxWidth: '850px' }}>
-                                    <div className="atl-an-modal-head">
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <div className="atl-an-overlay">
+                                <div className="audit-modal-container animate-fade-in">
+                                    <div className="audit-modal-head">
+                                        <div className="audit-modal-header-top">
                                             <div>
-                                                <h3 style={{ margin: 0 }}>Reporte ATLAS: Diagnóstico Real</h3>
-                                                <p style={{ fontSize: '0.8rem', color: 'gray', margin: 0 }}>Datos sincronizados desde Fase de Auditoría</p>
+                                                <h3>Reporte ATLAS: Diagnóstico de Auditoría</h3>
+                                                <p className="audit-modal-sub">Basado en {selectedFormReal?.totalItems} evidencias reales</p>
                                             </div>
-                                            <button className="atl-an-close" onClick={() => setShowModalReal(false)}>✕</button>
+                                            <button className="audit-modal-close" onClick={() => setShowModalReal(false)}>✕</button>
                                         </div>
-                                        <div className="modal-tabs" style={{ marginTop: '20px' }}>
-                                            <button className={viewModeReal === 'stats' ? 'active' : ''} onClick={() => setViewModeReal('stats')}>📊 Resumen Estadístico</button>
-                                            <button className={viewModeReal === 'survey' ? 'active' : ''} onClick={() => setViewModeReal('survey')}>📝 Análisis por Indicador</button>
+                                        <div className="audit-modal-tabs">
+                                            <button className={viewModeReal === 'stats' ? 'active' : ''} onClick={() => setViewModeReal('stats')}>📊 Estadísticas</button>
+                                            <button className={viewModeReal === 'survey' ? 'active' : ''} onClick={() => setViewModeReal('survey')}>📝 Puntos por Ítem</button>
+                                            <button className={`compass-tab-unique ${viewModeReal === 'compass' ? 'active' : ''}`} onClick={() => setViewModeReal('compass')}>🧭 Análisis Compass</button>
                                         </div>
                                     </div>
 
-                                    <div className="atl-an-modal-body" style={{ padding: '25px' }}>
-                                        {viewModeReal === 'stats' ? (
-                                            <div className="stats-view">
-                                                <div className="atl-an-metrics-grid" style={{ marginBottom: '30px' }}>
-                                                    <div className="atl-an-mini-box dark">
-                                                        <span className="atl-an-val" style={{ color: '#63b3ed' }}>{selectedFormReal?.promedio}%</span>
-                                                        <span className="atl-an-lbl">MEDIA (M)</span>
+                                    <div className="audit-modal-body">
+                                        {viewModeReal === 'stats' && (
+                                            <div className="audit-stats-view">
+                                                <div className="audit-metrics-grid">
+                                                    <div className="audit-stat-box">
+                                                        <span className="audit-val blue">{selectedFormReal?.puntosMedia}</span>
+                                                        <span className="audit-lbl">MEDIA (0-5)</span>
                                                     </div>
-                                                    <div className="atl-an-mini-box dark">
-                                                        <span className="atl-an-val" style={{ color: '#68d391' }}>{selectedFormReal?.modaValue || selectedFormReal?.promedio}%</span>
-                                                        <span className="atl-an-lbl">MODA (MO)</span>
+                                                    <div className="audit-stat-box">
+                                                        <span className="audit-val green">{selectedFormReal?.puntosModa}</span>
+                                                        <span className="audit-lbl">MODA (PUNTOS)</span>
                                                     </div>
-                                                    <div className="atl-an-mini-box dark">
-                                                        <span className="atl-an-val" style={{ color: '#f6ad55' }}>{selectedFormReal?.desviacion || '1.88'}</span>
-                                                        <span className="atl-an-lbl">DESVIACIÓN (Σ)</span>
+                                                    <div className="audit-stat-box">
+                                                        <span className="audit-val orange">{selectedFormReal?.desviacion}</span>
+                                                        <span className="audit-lbl">DESVIACIÓN (Σ)</span>
                                                     </div>
                                                 </div>
-
-                                                <div className="atl-an-insight-card" style={{ borderLeft: '5px solid #4c51bf', background: '#f8fafc', padding: '20px' }}>
-                                                    <h4 style={{ color: '#4c51bf', marginBottom: '10px', fontSize: '1rem' }}>Capacidad ATLAS Demostrada</h4>
-                                                    <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: '#4a5568' }}>
-                                                        Basado en las <strong>{respuestasAuditarReal.length}</strong> evidencias recolectadas, su práctica se ubica mayoritariamente alineada. Este resultado refleja un uso intencional de la IA, con criterios éticos aplicados en tiempo real.
+                                                <div className="audit-insight-card">
+                                                    <h4>Interpretación de Consistencia</h4>
+                                                    <p>
+                                                        Una desviación de <strong>{selectedFormReal?.desviacion}</strong> indica que su práctica docente con IA
+                                                        {parseFloat(selectedFormReal?.desviacion) < 1.0 ? " es altamente consistente entre los diferentes indicadores." : " presenta variaciones notables dependiendo del área evaluada."}
                                                     </p>
                                                 </div>
                                             </div>
-                                        ) : (
-                                            <div className="survey-view" style={{ maxHeight: '450px', overflowY: 'auto', paddingRight: '10px' }}>
-                                                <h4 style={{ marginBottom: '20px', fontSize: '0.9rem', color: '#718096' }}>DESGLOSE DE PUNTUACIONES POR ITEM</h4>
+                                        )}
+
+                                        {viewModeReal === 'survey' && (
+                                            <div className="audit-survey-scroll">
                                                 {respuestasAuditarReal.map((q, idx) => {
-                                                    // Calculamos el porcentaje por pregunta (asumiendo base 5)
-                                                    const valorPregunta = (Number(q.Puntos_Ganados || 0) * 20);
+                                                    const puntos = parseFloat(String(q.Puntos_Ganados || "0").replace(',', '.'));
                                                     return (
-                                                        <div key={idx} className="atl-an-bar-container" style={{ marginBottom: '18px' }}>
-                                                            <div className="atl-an-bar-label-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                                                                <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#2d3748' }}>
-                                                                    {q.Valor_Respondido || `Indicador ${idx + 1}`}
-                                                                </span>
-                                                                <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#4c51bf' }}>{valorPregunta}%</span>
+                                                        <div key={idx} className="audit-item-row">
+                                                            <div className="audit-item-info">
+                                                                <span className="audit-item-text">{q.Valor_Respondido || `Indicador ${idx + 1}`}</span>
+                                                                <span className="audit-item-score">{puntos.toFixed(1)} / 5</span>
                                                             </div>
-                                                            <div className="atl-an-bar-bg" style={{ height: '10px', background: '#edf2f7', borderRadius: '10px' }}>
-                                                                <div className="atl-an-bar-fill" style={{
-                                                                    width: `${valorPregunta}%`,
-                                                                    height: '100%',
-                                                                    borderRadius: '10px',
-                                                                    backgroundColor: valorPregunta > 75 ? '#48bb78' : valorPregunta > 45 ? '#ecc94b' : '#f56565',
-                                                                    transition: 'width 1s ease-in-out'
+                                                            <div className="audit-progress-bg">
+                                                                <div className="audit-progress-fill" style={{
+                                                                    width: `${(puntos / 5) * 100}%`,
+                                                                    backgroundColor: puntos >= 4 ? '#48bb78' : puntos >= 2.5 ? '#ecc94b' : '#f56565'
                                                                 }}></div>
                                                             </div>
                                                         </div>
@@ -572,44 +658,89 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
                                                 })}
                                             </div>
                                         )}
+
+                                        {viewModeReal === 'compass' && (
+                                            <div className="audit-compass-view animate-slide-up">
+                                                <div className="audit-compass-badge">
+                                                    {getCompassData(selectedFormReal?.porcentajeGlobal).nivel}
+                                                </div>
+                                                <div className="audit-compass-box">
+                                                    <h4>Diagnóstico Compass (Auditoría)</h4>
+                                                    <p>{getCompassData(selectedFormReal?.porcentajeGlobal).desc}</p>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
-                                    <div className="modal-footer" style={{ borderTop: '1px solid #edf2f7', padding: '15px' }}>
-                                        <button className="atl-an-btn-main" onClick={() => setShowModalReal(false)} style={{ background: '#1e293b', width: '200px' }}>
-                                            Cerrar Reporte
+                                    <div className="audit-modal-footer">
+                                        <button className="audit-btn-close-full" onClick={() => setShowModalReal(false)}>
+                                            Cerrar Diagnóstico
                                         </button>
                                     </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* PANEL 2: PROMPTING ÉTICO (HEURÍSTICA) */}
-                        <div className="sos-history-chart" style={{marginTop: '20px'}}>
-                            <span className="dash-lider-2026-panel-id">Panel 2</span>
-                            <h4>Análisis de Prompting Individual (Liderazgo)</h4>
-                            {statsPrompt ? (
-                                <div className="dash-lider-2026-bars-stack" style={{padding: '10px'}}>
-                                    {[
-                                        { l: 'Ética', v: statsPrompt.etica, c: '#8b5cf6' },
-                                        { l: 'Privacidad', v: statsPrompt.priv, c: '#06b6d4' },
-                                        { l: 'Agencia', v: statsPrompt.agen, c: '#f59e0b' },
-                                        { l: 'Cognición', v: statsPrompt.cogn, c: '#ec4899' }
-                                    ].map(d => (
-                                        <div key={d.l} className="dash-lider-2026-bar-group">
-                                            <div className="dash-lider-2026-bar-label"><span>{d.l}</span><strong>{d.v}</strong></div>
-                                            <div className="dash-lider-2026-bar-bg"><div className="dash-lider-2026-bar-fill" style={{width: `${(d.v/5)*100}%`, backgroundColor: d.c}}></div></div>
+                        {/* PANEL 2: DICTAMEN DE AUDITORÍA ÉTICA (LIDERAZGO) */}
+                        <div className={`sos-history-chart audit-ethic-border`} style={{ borderLeftColor: statsPrompt?.color }}>
+                            <span className="dash-lider-2026-panel-id">Panel 3: Fase Liderar</span>
+                            <h4>Dictamen de Liderazgo Pedagógico e IA</h4>
+
+                            {promptData ? (
+                                <div className="sos-audit-content">
+                                    <div className="sos-audit-head-row">
+                                        <div>
+                                            <h5 className="sos-audit-title" style={{ color: statsPrompt?.color }}>
+                                                {promptData.Clasificacion_Riesgo?.split('|')[0] || "Análisis en curso"}
+                                            </h5>
+                                            <small>Auditoría bajo Marco UNESCO 2024 & AI Act</small>
                                         </div>
-                                    ))}
-                                    <div className="sos-alert-pill" style={{marginTop: '10px', backgroundColor: '#fcf8e3', border: '1px solid #faebcc', color: '#8a6d3b'}}>
-                                        {statsPrompt.diagnostico}
+                                    </div>
+
+                                    <div className="sos-mini-grid-bars">
+                                        {[
+                                            { l: 'Ética', v: promptData.Puntaje_Etica, c: '#8b5cf6' },
+                                            { l: 'Privacidad', v: promptData.Puntaje_Privacidad, c: '#06b6d4' },
+                                            { l: 'Agencia', v: promptData.Puntaje_Agencia, c: '#f59e0b' },
+                                            { l: 'Cognición', v: promptData.Puntaje_Dependencia, c: '#ec4899' }
+                                        ].map(d => (
+                                            <div key={d.l} className="sos-mini-bar-item">
+                                                <div className="sos-mini-bar-labels">
+                                                    <span>{d.l}</span>
+                                                    <strong>{d.v}/5</strong>
+                                                </div>
+                                                <div className="sos-mini-bar-bg">
+                                                    <div className="sos-mini-bar-fill" style={{ width: `${(d.v / 5) * 100}%`, backgroundColor: d.c }}></div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="sos-dictamen-box">
+                                        <strong className="sos-dictamen-tag">🔍 Hallazgos de la Auditoría:</strong>
+                                        <p className="sos-prompt-preview">
+                                            "{promptData.Prompt_Original?.substring(0, 800)}"
+                                        </p>
+                                        <p className="sos-dictamen-text">
+                                            {promptData.Puntaje_Agencia <= 2
+                                                ? "⚠️ Alerta crítica: Se detecta una delegación excesiva del juicio docente. La IA está asumiendo roles evaluativos sin supervisión suficiente."
+                                                : "✅ Se mantiene una agencia humana adecuada en el diseño de la interacción."}
+                                            <br /><br />
+                                            En términos de <strong>Privacidad</strong>, el nivel {promptData.Puntaje_Privacidad} indica que
+                                            {promptData.Puntaje_Privacidad >= 4 ? " aplicas protocolos seguros de minimización de datos." : " existen riesgos de exposición de datos sensibles."}
+                                        </p>
                                     </div>
                                 </div>
-                            ) : <p>Fase Liderar no completada.</p>}
+                            ) : (
+                                <div className="sos-empty-state">
+                                    <p>No se han encontrado registros de auditoría ética. <br /> Completa la Fase Liderar para activar este panel.</p>
+                                </div>
+                            )}
                         </div>
 
                         {/* PANEL 3: RETOS (TRANSFORMACIÓN) */}
                         <div className="sos-history-chart">
-                            <span className="dash-lider-2026-panel-id">Panel 3</span>
+                            <span className="dash-lider-2026-panel-id">Panel 4</span>
                             <h4>Misiones de Transformación</h4>
                             <div className="retos-summary-grid">
                                 {retos.length > 0 ? retos.map((r, i) => (
@@ -624,10 +755,15 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
 
                         {/* EVOLUCIÓN */}
                         <div className="sos-history-chart">
+                            <span className="dash-lider-2026-panel-id">Panel 5</span>
                             <h4>Evolución Histórica ATLAS</h4>
                             <ResponsiveContainer width="100%" height={180}>
                                 <LineChart data={[...historial].reverse()}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="Fecha_Evaluacion" /><YAxis domain={[0, 5]} hide /><Tooltip /><Line type="monotone" dataKey="Promedio_Global" stroke="#c5a059" strokeWidth={3} />
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="Fecha_Evaluacion" />
+                                    <YAxis domain={[0, 5]} hide />
+                                    <Tooltip />
+                                    <Line type="monotone" dataKey="Promedio_Global" stroke="#c5a059" strokeWidth={3} />
                                 </LineChart>
                             </ResponsiveContainer>
                         </div>
@@ -638,16 +774,16 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
             {/* MODAL DE DIAGNÓSTICO INDIVIDUAL */}
             {showModal && (
                 <div className="atl-an-overlay">
-                    <div className="atl-an-modal wide animate-fade-in" style={{ maxWidth: '900px' }}>
+                    <div className="atl-an-modal wide animate-fade-in">
                         <div className="atl-an-modal-head">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <div className="atl-an-modal-head-flex">
                                 <div>
                                     <h3>Reporte Individual: {userData.Nombre}</h3>
-                                    <p style={{ color: 'gray', fontSize: '0.8rem', margin: 0 }}>Marco COMPASS - Ciclo Sostener 2026</p>
+                                    <p className="atl-an-modal-sub">Marco COMPASS - Ciclo Sostener 2026</p>
                                 </div>
                                 <button className="atl-an-close" onClick={() => setShowModal(false)}>✕</button>
                             </div>
-                            <div className="modal-tabs" style={{ marginTop: '15px' }}>
+                            <div className="modal-tabs-margin">
                                 <button className={viewModeModal === 'stats' ? 'active' : ''} onClick={() => setViewModeModal('stats')}>Análisis</button>
                                 <button className={viewModeModal === 'survey' ? 'active' : ''} onClick={() => setViewModeModal('survey')}>Dimensiones</button>
                             </div>
@@ -656,43 +792,38 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
                             {viewModeModal === 'stats' ? (
                                 <div className="stats-view">
                                     <div className="atl-an-metrics-grid">
-                                        <div className="atl-an-mini-box dark">
-                                            <span className="atl-an-val" style={{ color: 'var(--primary)' }}>{toPct(historial[0].Promedio_Global)}%</span>
+                                        <div className="atl-an-mini-box-dark">
+                                            <span className="atl-an-val-primary">{toPct(historial[0].Promedio_Global)}%</span>
                                             <span className="atl-an-lbl">MEDIA GLOBAL</span>
                                         </div>
-                                        <div className="atl-an-mini-box dark">
-                                            <span className="atl-an-val" style={{ fontSize: '1.1rem' }}>{generarDiagnostico(toPct(historial[0].Promedio_Global)).nivel}</span>
+                                        <div className="atl-an-mini-box-dark">
+                                            <span className="atl-an-val-small">{generarDiagnostico(toPct(historial[0].Promedio_Global)).nivel}</span>
                                             <span className="atl-an-lbl">NIVEL ACTUAL</span>
                                         </div>
                                     </div>
 
-                                    {/* BLOQUE DE ANÁLISIS DINÁMICO */}
-                                    <div className="atl-an-insight-card" style={{ marginTop: '20px', textAlign: 'left', borderLeft: '4px solid var(--primary)', padding: '20px', background: '#f8fafc' }}>
-                                        <h4 style={{ marginBottom: '10px', color: '#1e293b' }}>💡 Diagnóstico Pedagógico</h4>
-                                        <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: '#475569', whiteSpace: 'pre-line' }}>
+                                    <div className="atl-an-insight-card-individual">
+                                        <h4 className="insight-title">💡 Diagnóstico Pedagógico</h4>
+                                        <p className="insight-text">
                                             {generarDiagnostico(toPct(historial[0].Promedio_Global)).texto}
                                         </p>
 
-                                        <h4 style={{ marginTop: '20px', marginBottom: '10px', color: 'var(--primary-dark)', fontSize: '0.9rem' }}>🔍 Implicación</h4>
-                                        <p style={{ fontSize: '0.9rem', color: '#64748b' }}>
+                                        <h4 className="insight-sub-title">🔍 Implicación</h4>
+                                        <p className="insight-sub-text">
                                             {generarDiagnostico(toPct(historial[0].Promedio_Global)).implicacion}
                                         </p>
-                                    </div>
-
-                                    <div style={{ marginTop: '15px' }}>
-                                        <p style={{ fontSize: '0.8rem', color: 'gray' }}><strong>Alertas Activas:</strong> {historial[0].Alertas_Activas}</p>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="survey-view">
                                     {dimensiones.map((d, i) => (
-                                        <div key={d.id} className="atl-an-bar-container" style={{ marginBottom: '15px' }}>
-                                            <div className="atl-an-bar-label-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                                                <span style={{ fontWeight: '600' }}>{d.nombre}</span>
+                                        <div key={d.id} className="atl-an-bar-container-margin">
+                                            <div className="atl-an-bar-label-row-bold">
+                                                <span>{d.nombre}</span>
                                                 <span>{toPct(pD[i])}%</span>
                                             </div>
-                                            <div className="atl-an-bar-bg" style={{ background: '#f1f5f9', borderRadius: '5px', height: '10px' }}>
-                                                <div className="atl-an-bar-fill" style={{ width: `${toPct(pD[i])}%`, background: 'var(--primary)', height: '100%', borderRadius: '5px', transition: 'width 1s ease' }}></div>
+                                            <div className="atl-an-bar-bg-light">
+                                                <div className="atl-an-bar-fill-primary" style={{ width: `${toPct(pD[i])}%` }}></div>
                                             </div>
                                         </div>
                                     ))}
@@ -700,7 +831,7 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
                             )}
                         </div>
                         <div className="modal-footer">
-                            <button className="atl-an-btn-main" onClick={() => setShowModal(false)} style={{ width: '100%' }}>Cerrar Reporte de Sostenibilidad</button>
+                            <button className="atl-an-btn-full" onClick={() => setShowModal(false)}>Cerrar Reporte de Sostenibilidad</button>
                         </div>
                     </div>
                 </div>

@@ -1,102 +1,130 @@
 /* =========================================
-   MODULO SOSTENER - DOCENTE (ESTÁNDAR ATLAS)
+   MODULO SOSTENER - DOCENTE (ESTÁNDAR ATLAS PRO)
    ========================================= */
+
 .sostener-page-wrapper {
     --primary: #c5a059;
     --primary-dark: #a8894a;
+    --primary-soft: rgba(197,160,89,0.15);
     --bg: #f8fafc;
     --white: #ffffff;
     --text: #1e293b;
     --text-muted: #64748b;
     --border: #e2e8f0;
-    --gold-light: rgba(197, 160, 89, 0.1);
+    --slate-dark: #15203c;
+        --gold-light: rgba(197, 160, 89, 0.1);
+        --atlas-blue: #15203c;
     
-    background-color: var(--bg);
+        --atlas-blue-light: #15203c;
+    
+        --atlas-gold: #c5a059;
+    
+        --atlas-white: #ffffff;
+
+    background:
+        radial-gradient(circle at 20% 0%, rgba(197,160,89,0.08), transparent 40%),
+        radial-gradient(circle at 90% 10%, rgba(15,23,42,0.05), transparent 50%),
+        var(--bg);
+
     min-height: 100vh;
-    padding: 30px;
+    padding: 40px;
     font-family: 'Inter', sans-serif;
     color: var(--text);
+    box-sizing: border-box;
 }
 
-/* Animaciones */
+/* =============================
+   ANIMACIONES
+============================= */
+
 .animate-fade-in {
     animation: fadeIn 0.5s ease-out;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(15px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- VISTA: MENU PRINCIPAL --- */
+/* =============================
+   HEADER
+============================= */
+
 .sostener-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 40px;
+    margin-bottom: 50px;
     border-bottom: 1px solid var(--border);
-    padding-bottom: 20px;
+    padding-bottom: 25px;
 }
 
 .sostener-header h2 {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: var(--text);
-    margin: 0;
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
 }
 
 .btn-back-atlas {
     background: var(--white);
     border: 1px solid var(--border);
-    padding: 10px 20px;
-    border-radius: 10px;
+    padding: 12px 22px;
+    border-radius: 12px;
     font-weight: 600;
     color: var(--text-muted);
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.3s ease;
 }
 
 .btn-back-atlas:hover {
-    background: #f1f5f9;
+    background: var(--primary-soft);
+    border-color: var(--primary);
+    color: var(--primary-dark);
 }
+
+/* =============================
+   MENU CARDS
+============================= */
 
 .sostener-grid-menu {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 30px;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 35px;
     max-width: 1200px;
     margin: 0 auto;
 }
 
 .sos-card-main {
     background: var(--white);
-    border-radius: 20px;
-    padding: 40px;
+    border-radius: 24px;
+    padding: 45px;
     text-align: center;
     border: 1px solid var(--border);
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    transition: all 0.35s cubic-bezier(.16,1,.3,1);
+    box-shadow: 0 10px 30px rgba(15,23,42,0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.sos-card-main::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, var(--primary-soft), transparent 70%);
+    transform: rotate(25deg);
 }
 
 .sos-card-main:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+    transform: translateY(-8px);
+    box-shadow: 0 25px 60px rgba(15,23,42,0.08);
 }
 
 .sos-icon {
-    font-size: 3rem;
-    margin-bottom: 20px;
-}
-
-.sos-card-main h3 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin-bottom: 10px;
-}
-
-.sos-card-main p {
-    color: var(--text-muted);
-    margin-bottom: 30px;
+    font-size: 3.2rem;
+    margin-bottom: 25px;
 }
 
 .sos-actions {
@@ -106,278 +134,1530 @@
 }
 
 .btn-sos-primary {
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
     border: none;
-    padding: 12px 25px;
-    border-radius: 12px;
+    padding: 13px 28px;
+    border-radius: 14px;
     font-weight: 700;
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(197,160,89,0.25);
+}
+
+.btn-sos-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(197,160,89,0.35);
 }
 
 .btn-sos-secondary {
     background: #f1f5f9;
     color: var(--text);
     border: 1px solid var(--border);
-    padding: 12px 25px;
-    border-radius: 12px;
+    padding: 13px 28px;
+    border-radius: 14px;
     font-weight: 700;
     cursor: pointer;
 }
 
-.is-locked {
-    opacity: 0.6;
-    filter: grayscale(1);
-    cursor: not-allowed;
-}
+/* =============================
+   DASHBOARD
+============================= */
 
-/* --- VISTA: CUESTIONARIO --- */
-.sos-form-container {
-    max-width: 800px;
-    margin: 0 auto;
-    background: white;
-    padding: 40px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-}
-
-.sos-dim-group {
-    margin-bottom: 40px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #f8fafc;
-}
-
-.sos-dim-group h3 {
-    color: var(--primary-dark);
-    font-size: 1.2rem;
-    margin-bottom: 20px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.sos-q-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 0;
-    border-bottom: 1px solid #f1f5f9;
-    gap: 20px;
-}
-
-.sos-q-item span {
-    font-size: 0.95rem;
-    font-weight: 500;
-}
-
-.sos-likert {
-    display: flex;
-    gap: 8px;
-}
-
-.sos-likert button {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: white;
-    cursor: pointer;
-    font-weight: 600;
-    transition: 0.2s;
-}
-
-.sos-likert button.active {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
-    transform: scale(1.1);
-}
-
-.btn-sos-submit {
-    width: 100%;
-    margin-top: 20px;
-    background: var(--text);
-    color: white;
-    padding: 18px;
-    border-radius: 12px;
-    font-weight: 800;
-    font-size: 1.1rem;
-    border: none;
-    cursor: pointer;
-}
-
-/* --- VISTA: DASHBOARD --- */
 .sos-dash-layout {
     display: flex;
     flex-direction: column;
-    gap: 25px;
-    max-width: 1100px;
-    margin: 20px auto;
+    gap: 30px;
+    max-width: 1150px;
+    margin: 30px auto;
 }
 
 .sos-dash-top {
     display: grid;
-    grid-template-columns: 1fr 1.5fr 1fr;
-    gap: 20px;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 25px;
 }
 
 .sos-stat-card {
-    background: white;
-    padding: 25px;
-    border-radius: 18px;
+    background: var(--white);
+    padding: 30px;
+    border-radius: 24px;
     border: 1px solid var(--border);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    box-shadow: 0 8px 30px rgba(15,23,42,0.04);
+    transition: all 0.3s ease;
+}
+
+.sos-stat-card:hover {
+    transform: translateY(-5px);
 }
 
 .sos-stat-card.gold {
     background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
     color: white;
     border: none;
-    text-align: center;
 }
-
-.sos-stat-card h4 {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 15px;
-}
-
-.sos-stat-card.gold h4 { color: rgba(255,255,255,0.6); }
 
 .sos-big-val {
-    font-size: 1.4rem;
-    font-weight: 800;
+    font-size: 2rem;
+    font-weight: 900;
     color: var(--primary);
-    margin: 10px 0;
 }
 
-.sos-alert-pill {
-    background: #fff1f2;
-    color: #be123c;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    margin-bottom: 8px;
-    font-weight: 600;
-}
+
+/* =============================
+   HISTORIAL / CARDS GRANDES
+============================= */
 
 .sos-history-chart {
-    background: white;
-    padding: 30px;
-    border-radius: 18px;
+    background: var(--white);
+    padding: 35px;
+    border-radius: 24px;
     border: 1px solid var(--border);
+    box-shadow: 0 12px 35px rgba(15,23,42,0.05);
 }
-/* --- MEJORA: BOTÓN VOLVER (ESTILO ATLAS) --- */
+
+/* =============================
+   BOTÓN VOLVER
+============================= */
+
 .btn-sos-back {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     background: var(--white);
     border: 1px solid var(--border);
-    padding: 10px 18px;
-    border-radius: 8px;
+    padding: 12px 20px;
+    border-radius: 10px;
     font-weight: 600;
-    color: var(--text);
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    margin-bottom: 25px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+    transition: 0.3s;
 }
 
 .btn-sos-back:hover {
-    background: var(--bg);
+    transform: translateX(-6px);
     border-color: var(--primary);
     color: var(--primary-dark);
-    transform: translateX(-5px);
 }
 
-/* --- VISTA: CUESTIONARIO (ANCHO MEJORADO) --- */
-.sostener-cuestionario {
-    max-width: 1200px; /* Expandido para alinearse con el resto del dashboard */
-    margin: 0 auto;
-}
+/* ================================================================
+   POPUP PREMIUM CORREGIDO (SIDEBAR FIX + ATMÓSFERA ATLAS)
+   ================================================================ */
 
-.sos-form-container {
-    width: 100%; /* Ocupa todo el ancho del padre */
-    max-width: none; /* Quitamos la restricción anterior de 800px */
-    background: var(--white);
-    padding: 40px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.02);
-}
+.atl-an-overlay,
+.atl-audit-popup-overlay {
+    position: fixed !important;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.88);
+    backdrop-filter: blur(12px);
 
-/* --- DISEÑO DE PREGUNTAS MÁS LIMPIO --- */
-.sos-q-item {
-    display: grid; /* Cambiamos a grid para mejor control de alineación */
-    grid-template-columns: 1fr auto; 
+    display: flex;
     align-items: center;
-    padding: 20px 0;
-    border-bottom: 1px solid #f1f5f9;
-    gap: 30px;
+    justify-content: center;
+
+    padding-left: 280px;
+    padding-right: 40px;
+
+    z-index: 999999 !important;
+    box-sizing: border-box;
 }
 
-.sos-q-item:hover {
-    background-color: #fcfcfc;
-}
-
-.sos-q-item span {
-    font-size: 1rem;
-    line-height: 1.5;
-    color: var(--text);
-}
-
-/* --- BOTÓN SUBMIT PREMIUM --- */
-.btn-sos-submit {
+.atl-an-modal,
+.atl-audit-popup-container {
+    background: #ffffff;
     width: 100%;
-    max-width: 400px; /* El botón no necesita ser gigante, se centra */
-    margin: 40px auto 0 auto;
-    display: block;
-    background: linear-gradient(135deg, var(--text) 0%, #0f172a 100%);
+    max-width: 900px;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 50px 120px -20px rgba(0, 0, 0, 0.7);
+    animation: modalEmerger 0.45s cubic-bezier(.16,1,.3,1);
+    border: 1px solid rgba(197,160,89,0.15);
+}
+
+@keyframes modalEmerger {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.atl-an-modal-head {
+    padding: 28px 35px;
+    background: linear-gradient(135deg, var(--slate-dark), #1e293b);
     color: white;
-    padding: 16px;
+}
+
+.atl-an-modal-body {
+    padding: 40px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.atl-an-close {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: white;
+    font-size: 18px;
+    transition: 0.3s;
+}
+
+.atl-an-close:hover {
+    background: var(--primary);
+}
+
+/* ================================================================
+   MEJORAS PANEL 1 Y CONTENEDORES DE DASHBOARD
+   ================================================================ */
+
+/* Panel 1: Ajuste de espaciado y jerarquía */
+.sos-stat-card.gold {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 30px; /* Aumentamos el padding para que no se pegue al top */
+    min-height: 250px;
+    position: relative;
+    overflow: hidden;
+}
+
+.sos-stat-card.gold h4 {
+    font-size: 1.2rem;
+    margin: 10px 0;
+    opacity: 0.9;
+}
+
+.sos-big-val {
+    font-size: 3.5rem !important; /* Valor mucho más imponente */
+    margin: 15px 0;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.atl-an-btn-main {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: auto; /* Empuja el botón al final del card */
+}
+
+/* Identificador de Panel (Label superior) */
+.dash-lider-2026-panel-id {
+    background: rgba(197, 160, 89, 0.2);
+    color: var(--primary);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+/* ================================================================
+   MEJORAS POP-UP: LEGIBILIDAD Y LÍNEAS DE DIMENSIONES
+   ================================================================ */
+
+.atl-an-modal-body {
+    color: #1e293b !important; /* Forzamos color oscuro para que SE LEA siempre */
+    background-color: white;
+}
+
+.atl-an-modal-sub {
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/* Líneas de Dimensiones (Survey View) */
+.atl-an-bar-container-margin {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f5f9; /* Línea divisoria suave entre dimensiones */
+}
+
+.atl-an-bar-label-row-bold {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #334155;
+}
+
+.atl-an-bar-bg-light {
+    background: #e2e8f0;
+    height: 12px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.atl-an-bar-fill-primary {
+    background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+    height: 100%;
+    border-radius: 10px;
+    transition: width 1s ease-in-out;
+}
+
+/* ================================================================
+   CORRECCIÓN DEFINITIVA DE POP-UPS (LEGIBILIDAD Y DISEÑO)
+   ================================================================ */
+
+/* 1. Fondo del modal y contraste de texto */
+.atl-an-modal-body {
+    background: #ffffff !important;
+    color: #1e293b !important; /* Texto azul oscuro profundo para lectura perfecta */
+    padding: 40px;
+}
+
+/* 2. Título del Modal (Evita que se pierda con el background) */
+.atl-an-modal-head h3 {
+    color: #ffffff !important;
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.atl-an-modal-sub {
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+/* 3. Diseño de Dimensiones y Líneas (Survey View) */
+.atl-an-bar-container-margin {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f1f5f9; /* Línea divisoria entre dimensiones */
+}
+
+.atl-an-bar-label-row-bold {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.atl-an-bar-label-row-bold span:first-child {
+    color: #334155;
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.atl-an-bar-label-row-bold span:last-child {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 800;
+}
+
+/* 4. Barras de progreso con diseño Atlas */
+.atl-an-bar-bg-light {
+    background: #e2e8f0;
+    height: 10px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.atl-an-bar-fill-primary {
+    background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+    height: 100%;
+    border-radius: 20px;
+    transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 5. Cards de Diagnóstico (Texto legible) */
+.atl-an-insight-card-individual, 
+.atl-an-insight-card-audit {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 5px solid var(--primary);
+    padding: 25px;
+    border-radius: 18px;
+    margin-top: 25px;
+}
+
+.insight-title, .insight-sub-title {
+    color: var(--slate-dark) !important;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.insight-text, .insight-sub-text {
+    color: #475569 !important; /* Gris oscuro legible */
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+/* 6. Tabs del Modal */
+.modal-tabs-margin {
+    display: flex;
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.modal-tabs-margin button {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.5);
+    padding: 8px 0;
+    font-weight: 700;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: 0.3s;
+}
+
+.modal-tabs-margin button.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+/* 7. Footer del Modal */
+.modal-footer {
+    padding: 20px 40px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+}
+
+.atl-an-btn-full {
+    width: 100%;
+    background: var(--slate-dark);
+    color: white;
+    padding: 15px;
     border-radius: 12px;
     font-weight: 700;
-    letter-spacing: 0.5px;
     border: none;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: 0.3s;
 }
 
-.btn-sos-submit:hover {
+.atl-an-btn-full:hover {
+    background: #000;
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    background: var(--primary-dark);
 }
 
-/* Mini Cards de Resultados (Arriba del formulario si aplica) */
-.balance-global-mini-card {
-    display: flex;
+/* ================================================================
+   ESTILIZACIÓN DE MÉTRICAS EN MODAL (MEDIA GLOBAL Y NIVEL)
+   ================================================================ */
+
+/* Contenedor de las dos cajas de métricas */
+.atl-an-metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Divide en dos columnas iguales */
     gap: 20px;
     margin-bottom: 30px;
 }
 
-.mini-stat {
-    background: var(--white);
-    padding: 15px 25px;
-    border-radius: 12px;
-    border-left: 4px solid var(--primary);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+/* Las cajas individuales (Media y Nivel) */
+.atl-an-mini-box-dark {
+    background: #f1f5f9; /* Gris muy suave profesional */
+    padding: 25px 15px;
+    border-radius: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    transition: transform 0.3s ease;
 }
-/* Mobile Responsive */
-@media (max-width: 900px) {
+
+.atl-an-mini-box-dark:hover {
+    transform: translateY(-5px);
+    background: #ffffff;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+/* El número grande (85.0%) */
+.atl-an-val-primary {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--primary-dark);
+    display: block;
+    line-height: 1;
+}
+
+/* El texto del nivel (Docente Estratégico...) */
+.atl-an-val-small {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--slate-dark);
+    display: block;
+    line-height: 1.2;
+    margin-bottom: 5px;
+    padding: 0 10px;
+}
+
+/* Las etiquetas pequeñas (MEDIA GLOBAL / NIVEL ACTUAL) */
+.atl-an-lbl {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 10px;
+}
+
+.atl-an-btn-main:hover {
+    background: var(--primary) !important; /* Mantiene el dorado original */
+    color: white !important;               /* Mantiene el texto blanco */
+    transform: translateY(-2px);           /* Mantiene la elevación sutil sin cambiar color */
+    box-shadow: 0 8px 20px rgba(197, 160, 89, 0.4) !important; /* Sombra dorada, no azul */
+}
+
+/* Ajuste para pantallas pequeñas */
+@media (max-width: 600px) {
+    .atl-an-metrics-grid {
+        grid-template-columns: 1fr; /* Se apilan en móvil */
+    }
+}
+
+/* ================================================================
+   PANELES DE AUDITORÍA Y RETOS (2, 3 y 4)
+   ================================================================ */
+
+/* ================================================================
+   PANEL 2: DIAGNÓSTICO PEDAGÓGICO (UNIFICADO CON CARD 1)
+   ================================================================ */
+
+/* Estructura del Card */
+.sos-stat-card.real-evidence {
+    cursor: pointer;
+    border-left: 6px solid var(--slate-dark) !important; /* Azul Pizarra de Card 1 */
+    background: #ffffff;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Título del Panel */
+.sos-stat-card.real-evidence h4 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--slate-dark);
+    margin-bottom: 20px;
+}
+
+/* Cajas de datos internas */
+.atl-an-mini-box {
+    background: #f8fafc; /* Fondo suave para resaltar el valor */
+    border: 1px solid var(--border);
+    padding: 18px 10px;
+    border-radius: 16px;
+    text-align: center;
+}
+
+.atl-an-mini-box-val {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--slate-dark); /* Color unificado */
+    line-height: 1;
+}
+
+.atl-an-mini-box-lbl {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 8px;
+}
+
+/* Botón de Acción con estilo Atlas Pro */
+.atl-an-btn-main-alt {
+    background: var(--slate-dark);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    width: 100%;
+    margin-top: 15px;
+}
+
+/* Indicador visual de "Fase Activa" unificado */
+.real-evidence .dash-lider-2026-panel-id {
+    background: var(--gold-light);
+    color: var(--primary-dark);
+    border: 1px solid var(--primary-soft);
+}
+
+/* Panel 3: Dictamen Ético */
+.audit-ethic-border {
+    border-left: 6px solid #8b5cf6 !important;
+}
+
+.sos-dictamen-box {
+    background: #f1f5f9;
+    padding: 20px;
+    border-radius: 15px;
+    margin-top: 15px;
+    border: 1px dashed #cbd5e1;
+}
+
+/* Panel 4: Retos */
+.retos-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.reto-mini-card {
+    background: white;
+    padding: 15px;
+    border-radius: 15px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+
+.status-pill {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.status-pill.completed { background: #dcfce7; color: #166534; }
+.status-pill.non-completed { background: #fee2e2; color: #991b1b; }
+
+/* ================================================================
+   PANEL 3: DICTAMEN DE LIDERAZGO (ESTILO ATLAS PRO)
+   ================================================================ */
+
+.sos-stat-card.liderazgo-panel {
+    border-left: 6px solid #8b5cf6 !important; /* Un morado vibrante para diferenciar Liderazgo */
+    position: relative;
+    padding: 30px;
+}
+
+/* 1. Título y Alerta de Riesgo */
+.liderazgo-panel h4 {
+    color: var(--atlas-blue);
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+}
+
+.risk-badge-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff7ed; /* Naranja muy suave */
+    padding: 6px 16px;
+    border-radius: 50px;
+    border: 1px solid #ffedd5;
+    margin-bottom: 20px;
+}
+
+.risk-badge-text {
+    color: #ea580c; /* Naranja de advertencia */
+    font-weight: 800;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* 2. Grid de Métricas (Ética, Privacidad, etc.) */
+.liderazgo-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.liderazgo-metric-box {
+    background: var(--atlas-bg-light);
+    padding: 12px 15px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #e2e8f0;
+}
+
+.metric-label {
+    font-weight: 700;
+    color: var(--atlas-text);
+    font-size: 0.9rem;
+}
+
+.metric-value {
+    font-weight: 900;
+    color: var(--atlas-blue);
+    background: white;
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+}
+
+/* 3. Bloque de Hallazgos (El recuadro gris sutil) */
+.audit-hallazgos-box {
+    background: var(--glass-bg);
+    border: 1px dashed #cbd5e1;
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 20px;
+    position: relative;
+}
+
+.audit-hallazgos-box h5 {
+    font-size: 0.8rem;
+    color: var(--atlas-gold);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.hallazgos-text {
+    font-style: italic;
+    color: var(--atlas-text);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    border-left: 3px solid #e2e8f0;
+    padding-left: 15px;
+}
+
+/* 4. Alerta Crítica (Highlight) */
+.alerta-critica-banner {
+    background: #fef2f2;
+    border-radius: 12px;
+    padding: 15px;
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    border: 1px solid #fee2e2;
+}
+
+.alerta-critica-banner span {
+    color: #b91c1c;
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.4;
+}
+/* ================================================================
+   PANEL 3: DICTAMEN DE LIDERAZGO (UNIFICADO CON AZUL ATLAS)
+   ================================================================ */
+
+   /* ================================================================
+   PANEL 3: DICTAMEN DE LIDERAZGO PEDAGÓGICO (ATLAS PRO)
+   ================================================================ */
+
+/* Contenedor Principal */
+.sos-history-chart.audit-ethic-border {
+    background: var(--atlas-white);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 10px 30px rgba(16, 42, 67, 0.05);
+    border: 1px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+/* Tag superior "Panel 3" */
+.dash-lider-2026-panel-id {
+    display: inline-block;
+    background: var(--atlas-bg-light);
+    color: var(--atlas-text);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.sos-history-chart.audit-ethic-border h4 {
+    color: var(--atlas-blue);
+    font-size: 1.5rem;
+    font-weight: 850;
+    margin: 0 0 25px 0;
+    letter-spacing: -0.5px;
+}
+
+/* Header del Dictamen (Riesgo e ID) */
+.sos-audit-head-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: var(--atlas-bg-light);
+    padding: 20px;
+    border-radius: 16px;
+    margin-bottom: 25px;
+    border: 1px solid #eef2f6;
+}
+
+.sos-audit-title {
+    font-size: 1.2rem;
+    font-weight: 900;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sos-audit-head-row small {
+    color: var(--atlas-text);
+    opacity: 0.7;
+    font-weight: 600;
+    display: block;
+    margin-top: 4px;
+}
+
+/* ID del Prompt estilo "Badge" */
+.sos-audit-id-col {
+    text-align: right;
+}
+
+.sos-id-lbl {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: var(--atlas-text);
+    margin-bottom: 4px;
+}
+
+.sos-id-code {
+    background: var(--atlas-blue);
+    color: var(--atlas-gold);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-family: 'Monaco', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+/* Grid de Mini Barras (Métricas de IA) */
+.sos-mini-grid-bars {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.sos-mini-bar-item {
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    padding: 15px;
+    border-radius: 14px;
+}
+
+.sos-mini-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 0.85rem;
+}
+
+.sos-mini-bar-labels span {
+    font-weight: 800;
+    color: var(--atlas-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sos-mini-bar-labels strong {
+    color: var(--atlas-text);
+}
+
+/* Estilo de la barra de progreso */
+.sos-mini-bar-bg {
+    background: #f1f5f9;
+    height: 8px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.sos-mini-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 1s cubic-bezier(0.1, 0, 0.2, 1);
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Caja de Hallazgos y Dictamen */
+.sos-dictamen-box {
+    background: var(--atlas-bg-light);
+    border-radius: 20px;
+    padding: 25px;
+    border: 1px solid #e2e8f0;
+    border-left: 6px solid var(--atlas-gold); /* Acento en Dorado Atlas */
+}
+
+.sos-dictamen-tag {
+    display: block;
+    color: var(--atlas-gold);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+}
+
+.sos-prompt-preview {
+    font-style: italic;
+    color: var(--atlas-text);
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    border: 1px solid #f1f5f9;
+}
+
+.sos-dictamen-text {
+    font-size: 0.95rem;
+    color: var(--atlas-blue);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.sos-dictamen-text strong {
+    font-weight: 800;
+    color: var(--atlas-gold);
+}
+
+/* Estado Vacío */
+.sos-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    border: 2px dashed #e2e8f0;
+    border-radius: 24px;
+    color: var(--atlas-text);
+}
+/* Contenedor Principal Unificado */
+.sos-history-chart.audit-ethic-border {
+    background: var(--atlas-white);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 10px 30px rgba(16, 42, 67, 0.05);
+    border: 1px solid #e2e8f0;
+    /* Cambiado de morado al azul insignia de tu panel anterior */
+    border-left: 6px solid var(--atlas-blue) !important; 
+    position: relative;
+    overflow: hidden;
+}
+
+/* Tag de Fase */
+.dash-lider-2026-panel-id {
+    display: inline-block;
+    background: var(--atlas-bg-light);
+    color: var(--atlas-blue); /* Texto en azul */
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.sos-history-chart.audit-ethic-border h4 {
+    color: var(--atlas-blue);
+    font-size: 1.5rem;
+    font-weight: 850;
+    margin: 0 0 25px 0;
+    letter-spacing: -0.5px;
+}
+
+/* Header de Riesgo e ID */
+.sos-audit-head-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: var(--atlas-bg-light);
+    padding: 20px;
+    border-radius: 16px;
+    margin-bottom: 25px;
+    border: 1px solid #eef2f6;
+}
+
+/* Título de Riesgo Dinámico */
+.sos-audit-title {
+    font-size: 1.2rem;
+    font-weight: 900;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+/* Badge de ID Prompt */
+.sos-id-code {
+    background: var(--atlas-blue);
+    color: var(--atlas-gold);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-family: 'Monaco', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+/* Grid de Métricas (Barras) */
+.sos-mini-grid-bars {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.sos-mini-bar-item {
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    padding: 15px;
+    border-radius: 14px;
+    transition: transform 0.2s ease;
+}
+
+.sos-mini-bar-item:hover {
+    transform: translateY(-3px);
+    border-color: var(--atlas-gold);
+}
+
+.sos-mini-bar-labels span {
+    font-weight: 800;
+    color: var(--atlas-blue); /* Etiquetas en azul */
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+/* Caja de Hallazgos con Acento Dorado */
+.sos-dictamen-box {
+    background: var(--atlas-bg-light);
+    border-radius: 20px;
+    padding: 25px;
+    border: 1px solid #e2e8f0;
+    /* El dorado se mantiene como color de "Dictamen Oficial" */
+    border-left: 6px solid var(--atlas-gold); 
+}
+
+.sos-dictamen-tag {
+    display: block;
+    color: var(--atlas-gold);
+    font-weight: 900;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.sos-prompt-preview {
+    font-style: italic;
+    color: var(--atlas-text);
+    background: #ffffff;
+    padding: 18px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    border: 1px solid #f1f5f9;
+}
+
+/* Texto de Alerta Crítica */
+.sos-dictamen-text {
+    font-size: 0.95rem;
+    color: var(--atlas-blue);
+    line-height: 1.6;
+}
+
+.sos-dictamen-text strong {
+    color: var(--atlas-gold);
+    font-weight: 800;
+}
+
+/* ================================================================
+   MODAL DE AUDITORÍA REAL (SISTEMA ATLAS PRO - COLORES INSIGNIA)
+   ================================================================ */
+
+.audit-modal-container {
+    background: var(--atlas-white);
+    width: 100%;
+    max-width: 850px;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 40px 100px rgba(16, 42, 67, 0.3); /* Sombra basada en atlas-blue */
+    border: 1px solid var(--border);
+}
+
+.audit-modal-head {
+    background: var(--atlas-blue); /* Tu azul insignia */
+    padding: 30px 40px;
+    color: var(--atlas-white);
+}
+
+.audit-modal-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.audit-modal-head h3 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.audit-modal-sub {
+    color: rgba(255, 255, 255, 0.7);
+    margin: 5px 0 0 0;
+    font-weight: 500;
+}
+
+.audit-modal-close {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: white;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.audit-modal-close:hover {
+    background: var(--atlas-gold);
+}
+
+/* TABS ATLAS GOLD */
+.audit-modal-tabs {
+    display: flex;
+    gap: 25px;
+}
+
+.audit-modal-tabs button {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 12px 0;
+    font-weight: 700;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: 0.3s;
+}
+
+.audit-modal-tabs button.active {
+    color: var(--atlas-gold);
+    border-bottom-color: var(--atlas-gold);
+}
+
+/* CUERPO DEL MODAL */
+.audit-modal-body {
+    padding: 40px;
+    max-height: 60vh;
+    overflow-y: auto;
+    background: var(--atlas-white);
+    color: var(--atlas-text) !important; /* Tu color de texto oficial */
+}
+
+/* VISTA ESTADÍSTICAS */
+.audit-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.audit-stat-box {
+    background: var(--atlas-bg-light);
+    padding: 25px 15px;
+    border-radius: 18px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    transition: transform 0.3s ease;
+}
+
+.audit-stat-box:hover {
+    transform: translateY(-5px);
+    border-color: var(--atlas-gold);
+}
+
+.audit-val {
+    display: block;
+    font-size: 2.2rem;
+    font-weight: 900;
+    margin-bottom: 5px;
+    color: var(--atlas-blue); /* Valores en azul insignia */
+}
+
+/* Mantengo los sutiles acentos lógicos pero bajo tu tono de texto */
+.audit-val.blue { color: var(--atlas-blue); } 
+.audit-val.green { color: #16a34a; } 
+.audit-val.orange { color: #d97706; }
+
+.audit-lbl {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--atlas-text);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.8;
+}
+
+.audit-insight-card {
+    background: var(--atlas-bg-light);
+    padding: 25px;
+    border-radius: 18px;
+    border-left: 6px solid var(--atlas-gold); /* Detalle en Dorado */
+}
+
+.audit-insight-card h4 {
+    color: var(--atlas-blue);
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+/* VISTA ITEMS (SURVEY) */
+.audit-item-row {
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.audit-item-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-weight: 700;
+    color: var(--atlas-blue);
+}
+
+.audit-progress-bg {
+    background: #e2e8f0;
+    height: 10px;
+    border-radius: 10px;
+}
+
+.audit-progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, var(--atlas-gold), #a8894a); /* Gradiente Dorado */
+    transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* FOOTER */
+.audit-modal-footer {
+    padding: 25px 40px;
+    border-top: 1px solid #e2e8f0;
+    background: var(--atlas-bg-light);
+}
+
+.audit-btn-close-full {
+    width: 100%;
+    background: var(--atlas-blue);
+    color: var(--atlas-white);
+    border: none;
+    padding: 16px;
+    border-radius: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* ================================================================
+   MEJORAS DE EXPLORACIÓN: DIAGNÓSTICO ATLAS PRO
+   ================================================================ */
+
+/* 1. Contenedor de Ítems (Survey View) */
+.audit-survey-scroll {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    padding-right: 10px; /* Espacio para el scroll */
+}
+
+.audit-item-row {
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    padding: 20px;
+    border-radius: 16px;
+    transition: all 0.3s ease;
+}
+
+.audit-item-row:hover {
+    border-color: var(--atlas-gold);
+    box-shadow: 0 5px 15px rgba(197, 160, 89, 0.08);
+}
+
+/* 2. Etiqueta del Indicador y Puntaje */
+.audit-item-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.audit-item-text {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--atlas-blue);
+    line-height: 1.4;
+    max-width: 80%; /* Evita que el texto choque con el número */
+}
+
+.audit-item-score {
+    background: var(--atlas-bg-light);
+    color: var(--atlas-blue);
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    border: 1px solid #e2e8f0;
+}
+
+/* 3. Refinamiento de la Barra de Progreso */
+.audit-progress-bg {
+    background: #eef2f6;
+    height: 8px;
+    border-radius: 10px;
+    position: relative;
+}
+
+.audit-progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(197, 160, 89, 0.2);
+    /* El color dinámico se maneja en el JS (style), pero aquí damos suavidad */
+    transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 4. Mejora en la Interpretación (Insight Card) */
+.audit-insight-card {
+    background: linear-gradient(135deg, var(--atlas-bg-light) 0%, #ffffff 100%);
+    padding: 30px;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    border-left: 6px solid var(--atlas-gold);
+    margin-top: 30px;
+}
+
+.audit-insight-card h4 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.85rem;
+    margin-bottom: 15px;
+    color: var(--atlas-gold);
+}
+
+.audit-insight-card p {
+    color: var(--atlas-text);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.audit-insight-card strong {
+    color: var(--atlas-blue);
+    font-weight: 800;
+}
+
+/* 5. Vista Compass (Badge Central) */
+.audit-compass-view {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.audit-compass-badge {
+    display: inline-block;
+    background: var(--atlas-blue);
+    color: var(--atlas-gold);
+    padding: 15px 40px;
+    border-radius: 50px;
+    font-size: 1.4rem;
+    font-weight: 900;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 25px rgba(16, 42, 67, 0.2);
+    border: 2px solid var(--atlas-gold);
+}
+
+.audit-compass-box {
+    background: var(--atlas-bg-light);
+    padding: 30px;
+    border-radius: 20px;
+    border: 1px dashed var(--atlas-gold);
+}
+
+/* ================================================================
+   PANEL 4: MISIONES DE TRANSFORMACIÓN (GAMIFIED DESIGN)
+   ================================================================ */
+
+.retos-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.reto-mini-card {
+    background: #ffffff;
+    border: 1px solid #eef2f6;
+    padding: 20px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 120px;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* Efecto de elevación sutil */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+}
+
+.reto-mini-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(16, 42, 67, 0.08);
+    border-color: var(--atlas-gold);
+}
+
+/* Indicador lateral de estado */
+.reto-mini-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 25%;
+    height: 50%;
+    width: 4px;
+    border-radius: 0 4px 4px 0;
+    background: #cbd5e1; /* Default neutro */
+    transition: all 0.3s ease;
+}
+
+.reto-mini-card:has(.status-pill.completado)::before,
+.reto-mini-card:has(.status-pill.completed)::before {
+    background: #22c55e; /* Verde éxito */
+}
+
+.reto-mini-card h5 {
+    font-size: 0.95rem;
+    font-weight: 850;
+    color: var(--atlas-blue);
+    margin: 0;
+    line-height: 1.2;
+    letter-spacing: -0.2px;
+}
+
+/* Pills de Estado Estilo "Badge" */
+.status-pill {
+    font-size: 0.6rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 50px;
+    width: fit-content;
+    letter-spacing: 0.8px;
+    margin-top: 10px;
+}
+
+.status-pill.completado, .status-pill.completed {
+    background: rgba(34, 197, 94, 0.1);
+    color: #15803d;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.status-pill.pendiente, .status-pill.pending {
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #ffedd5;
+}
+
+.reto-mini-card small {
+    font-size: 0.75rem;
+    color: var(--atlas-gold);
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-top: auto;
+    padding-top: 10px;
+}
+
+/* ================================================================
+   PANEL 5: EVOLUCIÓN HISTÓRICA (HIGH-TECH CHART)
+   ================================================================ */
+
+.sos-history-chart:has(.recharts-responsive-container) {
+    background: var(--atlas-white);
+    padding: 35px !important;
+    border-radius: 24px;
+    border-left: 8px solid var(--atlas-blue) !important;
+    /* Un gradiente radial muy sutil para dar profundidad a la gráfica */
+    background: radial-gradient(circle at top right, rgba(197, 160, 89, 0.03), transparent);
+}
+
+/* Mejoras en el área de la gráfica */
+.recharts-cartesian-grid-horizontal line {
+    stroke: #f1f5f9;
+    stroke-dasharray: 8 8;
+}
+
+/* Estilo del Tooltip Personalizado */
+.recharts-default-tooltip {
+    background: var(--atlas-blue) !important;
+    border: 1px solid var(--atlas-gold) !important;
+    border-radius: 12px !important;
+    padding: 12px !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3) !important;
+}
+
+.recharts-tooltip-label {
+    color: rgba(255,255,255,0.6) !important;
+    font-size: 0.7rem !important;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+/* Animación del Punto de la Gráfica */
+.recharts-line-dot {
+    stroke: var(--atlas-gold);
+    stroke-width: 3;
+    fill: #ffffff;
+}
+
+.recharts-line-curve {
+    filter: drop-shadow(0px 4px 8px rgba(197, 160, 89, 0.3));
+}
+
+/* =============================
+   RESPONSIVE
+============================= */
+
+@media (max-width: 1024px) {
+
+    .atl-an-overlay,
+    .atl-audit-popup-overlay {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
     .sos-dash-top {
         grid-template-columns: 1fr;
     }
-    
-    .sos-q-item {
-        flex-direction: column;
-        align-items: flex-start;
-    }
 
-    .sostener-grid-menu {
-        grid-template-columns: 1fr;
+    .sostener-page-wrapper {
+        padding: 20px;
     }
 }
