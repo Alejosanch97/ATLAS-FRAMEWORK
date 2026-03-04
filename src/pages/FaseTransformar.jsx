@@ -196,7 +196,7 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                                 </>
                             ) : (
                                 <>
-                                    <p>Significa pasar de evaluar la IA… a <strong>diseñar con criterio.</strong> En esta etapa desarrollarás retos que te permitirán:</p>
+                                    <p>Significa pasar de evaluar la IA… a <strong>diseñar con criterio.</strong> En esta etapa desarrollarás misiones que te permitirán:</p>
                                     <ul className="bullet-list-minimal">
                                         <li>• Integrar IA con intención pedagógica clara.</li>
                                         <li>• Proteger la agencia y dignidad estudiantil.</li>
@@ -231,7 +231,7 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                                         <div className="u-item"><strong>Profundizar:</strong> Integrar de manera crítica.</div>
                                         <div className="u-item"><strong>Crear:</strong> Diseñar prácticas innovadoras.</div>
                                     </div>
-                                    <p className="small-context">Ahora iniciarás el recorrido por estos niveles a través de los retos.</p>
+                                    <p className="small-context">Ahora iniciarás el recorrido por estos niveles a través de las misiones.</p>
                                 </>
                             )}
                         </div>
@@ -245,7 +245,7 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                                 {isDirectivo ? (
                                     <p>Debes visualizar el video explicativo sobre el <strong>marco regulatorio y de gobernanza en IA</strong> aplicado a educación.</p>
                                 ) : (
-                                    <p>Debes visualizar el video explicativo del <strong>AI Competency Framework for Teachers – UNESCO (2024)</strong>. Este video es la base conceptual de tus retos.</p>
+                                    <p>Debes visualizar el video explicativo del <strong>AI Competency Framework for Teachers – UNESCO (2024)</strong>. Este video es la base conceptual de tus misiones.</p>
                                 )}
                             </div>
                         </div>
@@ -322,7 +322,7 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                             >
                                 {isSaving ? "Registrando..." : (
                                     loading ? "Sincronizando estado..." :
-                                        (progreso?.Capa_1_Sentido === 'COMPLETADO' ? "Ver Misiones de Retos" : "Aceptar Marco y Comenzar Retos")
+                                        (progreso?.Capa_1_Sentido === 'COMPLETADO' ? "Ver Misiones" : "Aceptar Marco y Comenzar Retos")
                                 )}
                             </button>
 

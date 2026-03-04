@@ -715,12 +715,12 @@ footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de
                                 >
                                     Misiones de Transformación
                                 </button>
-                                <button
+                                {/* <button
                                     className={activeTab === "retos" ? "active" : "phase-btn"}
                                     onClick={() => switchTab("retos")}
                                 >
                                     Mis Retos Estratégicos
-                                </button>
+                                </button> */}
                             </div>
                         )}
                     </div>
