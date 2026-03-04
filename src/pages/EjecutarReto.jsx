@@ -69,18 +69,111 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
         handleInputChange(field, nuevo);
     };
 
+    const descriptoresUNESCO = {
+        transparency: [
+            "No conozco cómo funciona la herramienta ni sus limitaciones. Caja negra.",
+            "Sé que es IA, pero no puedo explicar cómo genera respuestas ni sus límites.",
+            "Entiendo de manera general su lógica (generativa/predictiva), pero no explico límites.",
+            "Puedo explicar su funcionamiento y límites. Informo a estudiantes cuando la uso.",
+            "Integro explicación de funcionamiento, sesgos y trazabilidad como parte del aprendizaje."
+        ],
+        privacy: [
+            "No he revisado políticas de datos. Se ingresan datos personales sin criterio.",
+            "Sé que existen términos de uso, pero no los he analizado ni adaptado.",
+            "Evito compartir datos sensibles, pero no tengo claridad total sobre el almacenamiento.",
+            "Reviso términos, evito datos personales y explico a estudiantes qué se comparte.",
+            "Protección estructurada: consentimiento informado y análisis previo de riesgos."
+        ],
+        bias: [
+            "No considero la posibilidad de sesgos ni reviso resultados críticamente.",
+            "Reconozco que podría haber sesgos, pero no los evalúo activamente.",
+            "Reviso algunos resultados buscando posibles sesgos evidentes.",
+            "Evalúo respuestas considerando diversidad cultural, género y contexto local.",
+            "Diseño inclusivo: incorporo el análisis crítico de sesgos en el proceso pedagógico."
+        ],
+        agency: [
+            "Riesgo alto: La herramienta reemplaza procesos cognitivos centrales sin mediación.",
+            "Uso instrumental: Se utiliza principalmente para producir respuestas rápidas.",
+            "Apoyo parcial: La herramienta apoya tareas, pero no siempre hay reflexión crítica.",
+            "Mediación pedagógica: La IA es apoyo y el docente mantiene preguntas críticas.",
+            "Agencia fortalecida: La IA amplifica el pensamiento y promueve metacognición."
+        ],
+        supervision: [
+            "Riesgo alto: Las decisiones de la herramienta se aceptan sin revisión.",
+            "Supervisión ocasional: Reviso resultados solo cuando parecen problemáticos.",
+            "Supervisión regular: Reviso resultados antes de validarlos sin protocolo definido.",
+            "Control estructurado: Existe revisión sistemática antes de influir en decisiones.",
+            "Supervisión significativa: Control total, límites claros y justificación pedagógica."
+        ]
+    };
+
+    // Función de cambio corregida
     const handleMatrizChange = (criterio, valor) => {
-        const nuevosPuntos = { ...puntosMatriz, [criterio]: parseInt(valor) };
+        const valInt = parseInt(valor);
+        const nuevosPuntos = { ...puntosMatriz, [criterio]: valInt };
         setPuntosMatriz(nuevosPuntos);
 
-        if (retoId === 1) {
-            const total = Object.values(nuevosPuntos).reduce((a, b) => a + b, 0);
-            let sugerencia = "";
-            if (total < 10) sugerencia = "Riesgo ALTO: La herramienta carece de transparencia o protección de agencia.";
-            else if (total < 18) sugerencia = "Riesgo MEDIO: Requiere supervisión docente estricta.";
-            else sugerencia = "Riesgo BAJO: La herramienta es transparente y apoya la agencia humana.";
-            handleInputChange('riesgoSugerido', sugerencia);
+        const total = Object.values(nuevosPuntos).reduce((a, b) => a + b, 0);
+
+        // Determinación de Resultado UNESCO
+        let resultado = { nivel: "", color: "", texto: "" };
+
+        if (total <= 7) {
+            resultado = {
+                nivel: "Riesgo Alto",
+                color: "🔴",
+                texto: `Resultado: Riesgo alto en el uso pedagógico de la herramienta
+
+Tu análisis indica que el uso actual presenta debilidades significativas en términos de transparencia, supervisión humana, agencia estudiantil o gestión de datos. Desde el AI Competency Framework for Teachers (UNESCO, 2024), el uso responsable de IA exige comprensión básica de funcionamiento, análisis de riesgos éticos y control humano significativo. En este momento, la herramienta podría estar influyendo en procesos pedagógicos sin suficiente mediación crítica.
+
+Antes de implementarla, se recomienda rediseñar su uso, fortalecer la comprensión técnica básica y asegurar que no sustituya el juicio profesional docente.
+
+Recuerda, la IA no debe reemplazar criterio pedagógico. Debe amplificarlo.`
+            };
+
+        } else if (total <= 13) {
+            resultado = {
+                nivel: "Riesgo Moderado",
+                color: "🟠",
+                texto: `Resultado: Uso con intención pedagógica, pero con ajustes necesarios
+
+Tu evaluación muestra conciencia ética inicial y cierta supervisión, pero aún existen áreas que requieren fortalecimiento. El marco UNESCO (2024) señala que una práctica responsable debe integrar análisis explícito de sesgos, protección de datos y garantía de agencia estudiantil. Algunos de estos elementos aparecen de forma parcial en tu análisis.
+
+La herramienta puede utilizarse, pero es recomendable ajustar criterios de transparencia, formalizar la supervisión y hacer explícitos los límites de la IA ante los estudiantes.
+
+Estás en transición hacia una práctica más estructurada.`
+            };
+
+        } else if (total <= 17) {
+            resultado = {
+                nivel: "Riesgo Bajo",
+                color: "🟡",
+                texto: `Resultado: Uso pedagógicamente fundamentado con supervisión adecuada
+
+Tu análisis refleja una integración consciente de principios éticos y control humano significativo. De acuerdo con el AI Competency Framework for Teachers (UNESCO, 2024), este nivel demuestra alineación con un enfoque human-centred: la tecnología apoya el aprendizaje sin sustituir la agencia docente ni estudiantil.
+
+Existen prácticas claras de revisión, consideración de sesgos y manejo responsable de datos. Aun así, puedes seguir fortaleciendo la explicitación pedagógica de límites y riesgos como parte del aprendizaje crítico de tus estudiantes.
+
+Tu uso de esta herramienta muestra criterio profesional.`
+            };
+
+        } else {
+            resultado = {
+                nivel: "Práctica Sólida",
+                color: "🟢",
+                texto: `Resultado: Práctica sólida alineada con estándares internacionales
+
+Tu análisis evidencia un uso éticamente estructurado, con transparencia, supervisión humana significativa, protección de datos y fortalecimiento de la agencia estudiantil. Este nivel está claramente alineado con el AI Competency Framework for Teachers (UNESCO, 2024), especialmente en las dimensiones de ética de la IA, gobernanza responsable y pedagogía centrada en lo humano.
+
+La herramienta que analizaste no sustituye tu juicio profesional: lo complementa dentro de un marco crítico y deliberado.
+
+En este nivel, la IA se integra como parte de una arquitectura pedagógica consciente y responsable.`
+            };
         }
+
+        // Guardamos el resultado completo en el formData
+        handleInputChange('analisisEticoTotal', total);
+        handleInputChange('riesgoSugerido', `${resultado.color} ${resultado.nivel}: ${resultado.texto}`);
     };
 
     const saveReto = async (statusFinal = 'ENVIADO') => {
@@ -189,6 +282,184 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
         }
     };
 
+    const calcularPatronUNESCO = (data) => {
+
+        let indice = 0;
+
+        // =============================
+        // VARIABLES (9 preguntas reales)
+        // =============================
+
+        const I_IA = data.secuenciaInicioIA === 'Sí';
+        const I_DOC = data.secuenciaInicioDocente === 'Sí';
+        const I_EST = data.secuenciaInicioEstudiante === 'Sí';
+
+        const D_IA = data.secuenciaDesarrolloIA === 'Sí';
+        const D_DOC = data.secuenciaDesarrolloDocente === 'Sí';
+        const D_EST = data.secuenciaDesarrolloEstudiante === 'Sí';
+
+        const C_SINIA = data.secuenciaCierreSinIA === 'Sí';
+        const META = data.secuenciaReflexionMeta === 'Sí';
+        const C_IA = data.secuenciaCierreIA === 'Sí';
+
+        const PROD_FINAL = data.intervencion === "Producción final";
+
+        const conteoIA = [I_IA, D_IA, C_IA].filter(Boolean).length;
+
+        // ==================================================
+        // 🟢 1️⃣ INICIO (20 pts)
+        // ==================================================
+
+        indice += I_IA ? 5 : 8;              // IA en inicio suma poco
+        indice += I_DOC ? 5 : -5;            // Docente debe aparecer
+        indice += I_EST ? 10 : 0;            // Agencia temprana fuerte
+
+        // ==================================================
+        // 🔵 2️⃣ DESARROLLO (30 pts)
+        // ==================================================
+
+        indice += D_IA ? 10 : 0;
+        indice += D_DOC ? 5 : -5;
+        indice += D_EST ? 15 : -10;
+
+        // ==================================================
+        // 🟣 3️⃣ CIERRE (30 pts)
+        // ==================================================
+
+        indice += C_SINIA ? 15 : -15;
+        indice += META ? 15 : -10;
+        indice += C_IA ? 5 : 10;
+
+        // ==================================================
+        // 🔴 4️⃣ PRODUCCIÓN FINAL (20 pts)
+        // ==================================================
+
+        if (PROD_FINAL && (!META || !C_SINIA)) {
+            indice -= 20;
+        } else if (PROD_FINAL && META && C_SINIA) {
+            indice += 5;
+        } else if (!PROD_FINAL) {
+            indice += 10;
+        }
+
+        // Penalización por sobreexposición IA total
+        if (conteoIA === 3 && !C_SINIA) {
+            indice -= 10;
+        }
+
+        // Normalizar
+        indice = Math.max(0, Math.min(100, indice));
+
+        // ==================================================
+        // 🎯 CLASIFICACIÓN FINAL
+        // ==================================================
+
+        if (indice >= 85) {
+            return construirRespuesta(
+                1,
+                "#16a34a",
+                "🟢 Integración Human-Centred Sólida",
+                indice,
+                "La arquitectura pedagógica evidencia un equilibrio estructural robusto entre inteligencia artificial, mediación docente y autonomía estudiantil. La IA cumple una función estratégica claramente delimitada, potenciando procesos cognitivos específicos sin sustituir el juicio humano ni el pensamiento crítico.",
+                "Para sostener este nivel de madurez, continúa explicitando los criterios de uso de IA y fortaleciendo la comparación entre producción humana y producción asistida.",
+                "Este diseño se alinea de forma consistente con el nivel DEEPEN del marco UNESCO 2024, al demostrar integración crítica, ética y pedagógicamente fundamentada."
+            );
+        }
+
+        if (indice >= 70) {
+            return construirRespuesta(
+                2,
+                "#2563eb",
+                "🔵 Uso Estratégico Consolidado",
+                indice,
+                "La secuencia presenta una integración intencional de la IA con predominio de agencia humana. Existen momentos claros de mediación docente y espacios de validación cognitiva que reducen el riesgo de dependencia.",
+                "Podrías fortalecer aún más la metacognición estructurada para avanzar hacia un modelo plenamente human-centred.",
+                "El diseño refleja coherencia con principios de andamiaje progresivo promovidos por UNESCO."
+            );
+        }
+
+        if (indice >= 50) {
+            return construirRespuesta(
+                3,
+                "#eab308",
+                "🟡 Integración Funcional con Riesgos Moderados",
+                indice,
+                "La IA cumple un rol operativo relevante dentro de la secuencia, pero el equilibrio estructural aún no es completamente estable. Algunos momentos pueden favorecer dependencia si no se explicita la reflexión crítica.",
+                "Se recomienda consolidar instancias obligatorias sin IA y reforzar análisis metacognitivo del proceso y del output generado.",
+                "La competencia en IA implica comprensión crítica, no únicamente uso técnico."
+            );
+        }
+
+        if (indice >= 30) {
+            return construirRespuesta(
+                4,
+                "#f97316",
+                "🟠 Dependencia Parcial en Desarrollo",
+                indice,
+                "La herramienta tecnológica comienza a estructurar decisiones cognitivas clave sin suficiente validación autónoma. La agencia estudiantil y la mediación docente requieren mayor presencia para equilibrar el ecosistema.",
+                "Prioriza rediseñar el cierre incorporando evaluación sin IA y defensa argumentativa del proceso.",
+                "Sin estos elementos, el diseño podría debilitar la autenticidad del aprendizaje."
+            );
+        }
+
+        return construirRespuesta(
+            5,
+            "#dc2626",
+            "🔴 Alta Dependencia Estructural",
+            indice,
+            "La IA organiza de manera predominante el flujo didáctico sin evidencias claras de autonomía cognitiva ni supervisión pedagógica suficiente. El riesgo de sustitución del pensamiento humano es elevado.",
+            "Es imprescindible rediseñar la secuencia incorporando momentos sin IA, reflexión metacognitiva explícita y mayor intervención docente.",
+            "Este escenario representa el nivel de mayor alerta dentro del marco UNESCO 2024."
+        );
+    };
+
+
+    // ==================================================
+    // FUNCIÓN AUXILIAR
+    // ==================================================
+
+    const construirRespuesta = (id, color, titulo, indice, resultado, recomendacion, mensaje) => {
+        return {
+            id,
+            color,
+            titulo,
+            indiceUNESCO: indice,
+            resultado,
+            recomendacion,
+            mensaje
+        };
+    };
+
+    const BinarySelector = ({ label, value, onChange }) => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#64748b' }}>{label}</span>
+            <div style={{ display: 'flex', gap: '10px' }}>
+                {['Sí', 'No'].map(opt => (
+                    <button
+                        key={opt}
+                        type="button"
+                        onClick={() => onChange(opt)}
+                        style={{
+                            flex: 1,
+                            padding: '8px',
+                            borderRadius: '10px',
+                            border: '2px solid',
+                            borderColor: value === opt ? 'var(--atlas-gold)' : '#e2e8f0',
+                            background: value === opt ? 'var(--atlas-gold)' : 'white',
+                            color: value === opt ? 'white' : '#64748b',
+                            fontWeight: '800',
+                            fontSize: '0.8rem',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        {opt}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+
     return (
         <div className="atlas-unique-page-wrapper">
             {/* Solo sale el cartel si está cargando Y ya hay algo escrito (para no molestar en retos nuevos) */}
@@ -207,7 +478,7 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                     <header className="reto-header-inline">
                         <div className="header-left">
                             <button className="btn-back-minimal" onClick={() => onNavigate('fase_transformar')}>⬅ Volver</button>
-                            <div className="badge-reto-id">RETO {retoId}</div>
+                            <div className="badge-reto-id">Mision {retoId}</div>
                         </div>
                         <div className="atlas-unique-title-box">
                             <h2>
@@ -219,7 +490,7 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                                     </>
                                 ) : (
                                     <>
-                                        {retoId === 1 && "Evaluación ética y regulatoria de una herramienta IA"}
+                                        {retoId === 1 && "Evaluación Ética para el Diseño Responsable con IA"}
                                         {retoId === 2 && "Rediseño curricular human-centred con IA"}
                                         {retoId === 3 && "Diseño de estrategia de diferenciación inclusiva con IA"}
                                     </>
@@ -392,10 +663,42 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                                 </div>
                             </div>
                         </div>
+                        {/* --- BLOQUE DE ADVERTENCIA PARA RETO 2 DOCENTE --- */}
+                        {!isDirectivo && parseInt(retoId) === 2 && (
+                            <div className="pre-mission-notice">
+                                <div className="notice-badge">LECTURA PREVIA</div>
+                                <h4>Antes de comenzar</h4>
+                                <p>Esta misión no está diseñada para resolverse en una sola sesión frente a tu dispositivo.</p>
+                                <p>Se espera que primero <strong>planifiques tu clase e implementes la IA en el aula</strong>, y luego regreses a documentar tu rediseño con criterio profesional.</p>
+
+                                <div className="notice-grid">
+                                    <div className="notice-item">
+                                        <strong>⏳ Tiempo</strong>
+                                        <span>Tienes una semana para desarrollar esta misión.</span>
+                                    </div>
+                                    <div className="notice-item">
+                                        <strong>💡 Propósito</strong>
+                                        <span>Reflexionar sobre tu práctica real, no completar un formulario rápido.</span>
+                                    </div>
+                                </div>
+
+                                <ul className="notice-list">
+                                    <li>Diseñar con intención pedagógica.</li>
+                                    <li>Observar la interacción estudiante-IA.</li>
+                                    <li>Evaluar resultados y ajustar antes del análisis final.</li>
+                                </ul>
+
+                                <div className="notice-footer">
+                                    <span>Puedes usar <strong>Guardar Borrador</strong> para registrar avances parciales.</span>
+                                </div>
+                            </div>
+                        )}
+
+
 
                         {/* --- CARD 3: MISIÓN --- */}
                         <div className="narrative-card mission-card">
-                            <h3>El Reto: Tu Misión</h3>
+                            <h3>Tu Misión</h3>
                             {isDirectivo ? (
                                 <>
                                     {retoId === 1 && <p>Clasificar un caso hipotético de uso de IA en tu institución según el enfoque basado en riesgo del EU AI Act 2024 y tomar una decisión de gobernanza argumentada.</p>}
@@ -411,7 +714,7 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                             )}
 
                             <div className="condiciones-box">
-                                <strong>Condiciones del reto:</strong>
+                                <strong>Objetivos de aprendizaje</strong>
                                 <ol className="mission-list">
                                     {isDirectivo ? (
                                         <>
@@ -442,13 +745,13 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                                     <section className="form-card">
                                         <div className="form-section-title">1. Contexto de la Herramienta</div>
                                         <div className="input-group">
-                                            <label>Nombre de la herramienta:</label>
+                                            <label>Nombre de la herramienta de IA a analizar:</label>
                                             <input type="text" placeholder="Ej: ChatGPT, Canva Magic..." value={formData.toolName || ""} onChange={(e) => handleInputChange('toolName', e.target.value)} />
                                         </div>
                                         <div className="input-group">
                                             <label>Nivel educativo donde se usa:</label>
                                             <div className="options-vertical-premium">
-                                                {['Primaria', 'Secundaria', 'Media', 'Educación superior'].map(n => (
+                                                {['Preescolar','Primaria', 'Secundaria', 'Media', 'Educación superior', 'Otro'].map(n => (
                                                     <label key={n} className="check-label-row">
                                                         <input type="radio" name="nivel" checked={formData.nivel === n} onChange={() => handleInputChange('nivel', n)} />
                                                         <span className="label-text">{n}</span>
@@ -459,19 +762,84 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                                         <div className="input-group">
                                             <label>Función principal en clase:</label>
                                             <div className="options-vertical-premium">
+                                                {/* Opciones fijas */}
                                                 {['Generar contenido', 'Retroalimentar', 'Evaluar', 'Personalizar aprendizaje', 'Simular escenarios', 'Automatizar tareas'].map(f => (
                                                     <label key={f} className="check-label-row">
-                                                        <input type="checkbox" checked={(formData.funciones || []).includes(f)} onChange={() => handleChecklist('funciones', f)} />
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={(formData.funciones || []).includes(f)}
+                                                            onChange={() => handleChecklist('funciones', f)}
+                                                        />
                                                         <span className="label-text">{f}</span>
                                                     </label>
                                                 ))}
+
+                                                {/* Sección "Otro" - Mantiene el contenedor principal para el ancho total */}
+                                                <div className="otro-wrapper-premium" style={{ width: '100%' }}>
+                                                    <label className="check-label-row">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={formData.habilitarOtro || false}
+                                                            onChange={(e) => {
+                                                                const estaActivado = e.target.checked;
+                                                                handleInputChange('habilitarOtro', estaActivado);
+
+                                                                if (!estaActivado) {
+                                                                    handleInputChange('otroTexto', "");
+                                                                    const opcionesFijas = ['Generar contenido', 'Retroalimentar', 'Evaluar', 'Personalizar aprendizaje', 'Simular escenarios', 'Automatizar tareas'];
+                                                                    const funcionesLimpias = (formData.funciones || []).filter(f => opcionesFijas.includes(f));
+                                                                    handleInputChange('funciones', funcionesLimpias);
+                                                                }
+                                                            }}
+                                                        />
+                                                        <span className="label-text">Otro</span>
+                                                    </label>
+
+                                                    {/* Input condicional: Ocupa el 100% del ancho del contenedor de la fase Transformar */}
+                                                    {formData.habilitarOtro && (
+                                                        <div style={{
+                                                            padding: '0 5px 15px 5px', // Pequeño ajuste para no pegar al borde
+                                                            animation: 'fadeIn 0.3s ease',
+                                                            width: '100%'
+                                                        }}>
+                                                            <input
+                                                                type="text"
+                                                                placeholder="Especifica tu función aquí..."
+                                                                className="inline-input-premium"
+                                                                autoFocus
+                                                                style={{
+                                                                    width: '100%',        // Esto asegura que sea tan largo como los botones de arriba
+                                                                    minHeight: '45px',    // Le da altura premium
+                                                                    padding: '12px 15px',
+                                                                    borderRadius: '10px',
+                                                                    border: '2px solid #e5e7eb', // Un borde más definido
+                                                                    fontSize: '1rem',
+                                                                    boxSizing: 'border-box' // Crucial para que el padding no lo estire de más
+                                                                }}
+                                                                value={formData.otroTexto || ""}
+                                                                onChange={(e) => {
+                                                                    const valor = e.target.value;
+                                                                    handleInputChange('otroTexto', valor);
+
+                                                                    const opcionesFijas = ['Generar contenido', 'Retroalimentar', 'Evaluar', 'Personalizar aprendizaje', 'Simular escenarios', 'Automatizar tareas'];
+                                                                    let nuevasFunciones = (formData.funciones || []).filter(f => opcionesFijas.includes(f));
+
+                                                                    if (valor.trim() !== "") {
+                                                                        nuevasFunciones.push(valor);
+                                                                    }
+                                                                    handleInputChange('funciones', nuevasFunciones);
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </section>
 
                                     <section className="form-card">
                                         <div className="form-section-title">2. Uso real en contexto</div>
-                                        <label className="group-main-label">¿La herramienta impacta decisiones académicas?</label>
+                                        <label className="group-main-label">¿Consideras que la herramienta impacta tus decisiones académicas?</label>
                                         <div className="options-vertical-premium">
                                             {['Sí, influye en calificaciones', 'Sí, influye en retroalimentación', 'No influye directamente', 'No lo he determinado'].map(opt => (
                                                 <label key={opt} className="check-label-row">
@@ -484,34 +852,80 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
 
                                     <section className="form-card highlight">
                                         <div className="form-section-title">3. MATRIZ DE ANÁLISIS ÉTICO – ATLAS (UNESCO)</div>
-                                        <label className="group-main-label">Asigne un puntaje de 0 (riesgo alto) a 4 (práctica sólida) en cada criterio.</label>
-                                        <div className="table-responsive">
-                                            <table className="matriz-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Criterio</th>
-                                                        <th>Puntaje (0-4)</th>
-                                                        <th>Nivel</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {[
-                                                        { id: 'transparency', label: 'Transparencia', desc: '¿Cómo funciona y cuáles son sus límites?' },
-                                                        { id: 'privacy', label: 'Privacidad y Datos', desc: '¿Cómo protege la info personal?' },
-                                                        { id: 'bias', label: 'Sesgo y Equidad', desc: '¿Existen sesgos culturales o de género?' },
-                                                        { id: 'agency', label: 'Agencia Estudiantil', desc: '¿Sustituye el pensamiento o lo apoya?' },
-                                                        { id: 'supervision', label: 'Supervisión Humana', desc: '¿Qué tanto control tiene el docente?' }
-                                                    ].map(c => (
-                                                        <tr key={c.id}>
-                                                            <td className="desc-cell"><strong>{c.label}</strong><br /><small>{c.desc}</small></td>
-                                                            <td className="range-cell">
-                                                                <input type="range" min="0" max="4" value={puntosMatriz[c.id]} onChange={(e) => handleMatrizChange(c.id, e.target.value)} />
-                                                            </td>
-                                                            <td className="score-cell">{puntosMatriz[c.id]}</td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
+                                        <label className="group-main-label">Asigne un puntaje de 0 (riesgo alto) a 4 (práctica sólida). El descriptor se actualizará automáticamente.</label>
+
+                                        {/* ESTRUCTURA NUEVA: FLEXBOX EN LUGAR DE TABLA */}
+                                        <div className="unesco-matrix-grid">
+                                            {[
+                                                { id: 'transparency', label: 'Transparencia' },
+                                                { id: 'privacy', label: 'Privacidad y Datos' },
+                                                { id: 'bias', label: 'Sesgo y Equidad' },
+                                                { id: 'agency', label: 'Agencia Estudiantil' },
+                                                { id: 'supervision', label: 'Supervisión Humana' }
+                                            ].map(c => (
+                                                <div key={c.id} className="matrix-pill-row">
+                                                    <div className="matrix-content-left">
+                                                        <strong className="matrix-label">{c.label}</strong>
+                                                        <div className="unesco-dynamic-descriptor">
+                                                            {descriptoresUNESCO[c.id][puntosMatriz[c.id]]}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="matrix-controls-right">
+                                                        <input
+                                                            type="range"
+                                                            className="atlas-slider-premium"
+                                                            min="0" max="4"
+                                                            value={puntosMatriz[c.id]}
+                                                            onChange={(e) => handleMatrizChange(c.id, e.target.value)}
+                                                        />
+                                                        <div className="matrix-score-badge">
+                                                            <span className="level-label">NIVEL</span>
+                                                            <span className="score-number">{puntosMatriz[c.id]}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* PANEL DE RESULTADOS */}
+                                        <div className="atlas-interpretation-panel">
+                                            <div className="interpretation-header">
+                                                Puntaje Total: <strong>{formData.analisisEticoTotal || 0} / 20</strong>
+                                            </div>
+                                            <div className="interpretation-content">
+                                                {formData.riesgoSugerido || "Complete la matriz para obtener el diagnóstico UNESCO."}
+                                            </div>
+                                        </div>
+
+                                        <hr className="atlas-hr-divider" />
+
+                                        {/* SECCIÓN DE PREGUNTAS DE INTEGRIDAD (Se mantiene igual) */}
+                                        <div className="integrity-questions-container">
+                                            <label className="group-main-label">Evaluación de Integridad y Autenticidad:</label>
+                                            {[
+                                                { id: 'depCognitiva', q: '¿Esta herramienta podría generar dependencia cognitiva?' },
+                                                { id: 'autenticidad', q: '¿Esta herramienta podría afectar la autenticidad del aprendizaje?' },
+                                                { id: 'alineacion', q: '¿El uso está alineado con las políticas institucionales?' }
+                                            ].map(item => (
+                                                <div key={item.id} className="integrity-row">
+                                                    <p className="integrity-text">{item.q}</p>
+                                                    <div className="pills-container">
+                                                        {['Sí', 'No', 'Posiblemente', 'No sé'].map(opt => (
+                                                            <label key={opt} className={`pill-option ${formData[item.id] === opt ? 'selected' : ''}`}>
+                                                                <input
+                                                                    type="radio"
+                                                                    name={item.id}
+                                                                    value={opt}
+                                                                    checked={formData[item.id] === opt}
+                                                                    onChange={() => handleInputChange(item.id, opt)}
+                                                                />
+                                                                <span>{opt}</span>
+                                                            </label>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </section>
 
@@ -547,18 +961,67 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                                     <section className="form-card">
                                         <div className="form-section-title">1. Contexto de la Clase</div>
                                         <div className="grid-2-col-premium">
-                                            <div className="input-group"><label>Grado:</label><input type="text" value={formData.grado || ""} onChange={(e) => handleInputChange('grado', e.target.value)} /></div>
+                                            <div className="input-group"><label>Grado o Nivel:</label><input type="text" value={formData.grado || ""} onChange={(e) => handleInputChange('grado', e.target.value)} /></div>
                                             <div className="input-group"><label>Asignatura:</label><input type="text" value={formData.asignatura || ""} onChange={(e) => handleInputChange('asignatura', e.target.value)} /></div>
                                         </div>
                                         <div className="input-group"><label>Tema:</label><input type="text" value={formData.tema || ""} onChange={(e) => handleInputChange('tema', e.target.value)} /></div>
-                                        <div className="input-group"><label>Objetivo de aprendizaje:</label><input type="text" value={formData.objetivo || ""} onChange={(e) => handleInputChange('objetivo', e.target.value)} /></div>
+                                        <div className="input-group"><label>Objetivo de aprendizaje (medible en tu sesión de clase)</label><input type="text" value={formData.objetivo || ""} onChange={(e) => handleInputChange('objetivo', e.target.value)} /></div>
+                                    </section>
+
+                                    <section className="form-card highlight">
+                                        <div className="form-section-title">
+                                            <i className="form-section-title"></i> 2. Competencia Cognitiva Principal
+                                        </div>
+
+                                        <div className="input-group">
+                                            <label className="group-main-label">
+                                                ¿Qué nivel de pensamiento deseas priorizar en este rediseño?
+                                            </label>
+
+                                            <div className="options-vertical-premium">
+                                                {[
+                                                    'Comprensión conceptual',
+                                                    'Aplicación',
+                                                    'Análisis',
+                                                    'Evaluación crítica',
+                                                    'Creación'
+                                                ].map(competencia => (
+                                                    <label key={competencia} className="check-label-row">
+                                                        <input
+                                                            type="checkbox"
+                                                            name="competenciaCognitiva"
+                                                            checked={formData.competenciaCognitiva?.includes(competencia)}
+                                                            onChange={(e) => {
+                                                                const currentList = formData.competenciaCognitiva || [];
+                                                                const newList = e.target.checked
+                                                                    ? [...currentList, competencia]
+                                                                    : currentList.filter(c => c !== competencia);
+                                                                handleInputChange('competenciaCognitiva', newList);
+                                                            }}
+                                                        />
+                                                        <span className="label-text">{competencia}</span>
+                                                    </label>
+                                                ))}
+
+                                                {/* Espacio para "Otra competencia" si fuera necesario */}
+                                                <div className="input-group-inline">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Otra competencia específica..."
+                                                        className="inline-input-premium"
+                                                        value={formData.competenciaCognitivaOtro || ""}
+                                                        onChange={(e) => handleInputChange('competenciaCognitivaOtro', e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
                                     </section>
 
                                     <section className="form-card">
-                                        <div className="form-section-title">2. Diseño original (sin IA)</div>
-                                        <label>¿Cómo era tu clase antes?</label>
+                                        <div className="form-section-title">3. Diseño original (sin IA)</div>
+                                        <label>¿Cómo era tu secuencia didáctica antes de intergrar IA?</label>
                                         <div className="options-vertical-premium">
-                                            {['Clase magistral', 'Trabajo en grupo', 'Estudio de caso', 'Debate', 'Proyecto', 'Taller práctico'].map(opt => (
+                                            {['Clase magistral', 'Estudio de caso', 'Debate', 'Proyecto', 'Taller práctico'].map(opt => (
                                                 <label key={opt} className="check-label-row">
                                                     <input type="radio" name="disenoOriginal" checked={formData.disenoOriginal === opt} onChange={() => handleInputChange('disenoOriginal', opt)} />
                                                     <span className="label-text">{opt}</span>
@@ -571,7 +1034,26 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                                     </section>
 
                                     <section className="form-card">
-                                        <div className="form-section-title">3. Rediseño con IA</div>
+                                        <div className="form-section-title">
+                                            <i className="form-section-title"></i>4. Análisis de Limitaciones
+                                        </div>
+                                        <div className="textarea-group-premium">
+                                            <label>¿Qué limitación pedagógica tenía este diseño original?</label>
+                                            <textarea
+                                                maxLength={1000}
+                                                placeholder="Ej: Falta de personalización, evaluación muy memorística, poca participación activa..."
+                                                value={formData.limitacionPedagogica || ""}
+                                                onChange={(e) => handleInputChange('limitacionPedagogica', e.target.value)}
+                                                rows={4}
+                                            />
+                                            <span className="char-count">
+                                                {formData.limitacionPedagogica?.length || 0} / 1000
+                                            </span>
+                                        </div>
+                                    </section>
+
+                                    <section className="form-card">
+                                        <div className="form-section-title">5. Rediseño con IA</div>
                                         <div className="input-group">
                                             <label>Herramienta utilizada:</label>
                                             <div className="options-vertical-premium">
@@ -581,37 +1063,163 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                                             </div>
                                         </div>
                                         <div className="input-group">
-                                            <label>Rol de la IA:</label>
+                                            <label>Rol de la IA en la secuencia</label>
                                             <div className="options-vertical-premium">
-                                                {['Generar ejemplos', 'Proporcionar retroalimentación', 'Proponer preguntas', 'Simular escenarios', 'Corregir borradores', 'Resolver tareas completas'].map(r => (
+                                                {['Generar ejemplos', 'Proporcionar retroalimentación', 'Proponer preguntas', 'Simular escenarios', 'Corregir borradores'].map(r => (
                                                     <label key={r} className="check-label-row"><input type="checkbox" checked={(formData.rolIA || []).includes(r)} onChange={() => handleChecklist('rolIA', r)} /><span className="label-text">{r}</span></label>
                                                 ))}
                                             </div>
                                         </div>
                                         <div className="input-group">
-                                            <label>Tipo de intervención:</label>
-                                            <select className="atlas-select-premium" value={formData.intervencion || ""} onChange={(e) => handleInputChange('intervencion', e.target.value)}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                                                <label style={{ margin: 0 }}>Tipo de intervención:</label>
+                                                <div className="atlas-info-icon" title="Pasa el cursor sobre las opciones para ver ayuda">
+                                                    <i className="fas fa-info-circle" style={{ color: 'var(--atlas-gold)', cursor: 'pointer' }}></i>
+                                                </div>
+                                            </div>
+
+                                            <select
+                                                className="atlas-select-premium"
+                                                value={formData.intervencion || ""}
+                                                onChange={(e) => handleInputChange('intervencion', e.target.value)}
+                                            >
                                                 <option value="">Seleccione una categoría...</option>
                                                 <option value="Andamiaje temporal">Andamiaje temporal</option>
                                                 <option value="Apoyo conceptual">Apoyo conceptual</option>
-                                                <option value="Producción final">Producción final</option>
                                                 <option value="Simulación exploratoria">Simulación exploratoria</option>
+                                                <option value="Producción final">Producción final</option>
                                             </select>
+
+                                            {/* PANEL EXPLICATIVO DINÁMICO */}
+                                            {formData.intervencion && (
+                                                <div className="intervention-help-panel" style={{ marginTop: '20px', animation: 'fadeIn 0.3s ease' }}>
+
+                                                    {/* TOOLTIP BREVE (Siempre visible al seleccionar) */}
+                                                    <div className="tooltip-brief-container" style={{ padding: '15px', background: 'rgba(197, 160, 89, 0.08)', borderRadius: '12px', borderLeft: '4px solid var(--atlas-gold)' }}>
+                                                        <strong style={{ display: 'block', color: 'var(--atlas-gold)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '5px' }}>
+                                                            Tooltip breve:
+                                                        </strong>
+                                                        <p style={{ margin: 0, fontStyle: 'italic', color: 'var(--atlas-dark)', fontSize: '0.95rem' }}>
+                                                            {formData.intervencion === "Andamiaje temporal" && "“La IA actúa como apoyo provisional para ayudar al estudiante a avanzar en una tarea que aún no puede realizar solo. El control y la responsabilidad final permanecen en el estudiante.”"}
+                                                            {formData.intervencion === "Apoyo conceptual" && "“La IA ayuda a clarificar conceptos, ofrecer explicaciones alternativas o ejemplos adicionales para fortalecer comprensión.”"}
+                                                            {formData.intervencion === "Simulación exploratoria" && "“La IA permite explorar escenarios, casos o situaciones hipotéticas para promover pensamiento crítico y toma de decisiones.”"}
+                                                            {formData.intervencion === "Producción final" && "“La IA interviene directamente en la elaboración del producto final evaluado. Este uso requiere justificar cómo se mantiene la autoría y el juicio humano.”"}
+                                                        </p>
+                                                    </div>
+
+                                                    {/* ALERTA PEDAGÓGICA (Solo para Producción Final) */}
+                                                    {formData.intervencion === "Producción final" && (
+                                                        <div className="pedagogical-alert" style={{ margin: '15px 0', padding: '15px', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '12px', color: '#991b1b' }}>
+                                                            <i className="fas fa-exclamation-triangle" style={{ marginRight: '8px' }}></i>
+                                                            <strong>Alerta pedagógica:</strong> “Según el enfoque UNESCO 2024, la IA no debe sustituir la autoría ni el juicio profesional. Justifica por qué esta decisión mantiene agencia humana.”
+                                                        </div>
+                                                    )}
+
+                                                    {/* VERSIÓN AMPLIADA */}
+                                                    <div className="expanded-version" style={{ marginTop: '15px', padding: '0 10px' }}>
+                                                        <h5 style={{ fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '8px' }}>Versión ampliada:</h5>
+                                                        <p style={{ fontSize: '0.9rem', color: '#475569', lineHeight: '1.5' }}>
+                                                            {formData.intervencion === "Andamiaje temporal" && "En este tipo de intervención, la IA cumple una función de apoyo gradual: ofrece ejemplos, preguntas guía, pistas o retroalimentación inicial. Su propósito es facilitar comprensión o desbloquear dificultades, pero no sustituye el proceso cognitivo. Desde el marco UNESCO 2024, este uso es coherente cuando fortalece autonomía progresiva y no genera dependencia permanente."}
+                                                            {formData.intervencion === "Apoyo conceptual" && "Aquí la IA cumple una función explicativa o de ampliación conceptual. Puede reformular ideas, proporcionar analogías o presentar perspectivas adicionales. Debe utilizarse con supervisión docente para evitar simplificaciones incorrectas o información inexacta. Según UNESCO, este uso es pertinente cuando mejora comprensión sin sustituir el análisis crítico del estudiante."}
+                                                            {formData.intervencion === "Simulación exploratoria" && "En este caso, la IA actúa como entorno interactivo para experimentar ideas, escenarios o problemas complejos. No produce el resultado final del estudiante, sino que amplía posibilidades de análisis y discusión. Este tipo de uso es altamente alineado con DEEPEN cuando promueve reflexión, argumentación y evaluación crítica."}
+                                                            {formData.intervencion === "Producción final" && "Aquí la IA participa en la generación directa del producto que será evaluado (ensayo, informe, proyecto, solución). Este es el tipo de intervención de mayor riesgo en términos de agencia, autoría y pensamiento profundo. Desde el enfoque UNESCO 2024, solo es pedagógicamente justificable si: Existe supervisión docente clara, se evalúa el proceso, no solo el resultado, se mantiene evidencia de pensamiento propio del estudiante y hay instancia sin IA que demuestre comprensión."}
+                                                        </p>
+
+                                                        {/* PREGUNTA ORIENTADORA */}
+                                                        <div className="orienting-question" style={{ marginTop: '12px', padding: '10px', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #e2e8f0' }}>
+                                                            <strong style={{ fontSize: '0.8rem', color: 'var(--atlas-gold)' }}>Pregunta orientadora:</strong>
+                                                            <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem', fontWeight: '600' }}>
+                                                                {formData.intervencion === "Andamiaje temporal" && "¿La IA puede retirarse sin que el estudiante pierda capacidad de resolver la tarea?"}
+                                                                {formData.intervencion === "Apoyo conceptual" && "¿El estudiante analiza y contrasta la explicación de la IA con otras fuentes?"}
+                                                                {formData.intervencion === "Simulación exploratoria" && "¿La simulación genera debate, análisis o toma de decisiones fundamentadas?"}
+                                                                {formData.intervencion === "Producción final" && "Justifique cómo esta decisión preserva agencia estudiantil y supervisión humana significativa."}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </section>
 
-                                    <section className="form-card">
-                                        <div className="form-section-title">4. Enfoque Human-Centred (Checklist)</div>
-                                        <label>Selecciona las acciones que incorporaste:</label>
-                                        <div className="options-vertical-premium">
-                                            {['Comparación humano vs IA', 'Defensa oral sin IA', 'Declaración obligatoria de uso', 'Reflexión metacognitiva', 'Evaluación sin IA', 'Análisis crítico del output', 'Identificación de sesgos', 'Ninguna de las anteriores'].map(c => (
-                                                <label key={c} className="check-label-row"><input type="checkbox" checked={(formData.checklistHuman || []).includes(c)} onChange={() => handleChecklist('checklistHuman', c)} /><span className="label-text">{c}</span></label>
-                                            ))}
+                                    {/* SECCIÓN 6: SECUENCIA DIDÁCTICA VISUAL */}
+                                    <section className="form-card highlight">
+                                        <div className="form-section-title">
+                                            <i className="form-section-title"></i> 6. Secuencia Didáctica Visual (UNESCO DEEPEN)
+                                        </div>
+
+                                        <div className="secuencia-container" style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+
+                                            {/* MOMENTO 1: INICIO */}
+                                            <div className="momento-card" style={{ background: '#fff', padding: '15px', borderRadius: '15px', border: '1px solid #e2e8f0' }}>
+                                                <h5 style={{ color: 'var(--atlas-gold)', fontWeight: '800', marginBottom: '15px', fontSize: '0.9rem' }}>EN EL INICIO (PLANEACIÓN)</h5>
+                                                <div className="secuencia-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                                                    <BinarySelector label="¿Interviene IA?" value={formData.secuenciaInicioIA} onChange={(v) => handleInputChange('secuenciaInicioIA', v)} />
+                                                    <BinarySelector label="¿Interviene docente?" value={formData.secuenciaInicioDocente} onChange={(v) => handleInputChange('secuenciaInicioDocente', v)} />
+                                                    <BinarySelector label="¿Interviene estudiante sin IA?" value={formData.secuenciaInicioEstudiante} onChange={(v) => handleInputChange('secuenciaInicioEstudiante', v)} />
+                                                </div>
+                                            </div>
+
+                                            {/* MOMENTO 2: DESARROLLO */}
+                                            <div className="momento-card" style={{ background: '#fff', padding: '15px', borderRadius: '15px', border: '1px solid #e2e8f0' }}>
+                                                <h5 style={{ color: 'var(--atlas-gold)', fontWeight: '800', marginBottom: '15px', fontSize: '0.9rem' }}>EN EL DESARROLLO (EJECUCIÓN)</h5>
+                                                <div className="secuencia-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                                                    <BinarySelector label="¿Interviene IA?" value={formData.secuenciaDesarrolloIA} onChange={(v) => handleInputChange('secuenciaDesarrolloIA', v)} />
+                                                    <BinarySelector label="¿Interviene docente?" value={formData.secuenciaDesarrolloDocente} onChange={(v) => handleInputChange('secuenciaDesarrolloDocente', v)} />
+                                                    <BinarySelector label="¿Interviene estudiante sin IA?" value={formData.secuenciaDesarrolloEstudiante} onChange={(v) => handleInputChange('secuenciaDesarrolloEstudiante', v)} />
+                                                </div>
+                                            </div>
+
+                                            {/* MOMENTO 3: CIERRE */}
+                                            <div className="momento-card" style={{ background: '#fff', padding: '15px', borderRadius: '15px', border: '1px solid #e2e8f0' }}>
+                                                <h5 style={{ color: 'var(--atlas-gold)', fontWeight: '800', marginBottom: '15px', fontSize: '0.9rem' }}>EN EL CIERRE</h5>
+                                                <div className="secuencia-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                                                    <BinarySelector label="¿Hay instancia sin IA obligatoria?" value={formData.secuenciaCierreSinIA} onChange={(v) => handleInputChange('secuenciaCierreSinIA', v)} />
+                                                    <BinarySelector label="¿Hay reflexión metacognitiva?" value={formData.secuenciaReflexionMeta} onChange={(v) => handleInputChange('secuenciaReflexionMeta', v)} />
+                                                    <BinarySelector label="¿Interviene IA?" value={formData.secuenciaCierreIA} onChange={(v) => handleInputChange('secuenciaCierreIA', v)} />
+                                                </div>
+                                            </div>
+
+                                            {/* PANEL DE ANÁLISIS AUTOMÁTICO */}
+                                            {calcularPatronUNESCO(formData) && (
+                                                <div className="analysis-result-panel" style={{
+                                                    marginTop: '20px',
+                                                    padding: '25px',
+                                                    borderRadius: '20px',
+                                                    border: `2px solid ${calcularPatronUNESCO(formData).color}`,
+                                                    background: `${calcularPatronUNESCO(formData).color}08`,
+                                                    animation: 'fadeIn 0.5s ease'
+                                                }}>
+                                                    <h4 style={{ color: calcularPatronUNESCO(formData).color, fontWeight: '900', marginBottom: '15px' }}>
+                                                        {calcularPatronUNESCO(formData).titulo}
+                                                    </h4>
+                                                    <p style={{ fontSize: '1rem', lineHeight: '1.6', marginBottom: '15px' }}>{calcularPatronUNESCO(formData).resultado}</p>
+
+                                                    {calcularPatronUNESCO(formData).recomendacion && (
+                                                        <div style={{ marginBottom: '10px' }}>
+                                                            <strong style={{ display: 'block', color: 'var(--atlas-dark)' }}>Recomendación:</strong>
+                                                            <p style={{ margin: 0 }}>{calcularPatronUNESCO(formData).recomendacion}</p>
+                                                        </div>
+                                                    )}
+
+                                                    {calcularPatronUNESCO(formData).sugerencia && (
+                                                        <div style={{ marginBottom: '10px' }}>
+                                                            <strong style={{ display: 'block', color: 'var(--atlas-dark)' }}>Sugerencia opcional:</strong>
+                                                            <p style={{ margin: 0 }}>{calcularPatronUNESCO(formData).sugerencia}</p>
+                                                        </div>
+                                                    )}
+
+                                                    {calcularPatronUNESCO(formData).mensaje && (
+                                                        <div style={{ marginTop: '15px', padding: '10px', background: '#fff', borderRadius: '10px', fontStyle: 'italic' }}>
+                                                            "{calcularPatronUNESCO(formData).mensaje}"
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     </section>
 
-                                    <section className="form-card">
-                                        <div className="form-section-title">5. Agencia estudiantil</div>
+                                     <section className="form-card">
+                                        <div className="form-section-title">7. Agencia estudiantil</div>
                                         <label>La IA en mi clase:</label>
                                         <div className="options-vertical-premium">
                                             {['Reduce esfuerzo cognitivo', 'Mantiene esfuerzo cognitivo', 'Incrementa complejidad cognitiva', 'No lo he medido'].map(opt => (
@@ -624,7 +1232,85 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                                     </section>
 
                                     <section className="form-card">
-                                        <div className="form-section-title">6.  Riesgos y Mitigación </div>
+                                        <div className="form-section-title">
+                                            <i className="form-section-title"></i> 8. Protección de la Agencia Estudiantil
+                                        </div>
+                                        <div className="textarea-group-premium">
+                                            <label>¿Cómo garantizas que la IA no sustituye el pensamiento del estudiante?</label>
+                                            <textarea
+                                                maxLength={1000}
+                                                placeholder="Ej: Se requiere una defensa oral posterior, comparación crítica de versiones, o el uso de la IA es solo para estructurar ideas iniciales..."
+                                                value={formData.garantiaPensamiento || ""}
+                                                onChange={(e) => handleInputChange('garantiaPensamiento', e.target.value)}
+                                                rows={4}
+                                            />
+                                            <span className="char-count">
+                                                {formData.garantiaPensamiento?.length || 0} / 1000
+                                            </span>
+                                        </div>
+                                    </section>
+
+                                    <section className="form-card highlight">
+                                        <div className="form-section-title">
+                                            <i className="form-section-title"></i> 9. Transparencia y Metacognición (UNESCO DEEPEN)
+                                        </div>
+
+                                        <div className="input-group">
+                                            <label className="group-main-label">
+                                                Selecciona las acciones de transparencia y reflexión incorporadas en el diseño:
+                                            </label>
+
+                                            <div className="options-vertical-premium">
+                                                {[
+                                                    'Explicación de cómo funciona la herramienta y sus límites',
+                                                    'Comparación humano vs IA',
+                                                    'Defensa oral sin IA',
+                                                    'Declaración obligatoria de uso',
+                                                    'Reflexión metacognitiva estructurada',
+                                                    'Análisis crítico del output',
+                                                    'Identificación de sesgos'
+                                                ].map(accion => (
+                                                    <label key={accion} className="check-label-row">
+                                                        <input
+                                                            type="checkbox"
+                                                            name="checklistMetacognicion"
+                                                            checked={(formData.checklistMetacognicion || []).includes(accion)}
+                                                            onChange={(e) => {
+                                                                const currentList = formData.checklistMetacognicion || [];
+                                                                const newList = e.target.checked
+                                                                    ? [...currentList, accion]
+                                                                    : currentList.filter(item => item !== accion);
+                                                                handleInputChange('checklistMetacognicion', newList);
+                                                            }}
+                                                        />
+                                                        <span className="label-text">{accion}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <section className="form-card">
+                                        <div className="form-section-title">
+                                            <i className="form-section-title"></i> 10. Actividad Metacognitiva Diseñada
+                                        </div>
+                                        <div className="textarea-group-premium">
+                                            <label>Describe la pregunta o actividad en tu secuencia donde el estudiante reflexiona sobre el uso de IA:</label>
+                                            <textarea
+                                                maxLength={1500}
+                                                placeholder="Ej: El estudiante debe responder: ¿Qué parte del ensayo fue generada por la IA y qué cambios críticos realicé yo para mejorar la precisión y el estilo?"
+                                                value={formData.actividadMetacognitiva || ""}
+                                                onChange={(e) => handleInputChange('actividadMetacognitiva', e.target.value)}
+                                                rows={4}
+                                            />
+                                            <span className="char-count">
+                                                {formData.actividadMetacognitiva?.length || 0} / 1500
+                                            </span>
+                                        </div>
+                                    </section>
+
+                                    <section className="form-card">
+                                        <div className="form-section-title">11.  Riesgos y Mitigación </div>
                                         <label>Riesgos identificados:</label>
                                         <div className="options-vertical-premium">
                                             {['Dependencia', 'Sesgo', 'Información incorrecta', 'Pérdida de autoría', 'Superficialidad', 'Ninguno'].map(c => (
@@ -634,7 +1320,26 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                                     </section>
 
                                     <section className="form-card">
-                                        <div className="form-section-title">7. Estrategia de mitigación aplicada: </div>
+                                        <div className="form-section-title">
+                                            <i className="form-section-title"></i> 12. Gestión de Riesgos Pedagógicos
+                                        </div>
+                                        <div className="textarea-group-premium">
+                                            <label>¿Cuál es el riesgo pedagógico más relevante en esta secuencia?</label>
+                                            <textarea
+                                                maxLength={1000}
+                                                placeholder="Ej: Posible sesgo en la información de la IA, riesgo de dependencia excesiva en la fase de desarrollo, o dificultad para validar la autoría individual..."
+                                                value={formData.riesgoPedagogico || ""}
+                                                onChange={(e) => handleInputChange('riesgoPedagogico', e.target.value)}
+                                                rows={4}
+                                            />
+                                            <span className="char-count">
+                                                {formData.riesgoPedagogico?.length || 0} / 1000
+                                            </span>
+                                        </div>
+                                    </section>
+
+                                    <section className="form-card">
+                                        <div className="form-section-title">13. Estrategia de mitigación aplicada: </div>
                                         <label>Estrategias:</label>
                                         <div className="options-vertical-premium">
                                             {['Supervisión docente activa', 'Instancia sin IA', 'Rúbrica específica', 'Trabajo en etapas', 'Retroalimentación crítica', 'No se aplicó estrategia'].map(c => (
@@ -644,8 +1349,8 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                                     </section>
 
                                     <section className="form-card">
-                                        <div className="form-section-title">8. Evaluación </div>
-                                        <label>¿Tu evaluación incluye?</label>
+                                        <div className="form-section-title">14. Evaluación </div>
+                                        <label>Tu evaluación de esta secuencia didáctica incluye:</label>
                                         <div className="options-vertical-premium">
                                             {['Declaración de uso de IA', 'Criterios de pensamiento crítico', 'Criterios de ética', 'Defensa oral', 'Evaluación comparativa', 'Ninguno'].map(c => (
                                                 <label key={c} className="check-label-row"><input type="checkbox" checked={(formData.checklistHuman || []).includes(c)} onChange={() => handleChecklist('checklistHuman', c)} /><span className="label-text">{c}</span></label>
@@ -654,12 +1359,58 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                                     </section>
 
                                     <section className="form-card">
+                                        <div className="form-section-title">
+                                            <i className="form-section-title"></i> 15. Evaluación del Proceso Cognitivo
+                                        </div>
+                                        <div className="textarea-group-premium">
+                                            <label>¿Cómo evalúas la calidad del pensamiento más allá del producto generado?</label>
+                                            <textarea
+                                                maxLength={1200}
+                                                placeholder="Ej: Evaluación del historial de prompts, rúbrica de análisis crítico, comparación de borradores manuales vs. asistidos, o entrevista de validación..."
+                                                value={formData.evaluacionPensamiento || ""}
+                                                onChange={(e) => handleInputChange('evaluacionPensamiento', e.target.value)}
+                                                rows={4}
+                                            />
+                                            <span className="char-count">
+                                                {formData.evaluacionPensamiento?.length || 0} / 1200
+                                            </span>
+                                        </div>
+                                    </section>
+
+                                    <section className="form-card">
                                         <div className="form-section-title">Reflexión Docente</div>
                                         <div className="textarea-group-premium">
-                                            <label>La principal mejora pedagógica fue</label>
+                                            <label>La principal mejora pedagógica lograda fue:</label>
                                             <textarea maxLength={2000} placeholder="Describe la mejora..." value={formData.reflexionMejora || ""} onChange={(e) => handleInputChange('reflexionMejora', e.target.value)} />
-                                            <label>El mayor ajuste que debo hacer es: </label>
+                                            <label>El mayor riesgo que aún debo monitorear es:</label>
                                             <textarea maxLength={2000} placeholder="Describe el ajuste..." value={formData.reflexionAjuste || ""} onChange={(e) => handleInputChange('reflexionAjuste', e.target.value)} />
+                                        </div>
+                                    </section>
+
+                                    <section className="form-card">
+                                        <div className="form-section-title">
+                                            <i className="form-section-title"></i> 17. Validación de Autonomía (Prueba de Retiro)
+                                        </div>
+                                        <label className="group-main-label">
+                                            Si retiro la IA de esta secuencia, el aprendizaje profundo:
+                                        </label>
+                                        <div className="options-vertical-premium">
+                                            {[
+                                                'Se mantiene',
+                                                'Disminuye',
+                                                'Desaparece',
+                                                'No lo he evaluado'
+                                            ].map(opt => (
+                                                <label key={opt} className="check-label-row">
+                                                    <input
+                                                        type="radio"
+                                                        name="impactoRetiroIA"
+                                                        checked={formData.impactoRetiroIA === opt}
+                                                        onChange={() => handleInputChange('impactoRetiroIA', opt)}
+                                                    />
+                                                    <span className="label-text">{opt}</span>
+                                                </label>
+                                            ))}
                                         </div>
                                     </section>
                                 </>
@@ -1064,16 +1815,16 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                     <section className="autoevaluacion-final-section">
                         <div className="autoeval-card">
                             <h3>AUTOEVALUACIÓN DE LOGRO</h3>
-                            <p className="autoeval-desc">Marca cada ítem para certificar que tu reto cumple con los estándares exigidos:</p>
+                            <p className="autoeval-desc">Marca cada ítem para certificar que tu mision cumple con los estándares exigidos:</p>
                             <div className="checklist-items-premium">
                                 {(
                                     // --- LÓGICA DINÁMICA POR ROL Y RETO ---
                                     !isDirectivo ? (
                                         // Checklists para DOCENTES
                                         retoId === 1 ? [
-                                            "Se identifican riesgos reales", "Se analiza impacto en agencia", "Se considera transparencia y privacidad", "Se determina nivel de supervisión humana", "Se emite decisión argumentada"
+                                            "He identificado riesgos reales y no solo supuestos generales de una herramienta de IA.", "He analizado el impacto en la agencia y autonomía estudiantil.", "He considerado explícitamente transparencia, sesgos y protección de datos.", "He definido el nivel de supervisión humana requerido.", "Mi reflexión final es coherente con el análisis realizado.", "Se promovió pensamiento de orden superior."
                                         ] : retoId === 2 ? [
-                                            "Intencionalidad pedagógica explícita", "Protección de agencia humana", "Mitigación de riesgos éticos", "Evaluación coherente", "Supervisión humana clara"
+                                            "La intención pedagógica es explícita.", " La IA no sustituye juicio docente.", " La agencia estudiantil se mantiene o fortalece.", "Se incorporó supervisión humana clara.", "Se abordaron riesgos éticos relevantes"
                                         ] : [
                                             "Existe objetivo común claro", "La diferenciación no reduce estándares", "Se protege dignidad y agencia", "Se identifican y mitigan riesgos", "Estrategia replicable"
                                         ]

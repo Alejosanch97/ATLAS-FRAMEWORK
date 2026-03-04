@@ -443,12 +443,59 @@ textarea { min-height: 120px; resize: vertical; }
     border-spacing: 0 10px;
 }
 
-.matriz-table tr {
+/* .matriz-table tr {
     background: #f8fafc;
+} */
+
+/* USA ESTO EN SU LUGAR PARA LA MATRIZ */
+.matriz-table tbody tr {
+    background: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.matriz-table tbody tr:hover {
+    background: #f1f5f9;
+}
+
+/* FIX PARA EL SCORE INDICATOR (El texto de abajo del slider) */
+.score-indicator {
+    text-align: center;
+    font-weight: 800;
+    color: var(--atlas-gold);
+    font-size: 1.1rem; /* Un poco más grande */
+    margin-top: 8px;
+    display: block;
 }
 
 .matriz-table td {
     padding: 20px;
+}
+
+.range-cell {
+    padding: 20px !important;
+    min-width: 200px;
+}
+
+input[type="range"] {
+    cursor: pointer;
+    height: 8px;
+    border-radius: 5px;
+    background: #e2e8f0;
+    outline: none;
+}
+
+.desc-cell strong {
+    font-size: 1.05rem;
+    color: var(--atlas-dark);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.unesco-dynamic-descriptor {
+    /* Mantén lo que tenías pero asegura el margen */
+    margin-top: 10px;
+    font-style: italic;
+    border-left: 3px solid var(--atlas-gold-light);
 }
 
 .desc-cell { border-radius: 15px 0 0 15px; }
@@ -456,8 +503,11 @@ textarea { min-height: 120px; resize: vertical; }
     border-radius: 0 15px 15px 0; 
     font-weight: 800; 
     color: var(--atlas-gold);
-    font-size: 1.2rem;
+    font-size: 1.4rem; /* Aumentado para legibilidad */
     text-align: center;
+    min-width: 80px;   /* Agregado para que no se vea pequeño */
+    display: table-cell; 
+    vertical-align: middle;
 }
 
 input[type="range"] {
@@ -685,6 +735,326 @@ input[type="range"] {
   margin-bottom: 16px; /* separación entre un bloque y el siguiente */
 }
 
+/* Estilo para que el input de "Otro" sea más grande y profesional */
+.inline-input-premium {
+    width: 100% !important;
+    min-height: 55px !important; /* Aumenta la altura significativamente */
+    font-size: 1.1rem !important; /* Texto más legible */
+    padding: 12px 20px !important; /* Más espacio interno para el texto */
+    border: 2px solid #e5e7eb !important; /* Borde más grueso y visible */
+    border-radius: 10px !important; /* Esquinas más suaves */
+    background-color: #f9fafb !important;
+    box-sizing: border-box !important; /* Evita que el padding lo ensanche de más */
+    transition: all 0.2s ease-in-out !important;
+    margin-top: 5px !important;
+}
+
+/* Efecto de foco para resaltar la acción de escritura */
+.inline-input-premium:focus {
+    border-color: #d4af37 !important; /* Color dorado/premium de ATLAS */
+    background-color: #ffffff !important;
+    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1) !important;
+    outline: none !important;
+}
+
+/* Animación opcional para que aparezca suavemente */
+[style*="animation: fadeIn"] {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- MEJORAS MATRIZ DINÁMICA --- */
+.unesco-dynamic-descriptor {
+    font-size: 0.85rem;
+    color: #475569;
+    background: #ffffff;
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin-top: 8px;
+    border-left: 4px solid var(--atlas-gold);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    line-height: 1.4;
+    min-height: 50px;
+}
+
+.score-indicator {
+    text-align: center;
+    font-weight: 800;
+    color: var(--atlas-gold);
+    font-size: 0.9rem;
+    margin-top: 5px;
+    text-transform: uppercase;
+}
+
+/* --- PANEL DE INTERPRETACIÓN --- */
+.atlas-interpretation-panel {
+    margin-top: 30px;
+    background: #fdfbf7;
+    border: 2px solid var(--atlas-gold-light);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.interpretation-header {
+    background: var(--atlas-gold);
+    color: white;
+    padding: 10px 20px;
+    font-weight: 700;
+}
+
+.interpretation-content {
+    padding: 20px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--atlas-slate);
+    white-space: pre-line; /* Para respetar los saltos de línea del mensaje UNESCO */
+}
+
+/* --- PREGUNTAS DE INTEGRIDAD (PILLS) --- */
+.integrity-questions-container {
+    margin-top: 30px;
+}
+
+.integrity-row {
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 14px;
+    margin-bottom: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.integrity-text {
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--atlas-dark);
+}
+
+.pills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.pill-option {
+    cursor: pointer;
+    background: white;
+    border: 2px solid #e2e8f0;
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #64748b;
+    transition: all 0.2s ease;
+}
+
+.pill-option:hover {
+    border-color: var(--atlas-gold-light);
+    transform: translateY(-2px);
+}
+
+.pill-option.selected {
+    background: var(--atlas-gold);
+    border-color: var(--atlas-gold);
+    color: white;
+    box-shadow: 0 4px 10px rgba(197, 160, 89, 0.3);
+}
+
+.pill-option input {
+    display: none; /* Escondemos el radio real */
+}
+
+.atlas-hr-divider {
+    border: 0;
+    height: 1px;
+    background: #e2e8f0;
+    margin: 40px 0;
+}
+
+/* Contenedor principal de la matriz */
+.unesco-matrix-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+/* Fila estilo píldora */
+.matrix-pill-row {
+    display: flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 15px 25px;
+    transition: all 0.2s ease;
+    gap: 20px;
+}
+
+.matrix-pill-row:hover {
+    background: #ffffff;
+    border-color: var(--atlas-gold-light);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Lado izquierdo: 60% del espacio para el texto */
+.matrix-content-left {
+    flex: 0 0 60%;
+}
+
+.matrix-label {
+    font-size: 1.05rem;
+    color: var(--atlas-dark);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.unesco-dynamic-descriptor {
+    font-size: 0.88rem;
+    color: #64748b;
+    font-style: italic;
+    line-height: 1.4;
+}
+
+/* Lado derecho: 40% para el slider y el número */
+.matrix-controls-right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 20px;
+}
+
+.atlas-slider-premium {
+    width: 100%;
+    max-width: 140px;
+    accent-color: var(--atlas-gold);
+    cursor: pointer;
+}
+
+/* El cuadro de puntaje (NIVEL X) */
+.matrix-score-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border: 2px solid var(--atlas-gold-light);
+    border-radius: 12px;
+    min-width: 65px;
+    height: 65px;
+    flex-shrink: 0;
+}
+
+.level-label {
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+}
+
+.score-number {
+    font-size: 1.7rem;
+    font-weight: 900;
+    color: var(--atlas-gold);
+    line-height: 1;
+}
+
+.pre-mission-notice {
+    background: #fffdf9;
+    border: 1.5px solid var(--atlas-gold-light);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    position: relative;
+    
+    /* CORRECCIONES CLAVE: */
+    width: 100% !important; 
+    display: block !important; 
+    box-sizing: border-box !important;
+    grid-column: 1 / -1; /* Si está dentro de un grid (como narrative-hero-section), esto lo obliga a ocupar todas las columnas */
+    clear: both; /* Evita que elementos flotantes se pongan a los lados */
+}
+
+.notice-badge {
+    position: absolute;
+    top: -12px;
+    left: 30px;
+    background: var(--atlas-gold);
+    color: white;
+    padding: 4px 15px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.pre-mission-notice h4 {
+    color: var(--atlas-dark);
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+    font-weight: 800;
+}
+
+.pre-mission-notice p {
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.notice-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(197, 160, 89, 0.05);
+    border-radius: 12px;
+}
+
+.notice-item strong {
+    display: block;
+    color: var(--atlas-gold);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.notice-list {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.notice-list li {
+    padding-left: 25px;
+    position: relative;
+    margin-bottom: 8px;
+    color: #475569;
+    font-size: 0.95rem;
+}
+
+.notice-list li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--atlas-gold);
+    font-weight: bold;
+}
+
+.notice-footer {
+    border-top: 1px solid #e2e8f0;
+    margin-top: 20px;
+    padding-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9rem;
+    color: #64748b;
+}
 /* =========================================
    ATLAS RESPONSIVE OPTIMIZADO V3.0
    ========================================= */
