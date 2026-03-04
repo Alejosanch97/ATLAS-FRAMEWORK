@@ -31,6 +31,20 @@ const ModuloSostener = ({ userData, API_URL, onNavigate, datosExistentes }) => {
         crecimiento: 0
     });
 
+    const [cierreStep, setCierreStep] = useState(1);
+    const [showCierre, setShowCierre] = useState(false);
+    const [formDataCierre, setFormDataCierre] = useState({
+        reflexionAntes: "",
+        reflexionDespues: "",
+        aprendizajeClave: "",
+        aprendizajeDetalle: "",
+        prioridadSostener: "",
+        compromisoAccion: "",
+        evidenciaMejora: "",
+        fechaRevision: ""
+    });
+
+
     const dimensiones = [
         { id: "D1", nombre: "Uso Pedagógico Estratégico", preguntas: [
             { id: 1, text: "Utilizo IA con un propósito pedagógico claramente definido." },
@@ -242,6 +256,161 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
         };
     };
 
+    // ===============================
+    // 🎯 MICRO RECOMENDACIONES
+    // ===============================
+
+    const dimensionRecommendations = {
+        uso: {
+            basic: [
+                "Antes de usar IA, formula explícitamente el objetivo de aprendizaje.",
+                "Define qué parte del proceso requiere tu juicio profesional.",
+                "Diseña una actividad donde la IA apoye diferenciación pedagógica."
+            ],
+            medium: [
+                "Mide impacto en aprendizaje, no solo eficiencia.",
+                "Diseña una secuencia didáctica donde la IA tenga rol claro y medible.",
+                "Reflexiona si alguna tarea está siendo automatizada sin necesidad."
+            ],
+            advanced: [
+                "Documenta una experiencia de alto impacto.",
+                "Comparte una práctica en comunidad docente.",
+                "Experimenta con mejora incremental basada en evidencia."
+            ]
+        },
+
+        etica: {
+            basic: [
+                "Revisa la política institucional de IA.",
+                "Evita ingresar datos identificables en herramientas externas.",
+                "Verifica términos de uso de plataformas."
+            ],
+            medium: [
+                "Analiza un caso de posible sesgo algorítmico.",
+                "Explicita a estudiantes cuándo y cómo usas IA.",
+                "Incorpora revisión humana sistemática."
+            ],
+            advanced: [
+                "Lidera conversación institucional sobre riesgos emergentes.",
+                "Diseña una guía corta para estudiantes.",
+                "Apoya procesos de revisión institucional."
+            ]
+        },
+
+        impacto: {
+            basic: [
+                "Define un indicador concreto de mejora.",
+                "Evalúa resultados antes y después del uso de IA.",
+                "Ajusta herramientas que no aporten valor."
+            ],
+            medium: [
+                "Implementa medición más sistemática.",
+                "Diseña experiencia personalizada con IA.",
+                "Solicita retroalimentación directa."
+            ],
+            advanced: [
+                "Sistematiza evidencia.",
+                "Presenta resultados en espacio académico.",
+                "Conviértete en mentor interno."
+            ]
+        },
+
+        desarrollo: {
+            basic: [
+                "Agenda una sesión de formación sobre IA educativa.",
+                "Únete a comunidad interna o externa.",
+                "Inicia bitácora mensual."
+            ],
+            medium: [
+                "Profundiza en tema específico.",
+                "Publica o comparte experiencia.",
+                "Solicita retroalimentación de pares."
+            ],
+            advanced: [
+                "Diseña microformación para colegas.",
+                "Participa en proyectos piloto.",
+                "Apoya diseño de lineamientos institucionales."
+            ]
+        }
+    };
+
+    const getMetricasAuditoria = () => {
+        const r = respuestasAuditarReal;
+        const getProm = (ids) => {
+            const filtradas = r.filter(q => ids.includes(q.ID_Pregunta)); // Asumiendo que tienes ID_Pregunta en el objeto
+            if (filtradas.length === 0) return 0;
+            const suma = filtradas.reduce((acc, curr) => acc + parseFloat(String(curr.Puntos_Ganados || 0).replace(',', '.')), 0);
+            return (suma / filtradas.length).toFixed(2);
+        };
+
+        return {
+            desarrollo: getProm(['Q-A3-09', 'Q-A3-10', 'Q-A3-11', 'Q-A3-12','Q-A6-23', 'Q-A6-24', 'Q-A6-25', 'Q-A6-26',]),
+            etica: getProm(['Q-A4-13', 'Q-A4-14', 'Q-A4-15', 'Q-A4-16', 'Q-A4-17']),
+            impacto: getProm(['Q-A5-18', 'Q-A5-19', 'Q-A5-20', 'Q-A5-21', 'Q-A5-22']),
+            uso: getProm(['Q-A2-04', 'Q-A2-05', 'Q-A2-06', 'Q-A2-07', 'Q-A2-08' ])
+        };
+    };
+
+    // ===============================
+    // 🚨 ALERTAS
+    // ===============================
+
+    const generateAlerts = (data) => {
+        const alerts = [];
+
+        // ALERTA 1
+        if (data.item3 <= 2 && data.item5 <= 2) {
+            alerts.push("⚠️ Riesgo de automatización sin supervisión pedagógica.");
+        }
+
+        // ALERTA 2
+        if (data.item7 <= 2 || data.item8 <= 2) {
+            alerts.push("⚠️ Posible riesgo en protección de datos.");
+        }
+
+        // ALERTA 3
+        if (data.dim3 < 2.5) {
+            alerts.push("⚠️ El uso podría estar enfocado en eficiencia más que en aprendizaje.");
+        }
+
+        // ALERTA 4
+        if (data.dim4 < data.previousDim4) {
+            alerts.push("⚠️ Se detecta desaceleración en desarrollo profesional.");
+        }
+
+        return alerts;
+    };
+
+    const generateAnalysis = () => {
+
+        const dims = {
+            uso: pD[0],
+            etica: pD[1],
+            impacto: pD[2],
+            desarrollo: pD[3]
+        };
+
+        const result = {};
+
+        Object.keys(dims).forEach(key => {
+            const value = dims[key];
+
+            if (value < 3.0) {
+                result[key] = dimensionRecommendations[key].basic;
+            } else if (value < 4.0) {
+                result[key] = dimensionRecommendations[key].medium;
+            } else {
+                result[key] = dimensionRecommendations[key].advanced;
+            }
+        });
+
+        return result;
+    };
+
+    const [analysis, setAnalysis] = useState(null);
+    const [alerts, setAlerts] = useState([]);
+    const [showAnalysis, setShowAnalysis] = useState(false);
+
     useEffect(() => {
         if (datosExistentes) {
             setHistorial([datosExistentes]);
@@ -447,6 +616,189 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
     const toPct = (val) => ((val / 5) * 100).toFixed(1);
     const pD = historial[0]?.["Promedio_D1, Promedio_D2, Promedio_D3, Promedio_D4"]?.split(',').map(v => parseFloat(v)) || [0,0,0,0];
 
+    const handleFinalSaveCierre = async () => {
+    // 1. Validaciones de calidad antes de procesar
+    if (!formDataCierre.compromisoAccion || formDataCierre.compromisoAccion.length < 150) {
+        Swal.fire("Acción Incompleta", "Tu compromiso debe tener al menos 150 caracteres para ser transformador.", "warning");
+        return;
+    }
+
+    setLoading(true);
+    
+    // Obtenemos los cálculos ponderados que corregimos (Evita el 0% en la DB)
+    const comp = getComparativoAtlas();
+    const idAUsar = historial[0]?.ID_Sostener;
+
+    // 2. Construcción del objeto final con métricas de impacto
+        const finalData = {
+            // Reflexiones y Hoja de Ruta
+            Reflexion_Antes: formDataCierre.reflexionAntes,
+            Reflexion_Despues: formDataCierre.reflexionDespues,
+            Aprendizaje_Clave: `${formDataCierre.aprendizajeClave}: ${formDataCierre.aprendizajeDetalle}`,
+
+            // TUS TRES COLUMNAS CLAVE DE LA ETAPA 5
+            Compromiso_Accion: formDataCierre.compromisoAccion,
+            Evidencia_Mejora: formDataCierre.evidenciaMejora,
+            Fecha_Revision_Plan: formDataCierre.fechaRevision,
+
+            // MÉTRICAS DE IMPACTO (Para analítica posterior)
+            Score_Inicial_Pct: (comp.scoreAntes * 20).toFixed(1),
+            Score_Final_Pct: (comp.scoreAhora * 20).toFixed(1),
+            Crecimiento_Puntos: comp.crecimiento,
+
+            Status: "Ciclo_Completado",
+            Fecha_Cierre: new Date().toLocaleString()
+        };
+
+        try {
+            // 3. Sincronización con AppScript
+            const response = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    action: "update",
+                    sheet: "SOSTENER_Docentes",
+                    idField: "ID_Sostener",
+                    idValue: idAUsar,
+                    data: finalData
+                })
+            });
+
+            if (response.ok) {
+                await Swal.fire({
+                    title: "¡Ciclo Completado!",
+                    text: "Tu hoja de ruta ha sido integrada al ecosistema ATLAS.",
+                    icon: "success",
+                    confirmButtonColor: "#D4AF37" // Color oro para coherencia visual
+                });
+
+                // 4. FLUJO DE NAVEGACIÓN
+                setShowCierre(false); // Cierra el modal/overlay si lo usas
+                setView("menu");      // REGRESA AL MENÚ PRINCIPAL
+
+            } else {
+                throw new Error("Error en la respuesta del servidor");
+            }
+
+        } catch (e) {
+            console.error("Error en handleFinalSaveCierre:", e);
+            Swal.fire("Error", "No se pudo sincronizar el cierre. Verifica tu conexión.", "error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const metricasAuditoria = getMetricasAuditoria();
+    const datasetAuditoria = [
+        { label: 'Desarrollo', valor: parseFloat(metricasAuditoria.desarrollo) || 0 },
+        { label: 'Ética', valor: parseFloat(metricasAuditoria.etica) || 0 },
+        { label: 'Impacto', valor: parseFloat(metricasAuditoria.impacto) || 0 },
+        { label: 'Usabilidad.', valor: parseFloat(metricasAuditoria.uso) || 0 }
+    ];
+
+    // Identificamos el valor más bajo para resaltarlo
+    const valorMinimo = Math.min(...datasetAuditoria.map(d => d.valor));
+
+    const getComparativoAtlas = () => {
+    // 1. Ejecutamos tu función de métricas (la que no querías cambiar)
+        const m = getMetricasAuditoria();
+
+        // 2. CÁLCULO PONDERADO (EL ANTES)
+        // Aplicamos los pesos: Uso (25%), Ética (25%), Impacto/Gobernanza (25%), Desarrollo (25%)*
+        // Nota: Como tienes 4 categorías en la función y 5 pesos en la tabla, 
+        // agrupamos según la lógica de tus IDs.
+
+        const scoreAntesPct = (
+            (parseFloat(m.uso) / 5) * 25 +        // Uso pedagógico (25%)
+            (parseFloat(m.etica) / 5) * 25 +      // Ética y riesgo (25%)
+            (parseFloat(m.impacto) / 5) * 25 +    // Gobernanza/Impacto (25%)
+            (parseFloat(m.desarrollo) / 5) * 25   // Desarrollo/Fundamentos (25%)
+        );
+
+        // Convertimos a base 5 para textos y compatibilidad
+        const scoreAntesBase5 = scoreAntesPct / 20;
+        const nivelAntes = getCompassData(scoreAntesPct).nivel;
+
+        // 3. DATOS DE SOSTENER (EL AHORA)
+        const scoreAhoraBase5 = parseFloat(historial[0]?.Promedio_Global || 0);
+        const scoreAhoraPct = scoreAhoraBase5 * 20;
+
+        // 4. CRECIMIENTO REAL (Diferencia de porcentajes)
+        const crecimiento = (scoreAhoraPct - scoreAntesPct).toFixed(1);
+
+        return {
+            scoreAntes: scoreAntesBase5,
+            nivelAntes,
+            scoreAhora: scoreAhoraBase5,
+            nivelAhora: historial[0]?.Nivel_Calculado || "En proceso",
+            crecimiento
+        };
+    };
+
+    const cargarDatosCierreExistentes = () => {
+        if (historial.length > 0) {
+            const registro = historial[0];
+
+            // Mapeamos las columnas de Excel a nuestro estado de formulario
+            setFormDataCierre({
+                reflexionAntes: registro.Reflexion_Antes || "",
+                reflexionDespues: registro.Reflexion_Despues || "",
+                // El aprendizaje clave a veces viene como "Titulo: Detalle"
+                aprendizajeClave: registro.Aprendizaje_Clave?.split(': ')[0] || "",
+                aprendizajeDetalle: registro.Aprendizaje_Clave?.split(': ')[1] || "",
+                prioridadSostener: registro.Prioridad_Sostener || "",
+                compromisoAccion: registro.Compromiso_Accion || "",
+                evidenciaMejora: registro.Evidencia_Mejora || "",
+                fechaRevision: registro.Fecha_Revision_Plan || ""
+            });
+
+            setIsReadOnly(true); // Bloqueamos edición para que solo sea consulta
+            setCierreStep(1);    // Empezamos desde la fase 1
+            setView("cierre");   // Cambiamos a la vista de cierre
+        } else {
+            Swal.fire("Sin datos", "No hay un ciclo previo guardado para este docente.", "info");
+        }
+    };
+
+    const [isReadOnly, setIsReadOnly] = useState(false); // Estado para bloquear inputs
+
+    const fetchMisRespuestasCierre = async () => {
+        setLoading(true);
+        try {
+            const tKey = userData?.Teacher_Key;
+            const response = await fetch(`${API_URL}?sheet=SOSTENER_Docentes&Teacher_Key=${tKey}`);
+            const data = await response.json();
+
+            if (Array.isArray(data) && data.length > 0) {
+                // Tomamos el registro más reciente (el primero si tu API ordena desc)
+                const ultimoCierre = data[0];
+
+                // Llenamos el formulario con lo que hay en Excel
+                setFormDataCierre({
+                    reflexionAntes: ultimoCierre.Reflexion_Antes || "",
+                    reflexionDespues: ultimoCierre.Reflexion_Despues || "",
+                    // Separamos el aprendizaje clave del detalle si los guardaste juntos
+                    aprendizajeClave: ultimoCierre.Aprendizaje_Clave?.split(': ')[0] || "",
+                    aprendizajeDetalle: ultimoCierre.Aprendizaje_Clave?.split(': ')[1] || "",
+                    prioridadSostener: ultimoCierre.Prioridad_Sostener || "",
+                    compromisoAccion: ultimoCierre.Compromiso_Accion || "",
+                    evidenciaMejora: ultimoCierre.Evidencia_Mejora || "",
+                    fechaRevision: ultimoCierre.Fecha_Revision_Plan || ""
+                });
+
+                setIsReadOnly(true); // Activamos modo lectura
+                setCierreStep(1);
+                setView("cierre");
+            } else {
+                Swal.fire("Sin registros", "Aún no has completado ningún cierre de ciclo.", "info");
+            }
+        } catch (e) {
+            console.error("Error al traer respuestas:", e);
+            Swal.fire("Error", "No pudimos conectar con tu base de datos.", "error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="sostener-page-wrapper">
             {view === "menu" && (
@@ -481,41 +833,85 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
                             <div className="sos-icon">🔄</div>
                             <h3>Cierre de Ciclo</h3>
                             <p>Compara tu evolución Antes vs Después.</p>
-                            <button disabled={historial.length === 0} className="btn-sos-primary">Acceder</button>
+                            <div className="sos-actions" style={{ flexDirection: 'column', gap: '8px' }}>
+                                {/* BOTÓN PARA NUEVO ENVÍO */}
+                                <button
+                                    disabled={historial.length === 0}
+                                    className="btn-sos-primary"
+                                    onClick={() => {
+                                        // Limpiamos el formulario para un nuevo envío
+                                        setFormDataCierre({
+                                            reflexionAntes: "", reflexionDespues: "", aprendizajeClave: "",
+                                            aprendizajeDetalle: "", prioridadSostener: "", compromisoAccion: "",
+                                            evidenciaMejora: "", fechaRevision: ""
+                                        });
+                                        setIsReadOnly(false);
+                                        setCierreStep(1);
+                                        setView("cierre");
+                                    }}
+                                >
+                                    Iniciar Nuevo Cierre
+                                </button>
+
+                                {/* BOTÓN PARA VER LO QUE YA ESTÁ EN LA HOJA */}
+                                <button
+                                    disabled={historial.length === 0}
+                                    className="btn-sos-secondary"
+                                    onClick={cargarDatosCierreExistentes}
+                                >
+                                    Ver Respuestas Anteriores
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             )}
 
             {view === "cuestionario" && (
-                <div className="sostener-cuestionario animate-fade-in">
-                    <button className="btn-sos-back" onClick={() => setView("menu")}>⬅ Volver</button>
-                    <div className="sos-form-container">
-                        <h2>Autoevaluación Docente IA</h2>
+                <div className="atl-q-page-container animate-fade-in">
+                    <button className="atl-q-btn-back" onClick={() => setView("menu")}>⬅ Volver</button>
+
+                    <div className="atl-q-main-card">
+                        <header className="atl-q-header">
+                            <h2 className="atl-q-title">Autoevaluación Docente IA</h2>
+                            <p className="atl-q-subtitle">Sostener: Consolidación del Marco ATLAS 2026</p>
+                        </header>
+
                         {dimensiones.map(dim => (
-                            <div key={dim.id} className="sos-dim-group">
-                                <h3>{dim.nombre}</h3>
-                                {dim.preguntas.map(p => (
-                                    <div key={p.id} className="sos-q-item">
-                                        <span>{p.text}</span>
-                                        <div className="sos-likert">
-                                            {[1, 2, 3, 4, 5].map(v => (
-                                                <button
-                                                    key={v}
-                                                    className={respuestas[p.id] === v ? 'active' : ''}
-                                                    onClick={() => setRespuestas({ ...respuestas, [p.id]: v })}
-                                                >
-                                                    {v}
-                                                </button>
-                                            ))}
+                            <section key={dim.id} className="atl-q-dimension-section">
+                                <h3 className="atl-q-dim-title">{dim.nombre}</h3>
+
+                                <div className="atl-q-questions-list">
+                                    {dim.preguntas.map(p => (
+                                        <div key={p.id} className="atl-q-item-row">
+                                            <span className="atl-q-question-text">{p.text}</span>
+
+                                            <div className="atl-q-likert-scale">
+                                                {[1, 2, 3, 4, 5].map(v => (
+                                                    <button
+                                                        key={v}
+                                                        className={`atl-q-likert-btn ${respuestas[p.id] === v ? 'is-active' : ''} ${v === 5 ? 'is-premium' : ''}`}
+                                                        onClick={() => setRespuestas({ ...respuestas, [p.id]: v })}
+                                                    >
+                                                        {v}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+                            </section>
                         ))}
-                        <button className="btn-sos-submit" onClick={handleSave} disabled={loading}>
-                            {loading ? "Sincronizando..." : "Finalizar Evaluación"}
-                        </button>
+
+                        <footer className="atl-q-footer">
+                            <button
+                                className="atl-q-btn-submit"
+                                onClick={handleSave}
+                                disabled={loading}
+                            >
+                                {loading ? "Sincronizando con ATLAS..." : "Finalizar y Guardar Evaluación"}
+                            </button>
+                        </footer>
                     </div>
                 </div>
             )}
@@ -543,6 +939,7 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
 
                             <div className="sos-stat-card radar-cont">
                                 <h4>Radar de Sostenibilidad</h4>
+
                                 <ResponsiveContainer width="100%" height={250}>
                                     <RadarChart data={[
                                         { s: 'Uso', A: pD[0] },
@@ -561,8 +958,70 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
                                         />
                                     </RadarChart>
                                 </ResponsiveContainer>
+
+                                <button
+                                    className="analysis-btn"
+                                    onClick={() => {
+
+                                        // Si ya existe análisis, solo alterna visibilidad
+                                        if (analysis) {
+                                            setShowAnalysis(prev => !prev);
+                                            return;
+                                        }
+
+                                        // Si no existe, lo genera
+                                        const generated = generateAnalysis();
+                                        setAnalysis(generated);
+
+                                        const alertResults = generateAlerts({
+                                            item3: 2,
+                                            item5: 2,
+                                            item7: 3,
+                                            item8: 4,
+                                            dim3: pD[2],
+                                            dim4: pD[3],
+                                            previousDim4: 3.5
+                                        });
+
+                                        setAlerts(alertResults);
+
+                                        setShowAnalysis(true);
+                                    }}
+                                >
+                                    {!analysis
+                                        ? "Generar Análisis Inteligente"
+                                        : showAnalysis
+                                            ? "Minimizar Análisis"
+                                            : "Mostrar Análisis"}
+                                </button>
                             </div>
                         </div>
+
+                        {analysis && showAnalysis && (
+                            <div className="analysis-box">
+
+                                <h3>📊 Recomendaciones Personalizadas</h3>
+
+                                {Object.entries(analysis).map(([dim, recs]) => (
+                                    <div key={dim} className="dimension-block">
+                                        <h4>{dim.toUpperCase()}</h4>
+                                        <ul>
+                                            {recs.map((r, i) => <li key={i}>{r}</li>)}
+                                        </ul>
+                                    </div>
+                                ))}
+
+                                {alerts.length > 0 && (
+                                    <div className="alerts-box">
+                                        <h3>🚨 Alertas Detectadas</h3>
+                                        <ul>
+                                            {alerts.map((a, i) => <li key={i}>{a}</li>)}
+                                        </ul>
+                                    </div>
+                                )}
+
+                            </div>
+                        )}
 
                         {/* PANEL 1.2: EVIDENCIA INSTITUCIONAL REAL (CARD BOTÓN) */}
                         <div className="sos-stat-card real-evidence" onClick={() => setShowModalReal(true)}>
@@ -645,11 +1104,11 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
                                                         <div key={idx} className="audit-item-row">
                                                             <div className="audit-item-info">
                                                                 <span className="audit-item-text">{q.Valor_Respondido || `Indicador ${idx + 1}`}</span>
-                                                                <span className="audit-item-score">{puntos.toFixed(1)} / 5</span>
+                                                                <span className="audit-item-score">{puntos.toFixed(1)} </span>
                                                             </div>
                                                             <div className="audit-progress-bg">
                                                                 <div className="audit-progress-fill" style={{
-                                                                    width: `${(puntos / 5) * 100}%`,
+                                                                    width: `${(puntos / 9) * 100}%`,
                                                                     backgroundColor: puntos >= 4 ? '#48bb78' : puntos >= 2.5 ? '#ecc94b' : '#f56565'
                                                                 }}></div>
                                                             </div>
@@ -766,6 +1225,619 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
                                     <Line type="monotone" dataKey="Promedio_Global" stroke="#c5a059" strokeWidth={3} />
                                 </LineChart>
                             </ResponsiveContainer>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {view === "cierre" && (
+                <div className="sostener-cuestionario animate-fade-in cierre-full-view">
+                    {/* Header Fijo */}
+                    <div className="cierre-nav-header">
+                        <button className="btn-sos-back" onClick={() => setView("menu")}>⬅ Salir del Cierre</button>
+                        <div className="cierre-stepper">
+                            {[1, 2, 3, 4, 5].map(s => (
+                                <div key={s} className={`step-pill ${cierreStep >= s ? 'active' : ''} ${cierreStep > s ? 'completed' : ''}`}>
+                                    {s < cierreStep ? '✓' : s}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="sos-form-container cierre-main-content">
+
+                        {/* FASE 1: EL ORIGEN - DISEÑO BLINDADO */}
+                        {cierreStep === 1 && (
+                            <div className="at-cierre-fase-wrapper animate-slide-up">
+
+                                {/* ENCABEZADO CENTRADO Y LIMPIO */}
+                                <header className="at-cierre-header-main">
+                                    <div className="at-cierre-badge-container">
+                                        <span className="at-badge-gold">Fase 1: El Origen</span>
+                                    </div>
+                                    <h2 className="at-cierre-title">¿Dónde comenzó tu viaje?</h2>
+                                    <p className="at-cierre-subtitle">
+                                        Análisis retrospectivo basado en el <strong>Diagnóstico de Auditoría</strong>.
+                                    </p>
+                                </header>
+
+                                {/* GRID DE RESULTADOS (DIAGNÓSTICO) */}
+                                <div className="at-cierre-grid-container">
+
+                                    {/* CARD IZQUIERDA: SCORE GLOBAL (AZUL PREMIUM) */}
+                                    <section className="at-cierre-card-premium at-variant-dark">
+                                        <div className="at-card-tag">Estado Inicial</div>
+
+                                        <div className="at-score-hero-layout">
+                                            <div className="at-score-circle">
+                                                <span className="at-score-big-num">{selectedFormReal?.puntosMedia}</span>
+                                                <span className="at-score-subtext">Media Global</span>
+                                            </div>
+
+                                            <h3 className="at-level-title">
+                                                {getCompassData(selectedFormReal?.porcentajeGlobal).nivel}
+                                            </h3>
+                                        </div>
+
+                                        <div className="at-description-box">
+                                            <p>{getCompassData(selectedFormReal?.porcentajeGlobal).desc}</p>
+                                        </div>
+                                    </section>
+
+                                    {/* CARD DERECHA: GRÁFICA DE BARRAS (ESTILO DASHBOARD) */}
+                                    <section className="at-cierre-card-premium at-variant-white">
+                                        <h4 className="at-chart-title">Desempeño por Dimensión (Inicial)</h4>
+
+                                        <div className="at-vertical-chart-area">
+                                            {datasetAuditoria.map((item, idx) => {
+                                                const isMin = item.valor === valorMinimo && item.valor < 5;
+                                                return (
+                                                    <div key={idx} className="at-chart-col">
+                                                        <span className="at-col-val">{item.valor.toFixed(1)}</span>
+                                                        <div className="at-col-track">
+                                                            <div
+                                                                className={`at-col-fill ${isMin ? 'at-is-critical' : ''}`}
+                                                                style={{ height: `${(item.valor / 5) * 100}%` }}
+                                                            >
+                                                                {isMin && <span className="at-alert-pulse"></span>}
+                                                            </div>
+                                                        </div>
+                                                        <span className="at-col-label">{item.label}</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+
+                                        {valorMinimo < 3 && (
+                                            <div className="at-critical-alert-box">
+                                                <span className="at-alert-icon">⚠️</span>
+                                                <p>Punto de mejora crítico: <strong>{datasetAuditoria.find(d => d.valor === valorMinimo)?.label}</strong></p>
+                                            </div>
+                                        )}
+                                    </section>
+                                </div>
+
+                                {/* SECCIÓN DE REFLEXIÓN (INDETERMINADA POR EL DISEÑO DE RETOS) */}
+                                <div className="at-cierre-reflection-section">
+                                    <div className="at-reflection-header">
+                                        <h4>Guía de Reflexión</h4>
+                                        <ul className="at-reflection-prompts">
+                                            <li>¿Qué prácticas eran más funcionales que estratégicas?</li>
+                                            <li>¿Dónde delegabas más de lo necesario?</li>
+                                            <li>¿Qué riesgos no habías identificado aún?</li>
+                                        </ul>
+                                    </div>
+
+                                    <div className="at-reflection-input-group">
+                                        <textarea
+                                            className="at-reflection-textarea"
+                                            readOnly={isReadOnly}
+                                            placeholder="Escribe tu análisis aquí..."
+                                            value={formDataCierre.reflexionAntes}
+                                            onChange={(e) => setFormDataCierre({ ...formDataCierre, reflexionAntes: e.target.value })}
+                                        />
+                                        <div className={`at-char-counter ${formDataCierre.reflexionAntes.length >= 200 ? 'at-ready' : ''}`}>
+                                            <span className="at-counter-number">
+                                                {formDataCierre.reflexionAntes.length} / 200
+                                            </span>
+                                            <span className="at-counter-label">caracteres requeridos</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ETAPA 2: LA TRANSFORMACIÓN (SOSTENER) - DISEÑO COMPARATIVO EVOLUTIVO */}
+                        {cierreStep === 2 && (
+                            <div className="at-c2-wrapper animate-slide-up">
+
+                                {/* ENCABEZADO DE ÉXITO */}
+                                <header className="at-c2-header-main">
+                                    <div className="at-c2-badge-container">
+                                        <span className="at-badge-success">Fase 2: Consolidación</span>
+                                    </div>
+                                    <h2 className="at-c2-title">Tu evolución tangible</h2>
+                                    <p className="at-c2-subtitle">
+                                        Has completado el ciclo de Sostenibilidad. Mira cuánto has avanzado desde tu diagnóstico inicial:
+                                    </p>
+                                </header>
+
+                                {/* DASHBOARD DE MÉTRICAS DE IMPACTO */}
+                                <div className="at-c2-impact-grid">
+
+                                    {/* INDICADOR DE CRECIMIENTO (+X%) */}
+                                    <div className="at-c2-card-stats at-variant-dark-gold">
+                                        <div className="at-c2-growth-circle">
+                                            <span className="at-c2-plus">+</span>
+                                            <span className="at-c2-growth-num">{getComparativoAtlas().crecimiento}</span>
+                                            <span className="at-c2-percent">%</span>
+                                        </div>
+                                        <h4>Crecimiento Global</h4>
+                                        <p>Incremento en madurez pedagógica</p>
+                                    </div>
+
+                                    {/* STATUS ACTUAL AUTOMÁTICO - CORREGIDO PARA TEXTO LARGO */}
+                                    <div className="at-c2-card-stats at-variant-white">
+                                        <div className="at-c2-status-row">
+                                            <div className="at-c2-status-item at-level-block">
+                                                <label>Estado Alcanzado</label>
+                                                <strong className="at-text-level">{getComparativoAtlas().nivelAhora}</strong>
+                                            </div>
+                                            <div className="at-c2-status-item">
+                                                <label>Fortaleza</label>
+                                                <strong className="at-text-gold">{getComparativoAtlas().dimensionCrecimiento || "Impacto"}</strong>
+                                            </div>
+                                            <div className="at-c2-status-item">
+                                                <label>Riesgos</label>
+                                                <strong className="at-text-forest">-{alerts.length || 0} mitigados</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* PANTALLA COMPARATIVA: DOBLE CARRIL */}
+                                <div className="at-c2-comparison-container">
+                                    <h4 className="at-c2-chart-title">Análisis Comparativo: Punto de Partida | Nivel Actual</h4>
+                                    <div className="at-c2-comparison-chart">
+                                        {datasetAuditoria.map((item, idx) => (
+                                            <div key={idx} className="at-c2-comp-row">
+                                                <div className="at-c2-comp-label">{item.label}</div>
+
+                                                <div className="at-c2-dual-track-container">
+                                                    {/* Carril Superior: EL ANTES (Dorado) */}
+                                                    <div className="at-c2-track-path">
+                                                        <div
+                                                            className="at-c2-bar-before"
+                                                            style={{ width: `${(item.valor / 5) * 100}%` }}
+                                                        >
+                                                            <span className="at-c2-bar-label-val">{item.valor.toFixed(1)}</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Carril Inferior: EL AHORA (Verde Bosque) */}
+                                                    <div className="at-c2-track-path">
+                                                        <div
+                                                            className="at-c2-bar-after"
+                                                            style={{ width: `${(pD[idx] / 5) * 100}%` }}
+                                                        >
+                                                            <span className="at-c2-bar-label-val">{(pD[idx] || 0).toFixed(1)}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="at-c2-chart-legend">
+                                        <span className="at-leg-before">Diagnóstico Inicial</span>
+                                        <span className="at-leg-after">Estado de Sostenibilidad</span>
+                                    </div>
+                                </div>
+
+                                {/* SECCIÓN DE REFLEXIÓN EVOLUTIVA */}
+                                <div className="at-c2-reflection-section">
+                                    <div className="at-reflection-header">
+                                        <h4>Tu evolución: Describe tu cambio</h4>
+                                        <ul className="at-reflection-prompts">
+                                            <li>¿Qué cambió en tu manera de diseñar experiencias con IA?</li>
+                                            <li>¿Cómo garantizas ahora supervisión humana explícita?</li>
+                                            <li>¿Qué haces diferente para reducir riesgos y promover autonomía estudiantil?</li>
+                                        </ul>
+                                    </div>
+
+                                    <div className="at-reflection-input-group">
+                                        <textarea
+                                            className="at-reflection-textarea"
+                                            readOnly={isReadOnly}
+                                            placeholder="Describe tu transformación (mínimo 300 caracteres)..."
+                                            value={formDataCierre.reflexionDespues}
+                                            onChange={(e) => setFormDataCierre({ ...formDataCierre, reflexionDespues: e.target.value })}
+                                        />
+                                        <div className={`at-char-counter ${formDataCierre.reflexionDespues.length >= 300 ? 'at-ready' : ''}`}>
+                                            <span className="at-counter-number">
+                                                {formDataCierre.reflexionDespues.length} / 300
+                                            </span>
+                                            <span className="at-counter-label">caracteres requeridos</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ETAPA 3: MARCO ÉTICO (UNESCO) - APRENDIZAJES DE IMPACTO */}
+                        {cierreStep === 3 && (
+                            <div className="at-c3-wrapper animate-slide-up">
+
+                                {/* ENCABEZADO */}
+                                <header className="at-c2-header-main">
+                                    <div className="at-c2-badge-container">
+                                        <span className="at-badge-success">
+                                            Fase 3: Marco Internacional
+                                        </span>
+                                    </div>
+                                    <h2 className="at-c2-title">Aprendizajes de Impacto Global</h2>
+                                    <p className="at-c2-subtitle">
+                                        Durante este proceso comprendiste que integrar IA no es solo usar herramientas.
+                                        <strong> Selecciona el aprendizaje que más impactó tu práctica:</strong>
+                                    </p>
+                                </header>
+
+                                {/* GRID DE SELECCIÓN DE APRENDIZAJE */}
+                                <div className="at-c3-marco-grid">
+                                    {[
+                                        { id: 'A1', t: 'Agencia Humana', d: 'Mantener el control y la supervisión en las decisiones pedagógicas.', icon: '👤' },
+                                        { id: 'A2', t: 'Ética y Datos', d: 'Reducir riesgos, proteger la privacidad y mitigar sesgos algorítmicos.', icon: '⚖️' },
+                                        { id: 'A3', t: 'Propósito Pedagógico', d: 'Diseñar experiencias donde la IA potencie el aprendizaje activo.', icon: '🎯' },
+                                        { id: 'A4', t: 'Pensamiento Crítico', d: 'Fomentar la evaluación reflexiva y crítica de los estudiantes hacia la IA.', icon: '🧠' }
+                                    ].map(item => (
+                                        <div
+                                            key={item.id}
+                                            className={`at-c3-marco-card ${formDataCierre.aprendizajeClave === item.t ? 'at-selected' : ''}`}
+                                            onClick={() => setFormDataCierre({ ...formDataCierre, aprendizajeClave: item.t })}
+                                        >
+                                            <div className="at-c3-card-icon">{item.icon}</div>
+                                            <h4>{item.t}</h4>
+                                            <p>{item.d}</p>
+                                            <div className="at-c3-check-indicator"></div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* JUSTIFICACIÓN */}
+                                <div className="at-c2-reflection-section" style={{ marginTop: '30px' }}>
+                                    <div className="at-reflection-header">
+                                        <h4>Justifica tu elección</h4>
+                                        <p className="at-reflection-subtext">Explica por qué este pilar es fundamental para tu nueva etapa docente.</p>
+                                    </div>
+                                    <div className="at-reflection-input-group">
+                                        <textarea
+                                            className="at-reflection-textarea"
+                                            readOnly={isReadOnly}
+                                            placeholder="Describe el impacto de este aprendizaje (mínimo 150 caracteres)..."
+                                            value={formDataCierre.aprendizajeDetalle}
+                                            onChange={(e) => setFormDataCierre({ ...formDataCierre, aprendizajeDetalle: e.target.value })}
+                                        />
+                                        <div className={`at-char-counter ${formDataCierre.aprendizajeDetalle.length >= 150 ? 'at-ready' : ''}`}>
+                                            <span className="at-counter-number">{formDataCierre.aprendizajeDetalle.length} / 150</span>
+                                            <span className="at-counter-label">caracteres</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ETAPA 4: REPORTE MAESTRO DE EVOLUCIÓN ATLAS */}
+                        {cierreStep === 4 && (
+                            <div className="at-c4-wrapper animate-slide-up">
+                                <header className="at-c4-header-main">
+                                    <div className="at-c4-badge-container">
+                                        <span className="at-badge-gold">Certificación de Huella Pedagógica 2026</span>
+                                    </div>
+                                    <h2 className="at-c4-title">Tu Evolución ATLAS</h2>
+                                    <p className="at-c4-subtitle">Consolidación de evidencias: De la Auditoría Técnica a la Sostenibilidad Ética.</p>
+                                </header>
+
+                                <div className="at-c4-report-card">
+                                    {/* CABECERA INSTITUCIONAL */}
+                                    <div className="at-c4-report-header">
+                                        <div className="at-c4-logo-section">
+                                            <div className="at-c4-brand">ATLAS <span>PROJECT</span></div>
+                                            <div className="at-c4-docente-info">
+                                                <strong>DOCENTE:</strong> {userData.Nombre} <br />
+                                                <strong>ID:</strong> {userData.Teacher_Key} | {new Date().toLocaleDateString()}
+                                            </div>
+                                        </div>
+                                        <div className="at-c4-stamp-seal">
+                                            <div className="seal-inner">2026</div>
+                                            <span>CERTIFICADO</span>
+                                        </div>
+                                    </div>
+
+                                    {/* SECCIÓN 1: EL SALTO CUÁNTICO (COMPARATIVA EN PORCENTAJES) */}
+                                    {(() => {
+                                        const comp = getComparativoAtlas();
+                                        const pctInicial = (comp.scoreAntes * 20).toFixed(1);
+                                        const pctActual = (comp.scoreAhora * 20).toFixed(1);
+
+                                        return (
+                                            <div className="at-c4-comparison-layout">
+                                                {/* ESTADO INICIAL (PORCENTAJE PONDERADO) */}
+                                                <div className="at-c4-col-before">
+                                                    <h4 className="at-c4-col-title">Fase 1: Punto de Partida</h4>
+                                                    <div className="at-c4-main-metric">
+                                                        <span className="at-val">
+                                                            {pctInicial}
+                                                            <small className="at-symbol-pct">%</small>
+                                                        </span>
+                                                        <span className="at-lbl">Calificación Inicial</span>
+                                                    </div>
+                                                    <div className="at-c4-status-desc">
+                                                        <strong>Nivel: {comp.nivelAntes}</strong>
+                                                        <p>{getCompassData(comp.scoreAntes * 20).desc}</p>
+                                                    </div>
+                                                    <div className="at-c4-mini-stats">
+                                                        <span>Consistencia: {parseFloat(selectedFormReal?.desviacion || 0) < 1.0 ? "Estable" : "Variable"}</span>
+                                                        <span>Media: {comp.scoreAntes.toFixed(2)} / 5</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* MÉTRICA DE IMPACTO CENTRAL */}
+                                                <div className="at-c4-divider">
+                                                    <div className="at-c4-impact-orb">
+                                                        <span className="at-orb-plus">+</span>
+                                                        <span className="at-orb-val">{comp.crecimiento}</span>
+                                                        <span className="at-orb-pct">%</span>
+                                                    </div>
+                                                    <div className="at-c4-missions-badge">
+                                                        <strong>{retos.filter(r => ['COMPLETADO', 'COMPLETED'].includes(r.Status_Reto?.toUpperCase())).length}</strong>
+                                                        <span>Misiones</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* ESTADO ACTUAL (PORCENTAJE) */}
+                                                <div className="at-c4-col-after">
+                                                    <h4 className="at-c4-col-title">Fase 4: Madurez Actual</h4>
+                                                    <div className="at-c4-main-metric gold">
+                                                        <span className="at-val">
+                                                            {pctActual}
+                                                            <small className="at-symbol-pct">%</small>
+                                                        </span>
+                                                        <span className="at-lbl">Sostenibilidad Alcanzada</span>
+                                                    </div>
+                                                    <div className="at-c4-status-desc">
+                                                        <strong>{comp.nivelAhora}</strong>
+                                                        <p>{generarDiagnostico(pctActual).texto}</p>
+                                                    </div>
+                                                    <div className="at-c4-mini-stats">
+                                                        <span className="at-text-gold">Pilar: {formDataCierre.aprendizajeClave || "General"}</span>
+                                                        <span className="at-text-gold">Media Actual: {comp.scoreAhora.toFixed(2)} / 5</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
+                                    {/* SECCIÓN 2: NARRATIVA DE TRANSFORMACIÓN */}
+                                    <div className="at-c4-narrative-section">
+                                        <h5 className="at-section-subtitle">Trayectoria Reflexiva</h5>
+                                        <div className="at-narrative-grid">
+                                            <div className="at-narrative-box">
+                                                <label>Visión Inicial</label>
+                                                {/* Si no hay reflexión escrita, sacamos la data de la dimensión más baja del dataset inicial */}
+                                                <p>
+                                                    {formDataCierre.reflexionAntes.length > 5
+                                                        ? `"${formDataCierre.reflexionAntes}"`
+                                                        : `Al inicio, mi práctica presentaba una brecha crítica en ${datasetAuditoria.find(d => d.valor === Math.min(...datasetAuditoria.map(i => i.valor)))?.label}, con un desempeño basado más en la funcionalidad que en la estrategia ética.`}
+                                                </p>
+                                            </div>
+                                            <div className="at-narrative-box gold">
+                                                <label>Visión Transformada</label>
+                                                <p>
+                                                    {formDataCierre.reflexionDespues.length > 5
+                                                        ? `"${formDataCierre.reflexionDespues}"`
+                                                        : "A través de la implementación de protocolos de sostenibilidad, he consolidado una supervisión humana activa, reduciendo la dependencia de la automatización."}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* SECCIÓN 3: AUDITORÍA ÉTICA UNESCO */}
+                                    <div className="at-c4-ethic-summary">
+                                        <h5><span className="dot l"></span> Dictamen de Liderazgo Ético UNESCO</h5>
+                                        <div className="at-c4-ethic-bars">
+                                            {[
+                                                { l: 'Privacidad y Seguridad', v: promptData?.Puntaje_Privacidad, c: '#06b6d4' },
+                                                { l: 'Agencia Humana', v: promptData?.Puntaje_Agencia, c: '#f59e0b' },
+                                                { l: 'Propósito Pedagógico', v: promptData?.Puntaje_Etica, c: '#8b5cf6' }
+                                            ].map(d => (
+                                                <div key={d.l} className="at-c4-bar-row">
+                                                    <div className="at-bar-label"><span>{d.l}</span> <strong>{d.v}/5</strong></div>
+                                                    <div className="at-bar-track">
+                                                        <div className="at-bar-fill" style={{ width: `${(d.v / 5) * 100}%`, backgroundColor: d.c }}></div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="at-c4-hallazgo-box">
+                                            <strong>Análisis UNESCO 2026:</strong> {promptData?.Puntaje_Agencia <= 2
+                                                ? "Se detectó inicialmente una delegación de juicio docente. El ciclo ATLAS ha fortalecido la autonomía, permitiéndote usar la IA como copiloto sin ceder el control pedagógico."
+                                                : "Tu evolución demuestra una agencia humana sólida. Mantienes la autoridad en el diseño de experiencias, cumpliendo con los estándares de integridad digital de la UNESCO."}
+                                        </div>
+                                    </div>
+
+                                    {/* SECCIÓN 4: LOGROS Y RIESGOS */}
+                                    <div className="at-c4-double-stats">
+                                        <div className="at-c4-tech-block">
+                                            <h5><span className="dot t"></span> Misiones Superadas</h5>
+                                            <div className="at-c4-tags-container">
+                                                {retos.filter(r => r.Status_Reto?.toUpperCase() === 'COMPLETADO' || r.Status_Reto === 'completed').length > 0 ? (
+                                                    retos.filter(r => r.Status_Reto?.toUpperCase() === 'COMPLETADO' || r.Status_Reto === 'completed').map((r, i) => (
+                                                        <div key={i} className="at-mission-card-mini">
+                                                            <span className="check">✓</span>
+                                                            <div className="info">
+                                                                <strong>{r.Nombre_Reto}</strong>
+                                                                <small>{r.Nivel_UNESCO || 'Nivel Avanzado'}</small>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                ) : <p className="at-empty-text">No se registraron misiones externas.</p>}
+                                            </div>
+                                        </div>
+
+                                        <div className="at-c4-alerts-section">
+                                            <h5><span className="dot a"></span> Gestión de Riesgos</h5>
+                                            <div className="at-c4-alerts-grid">
+                                                {alerts.length > 0 ? alerts.slice(0, 2).map((a, i) => (
+                                                    <div key={i} className="at-alert-item-resolved">
+                                                        <span className="icon">🛡️</span>
+                                                        <p>{a}</p>
+                                                    </div>
+                                                )) : (
+                                                    <div className="at-alert-item-resolved success">
+                                                        <span className="icon">✅</span>
+                                                        <p>Ciclo finalizado sin brechas de seguridad activas.</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* SECCIÓN 5: INDICADORES TÉCNICOS FINALES */}
+                                    <div className="at-c4-quality-checks">
+                                        <div className="at-check-row">
+                                            <span className={`pill ${promptData?.Puntaje_Privacidad >= 3 ? 'on' : ''}`}>🛡️ Privacidad UNESCO</span>
+                                            <span className={`pill ${promptData?.Puntaje_Agencia >= 3 ? 'on' : ''}`}>👤 Agencia Humana</span>
+                                            <span className={`pill ${parseFloat(selectedFormReal?.desviacion) < 1.8 ? 'on' : ''}`}>📊 Consistencia ATLAS</span>
+                                            <span className={`pill ${historial.length > 0 ? 'on' : ''}`}>♻️ Sostenibilidad</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ETAPA 5: HOJA DE RUTA (PLAN DE MEJORA) */}
+                        {cierreStep === 5 && (() => {
+                            // Calculamos automáticamente la dimensión con mayor oportunidad (la más baja)
+                            const m = getMetricasAuditoria();
+                            const dimensiones = [
+                                { nombre: 'Uso Pedagógico', valor: parseFloat(m.uso) },
+                                { nombre: 'Ética y Privacidad', valor: parseFloat(m.etica) },
+                                { nombre: 'Impacto en el Aprendizaje', valor: parseFloat(m.impacto) },
+                                { nombre: 'Desarrollo y Fundamentos', valor: parseFloat(m.desarrollo) }
+                            ];
+                            // Ordenamos de menor a mayor y tomamos la primera
+                            const oportunidad = dimensiones.sort((a, b) => a.valor - b.valor)[0]?.nombre;
+
+                            return (
+                                <div className="at-c5-roadmap-container animate-slide-up">
+                                    {/* CABECERA ESTRATÉGICA */}
+                                    <div className="at-c5-header">
+                                        <span className="at-c5-badge">Fase 5: Sostener el Cambio</span>
+                                        <h2 className="at-c5-title">Hoja de Ruta de Sostenibilidad</h2>
+                                        <div className="at-c5-insight-box">
+                                            <span className="at-c5-insight-label">Hallazgo del Ciclo:</span>
+                                            <p>Tu dimensión con mayor oportunidad de consolidación es: <strong>{oportunidad}</strong></p>
+                                        </div>
+                                    </div>
+
+                                    <div className="at-c5-roadmap-card">
+                                        <div className="at-c5-instruction-text">
+                                            <p>"Sostener implica mejorar de manera consciente. Define un compromiso realista para los próximos meses."</p>
+                                        </div>
+
+                                        <div className="at-c5-form-grid">
+                                            {/* 1. PRIORIDAD */}
+                                            <div className="at-c5-field full">
+                                                <label className="at-c5-label">1. Mi prioridad será fortalecer:</label>
+                                                <select
+                                                    className="at-c5-select"
+                                                    value={formDataCierre.prioridadSostener}
+                                                    onChange={(e) => setFormDataCierre({ ...formDataCierre, prioridadSostener: e.target.value })}
+                                                >
+                                                    <option value="">Selecciona una dimensión...</option>
+                                                    <option value="Uso Pedagógico">Uso Pedagógico Intencional</option>
+                                                    <option value="Ética">Ética y Privacidad</option>
+                                                    <option value="Impacto">Impacto en el Aprendizaje</option>
+                                                    <option value="Desarrollo">Desarrollo y Fundamentos</option>
+                                                </select>
+                                            </div>
+
+                                            {/* 2. ACCIÓN CONCRETA */}
+                                            <div className="at-c5-field full">
+                                                <label className="at-c5-label">
+                                                    2. Acción concreta que implementaré:
+                                                    <span className={formDataCierre.compromisoAccion?.length < 150 ? "at-char-count error" : "at-char-count"}>
+                                                        ({formDataCierre.compromisoAccion?.length || 0}/150 caracteres)
+                                                    </span>
+                                                </label>
+                                                <textarea
+                                                    className="at-c5-textarea"
+                                                    placeholder="Describe detalladamente cómo aplicarás esto en tus clases..."
+                                                    value={formDataCierre.compromisoAccion}
+                                                    onChange={(e) => setFormDataCierre({ ...formDataCierre, compromisoAccion: e.target.value })}
+                                                />
+                                            </div>
+
+                                            {/* 3. EVIDENCIA */}
+                                            <div className="at-c5-field">
+                                                <label className="at-c5-label">
+                                                    3. Evidencia de mejora:
+                                                    <span className={formDataCierre.evidenciaMejora?.length < 100 ? "at-char-count error" : "at-char-count"}>
+                                                        ({formDataCierre.evidenciaMejora?.length || 0}/100)
+                                                    </span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    className="at-c5-input"
+                                                    placeholder="Ej: Portafolio de evidencias, resultados de examen..."
+                                                    value={formDataCierre.evidenciaMejora}
+                                                    onChange={(e) => setFormDataCierre({ ...formDataCierre, evidenciaMejora: e.target.value })}
+                                                />
+                                            </div>
+
+                                            {/* 4. FECHA */}
+                                            <div className="at-c5-field">
+                                                <label className="at-c5-label">4. Fecha de revisión:</label>
+                                                <input
+                                                    type="date"
+                                                    className="at-c5-input-date"
+                                                    value={formDataCierre.fechaRevision}
+                                                    onChange={(e) => setFormDataCierre({ ...formDataCierre, fechaRevision: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* MENSAJE FINAL INSPIRACIONAL */}
+                                        <div className="at-c5-footer-quote">
+                                            <div className="at-quote-line"></div>
+                                            <p className="at-main-quote">"No necesitas hacer más. Necesitas hacer mejor."</p>
+                                            <p className="at-sub-quote">Este plan será tu guía para el siguiente ciclo ATLAS.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+
+                        {/* Navegación Inferior */}
+                        <div className="cierre-actions-footer">
+                            {cierreStep > 1 && (
+                                <button className="btn-sos-secondary" onClick={() => setCierreStep(cierreStep - 1)}>Anterior</button>
+                            )}
+                            <button
+                                className="btn-sos-primary btn-large"
+                                onClick={() => {
+                                    if (cierreStep === 5) {
+                                        // Si estamos en modo lectura (viendo respuestas), solo volvemos al menú.
+                                        // Si es un ciclo nuevo, ejecutamos el guardado real.
+                                        isReadOnly ? setView("menu") : handleFinalSaveCierre();
+                                    } else {
+                                        setCierreStep(cierreStep + 1);
+                                    }
+                                }}
+                            >
+                                {cierreStep === 5
+                                    ? (isReadOnly ? "Finalizar Consulta" : "Finalizar Ciclo e Integrar")
+                                    : "Siguiente Etapa"}
+                            </button>
                         </div>
                     </div>
                 </div>
