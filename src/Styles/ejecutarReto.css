@@ -1055,99 +1055,277 @@ input[type="range"] {
     font-size: 0.9rem;
     color: #64748b;
 }
+
+/* --- SECCIÓN DE ANÁLISIS DE IMPACTO INCLUSIVO --- */
+.result-analysis-card {
+    border-top-width: 6px !important;
+    background-color: #ffffff;
+    margin-top: 40px;
+}
+
+/* Grilla de Resumen de Indicadores */
+.analysis-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin: 25px 0;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 16px;
+    border: 1px solid var(--atlas-border);
+}
+
+.summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.summary-item strong {
+    font-size: 0.8rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summary-item span {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--atlas-dark);
+}
+
+.analysis-divider {
+    border: 0;
+    height: 1px;
+    background: #e2e8f0;
+    margin: 30px 0;
+}
+
+/* Caja de Feedback Premium */
+.feedback-box-premium {
+    padding: 30px;
+    border-radius: 18px;
+    line-height: 1.7;
+    position: relative;
+    overflow: hidden;
+}
+
+.feedback-box-premium h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.feedback-box-premium p {
+    margin: 0;
+    font-size: 1.05rem;
+    color: #334155;
+}
+
+/* --- ESTILOS DINÁMICOS POR PATRÓN (Colores Atlas) --- */
+
+/* Patrón 1 y 2: Verdes (Estructural / Avanzado) */
+.patron-1, .patron-2 { border-top-color: #2ecc71 !important; }
+.patron-1 .feedback-box-premium, .patron-2 .feedback-box-premium { 
+    background-color: #f0fff4; 
+    border: 1px solid #c6f6d5;
+}
+.patron-1 h4, .patron-2 h4 { color: #22c55e; }
+
+/* Patrón 3: Amarillo (Operativo) */
+.patron-3 { border-top-color: #f1c40f !important; }
+.patron-3 .feedback-box-premium { 
+    background-color: #fffbeb; 
+    border: 1px solid #fef3c7;
+}
+.patron-3 h4 { color: #d97706; }
+
+/* Patrón 4: Naranja (Riesgo Cognitivo) */
+.patron-4 { border-top-color: #e67e22 !important; }
+.patron-4 .feedback-box-premium { 
+    background-color: #fff7ed; 
+    border: 1px solid #ffedd5;
+}
+.patron-4 h4 { color: #ea580c; }
+
+/* Patrón 5: Azul (Declarativo) */
+.patron-5 { border-top-color: #3498db !important; }
+.patron-5 .feedback-box-premium { 
+    background-color: #eff6ff; 
+    border: 1px solid #dbeafe;
+}
+.patron-5 h4 { color: #2563eb; }
+
+/* Patrón 6: Rojo (Segmentación) */
+.patron-6 { border-top-color: #e74c3c !important; }
+.patron-6 .feedback-box-premium { 
+    background-color: #fef2f2; 
+    border: 1px solid #fee2e2;
+}
+.patron-6 h4 { color: #dc2626; }
+
+/* Ajuste Responsivo para la Grilla de Análisis */
+@media (max-width: 600px) {
+    .analysis-summary-grid {
+        grid-template-columns: 1fr;
+        padding: 15px;
+    }
+    
+    .feedback-box-premium {
+        padding: 20px;
+    }
+}
 /* =========================================
    ATLAS RESPONSIVE OPTIMIZADO V3.0
    ========================================= */
 
+/* =========================================
+   ATLAS RESPONSIVE ESTRATÉGICO V4.0
+   Optimizado para: Mobile, iPad (Port/Land) y Desktop
+   ========================================= */
+
+/* --- TABLETS Y PANTALLAS MEDIANAS (iPad Portrait & Laptops pequeñas) --- */
 @media (max-width: 1024px) {
-    .atlas-unique-main-content { max-width: 95%; }
-    
-    /* Ajuste de grid para tablets */
+    .atlas-unique-main-content { 
+        max-width: 92%; 
+    }
+
     .fase-row, .priorizacion-item, .responsabilidad-item {
-        grid-template-columns: 1fr 300px; 
-        gap: 20px;
+        grid-template-columns: 1fr 280px; /* Reducción de ancho del selector para iPad */
+        gap: 15px;
+    }
+
+    .matrix-pill-row {
+        gap: 10px;
+        padding: 12px 18px;
     }
 }
 
-@media (max-width: 768px) {
-    .atlas-unique-page-wrapper { padding: 15px 10px; }
+/* --- IPAD HORIZONTAL Y TABLETS GRANDES --- */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+    .narrative-hero-section {
+        grid-template-columns: 1fr 1fr; /* Mantiene 2 columnas en horizontal */
+    }
+    
+    .form-card {
+        padding: 30px 40px;
+    }
+}
 
-    /* Header en columna para móviles */
+/* --- MÓVILES Y IPAD VERTICAL (Ajuste de quiebre crítico) --- */
+@media (max-width: 768px) {
+    .atlas-unique-page-wrapper { 
+        padding: 15px 12px; 
+    }
+
+    /* Header optimizado */
     .reto-header-inline {
         flex-direction: column;
-        gap: 15px;
+        gap: 12px;
         padding: 20px;
         text-align: center;
     }
 
-    /* Convertir Grids en bloques verticales para que nada se corte */
+    /* Colapsar Grillas a Bloques Verticales */
     .fase-row, 
     .priorizacion-item, 
     .responsabilidad-item,
-    .input-group-row-premium {
+    .input-group-row-premium,
+    .matrix-pill-row {
         display: flex !important;
-        flex-direction: column !important; /* Texto arriba, selector abajo */
-        align-items: flex-start !important;
-        gap: 10px !important;
-        padding: 15px 10px !important;
+        flex-direction: column !important;
+        align-items: stretch !important; /* Estira al ancho completo */
+        gap: 12px !important;
+        padding: 15px !important;
     }
 
-    /* Forzar que los selects y etiquetas ocupen el 100% en móvil */
+    /* Ajuste de Matriz UNESCO para móvil */
+    .matrix-content-left, .matrix-controls-right {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        justify-content: flex-start !important;
+    }
+
+    .matrix-controls-right {
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        border-top: 1px solid var(--atlas-border);
+        padding-top: 10px;
+    }
+
+    /* Forzar Selects y Textareas al 100% */
     .atlas-select-small, 
-    .atlas-select-premium {
+    .atlas-select-premium,
+    .inline-input-premium,
+    .input-group-inline .inline-input-premium {
         width: 100% !important;
         min-width: 100% !important;
         max-width: 100% !important;
     }
 
     .fase-row span, .fase-row label, .label-text-small {
-        min-width: 100% !important;
-        width: 100% !important;
+        font-size: 0.95rem;
+        line-height: 1.4;
     }
 
-    /* Ajuste de la sección narrativa */
-    .narrative-hero-section { grid-template-columns: 1fr; }
-    .mission-card { padding: 25px 15px; }
-
-    /* Cards de formulario con menos padding para ganar espacio */
-    .form-card { padding: 25px 15px !important; }
+    /* Narrativa en una sola columna */
+    .narrative-hero-section { 
+        grid-template-columns: 1fr; 
+    }
     
-    /* Inputs de número alineados a la derecha en móvil para fácil acceso */
-    .inline-input-premium {
-        align-self: flex-end; 
+    .notice-grid {
+        grid-template-columns: 1fr; /* Información del viaje en vertical */
+    }
+
+    .form-card { 
+        padding: 20px 15px !important; 
+        border-radius: 16px;
+    }
+
+    .analysis-summary-grid {
+        grid-template-columns: 1fr 1fr; /* 2 columnas para mini-indicadores */
+        gap: 10px;
     }
 }
 
+/* --- MÓVILES PEQUEÑOS (iPhone SE / Android Compactos) --- */
 @media (max-width: 480px) {
-    .atlas-unique-title-box h2 { font-size: 1.2rem; }
-    
-    .form-section-title { 
-        font-size: 1rem; 
-        flex-direction: column; 
-        align-items: flex-start; 
-    }
-
-    .check-label-row {
-        padding: 12px;
-        font-size: 0.9rem;
+    .atlas-unique-title-box h2 { 
+        font-size: 1.15rem; 
     }
 
     .btn-finalizar-mision {
-        padding: 15px 30px;
-        font-size: 1.1rem;
+        padding: 18px 20px;
+        font-size: 1rem;
         width: 100%;
     }
 
-    /* Evitar que las cajas de texto se vean gigantes */
-    textarea { min-height: 100px; }
+    .badge-reto-id {
+        font-size: 0.7rem;
+    }
+
+    .check-label-row {
+        padding: 15px 12px;
+    }
+
+    .analysis-summary-grid {
+        grid-template-columns: 1fr; /* Todo vertical en pantallas muy pequeñas */
+    }
+
+    /* Evitar que los textos largos de las etiquetas se rompan feo */
+    .label-text {
+        font-size: 0.9rem;
+    }
 }
 
-/* --- FIX GLOBAL PARA DESBORDE --- */
-* {
-    box-sizing: border-box;
-}
-
-html, body {
-    max-width: 100%;
-    overflow-x: hidden; /* Evita el scroll horizontal molesto */
+/* --- MÓVILES EN HORIZONTAL (Landscape) --- */
+@media (max-height: 500px) and (orientation: landscape) {
+    .atlas-unique-page-wrapper {
+        padding: 10px;
+    }
+    .form-card {
+        margin-bottom: 20px;
+    }
 }

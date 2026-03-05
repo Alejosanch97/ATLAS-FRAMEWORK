@@ -460,6 +460,52 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
         </div>
     );
 
+    const obtenerAnalisisInclusivo = () => {
+        // 1. Nivel Cognitivo (Bloom)
+        const nivelAlto = ['Analizar', 'Evaluar', 'Crear'];
+        const nivelMedio = ['Aplicar'];
+        const esNivelAlto = nivelAlto.includes(formData.bloom);
+        const esNivelMedio = nivelMedio.includes(formData.bloom);
+        const esNivelBajo = ['Recordar', 'Comprender'].includes(formData.bloom);
+
+        // 2. Garantías de Equidad (Mapeado a mitigacion3)
+        const garantias = formData.mitigacion3 || [];
+        const numGarantias = garantias.length;
+        const tieneEstandarComun = garantias.includes('Todas las variantes conducen al mismo estándar de evaluación.');
+        const tieneObjetivoComun = garantias.includes('El objetivo cognitivo es común y visible para todo el grupo.');
+
+        // 3. Comprobación de Impacto (Mapeado a validacionEstandares3)
+        const tieneComprobacion = (formData.validacionEstandares3 || []).length > 0;
+
+        // 4. Riesgos Sistémicos (Mapeado a riesgosIdent3)
+        const riesgosSistemicosLista = ['Sesgo algorítmico', 'Perfilamiento', 'Dependencia diferencial', 'Invisibilización de fortalezas'];
+        const identificaRiesgoSistemico = (formData.riesgosIdent3 || []).some(r => riesgosSistemicosLista.includes(r));
+
+        // DETERMINACIÓN DE PATRONES
+        if (esNivelAlto && numGarantias >= 4 && tieneComprobacion && identificaRiesgoSistemico) {
+            return { patron: 1, titulo: "Diseño Inclusivo Estructural", color: "#2ecc71" };
+        }
+        if (esNivelAlto && numGarantias >= 4 && tieneComprobacion && !identificaRiesgoSistemico) {
+            return { patron: 2, titulo: "Inclusión avanzada con oportunidad de mejora", color: "#27ae60" };
+        }
+        if ((esNivelAlto || esNivelMedio) && (numGarantias === 2 || numGarantias === 3) && tieneComprobacion) {
+            return { patron: 3, titulo: "Inclusión Operativa en Desarrollo", color: "#f1c40f" };
+        }
+        if (esNivelBajo && numGarantias <= 3) {
+            return { patron: 4, titulo: "Estrategia con riesgo de reducción cognitiva", color: "#e67e22" };
+        }
+        if (numGarantias >= 2 && !tieneComprobacion) {
+            return { patron: 5, titulo: "Inclusión declarativa", color: "#3498db" };
+        }
+        if (numGarantias <= 1 && !tieneEstandarComun && !tieneObjetivoComun) {
+            return { patron: 6, titulo: "Diferenciación con riesgo de segmentación", color: "#e74c3c" };
+        }
+
+        return { patron: 0, titulo: "Análisis en proceso...", color: "#95a5a6" };
+    };
+
+    const analizado = obtenerAnalisisInclusivo();
+
     return (
         <div className="atlas-unique-page-wrapper">
             {/* Solo sale el cartel si está cargando Y ya hay algo escrito (para no molestar en retos nuevos) */}
@@ -492,7 +538,7 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
                                     <>
                                         {retoId === 1 && "Evaluación Ética para el Diseño Responsable con IA"}
                                         {retoId === 2 && "Rediseño curricular human-centred con IA"}
-                                        {retoId === 3 && "Diseño de estrategia de diferenciación inclusiva con IA"}
+                                        {retoId === 3 && "Diseño inclusivo con IA para diversidad cognitiva y equidad "}
                                     </>
                                 )}
                             </h2>
@@ -726,12 +772,43 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
                                         <>
                                             {retoId === 1 && (<><li>Identificar la función pedagógica real.</li><li>Analizar riesgos (sesgo, privacidad, agencia).</li><li>Determinar supervisión humana requerida.</li></>)}
                                             {retoId === 2 && (<><li>IA como andamiaje, no producto final.</li><li>Instancia sin IA (defensa oral).</li><li>Explicitar competencia cognitiva.</li><li>Justificar protección de agencia.</li></>)}
-                                            {retoId === 3 && (<><li>Objetivo común para todo el grupo.</li><li>Dos variantes de acceso mediadas por IA.</li><li>Evitar reducción de expectativas.</li><li>Instancia común de convergencia.</li></>)}
+                                            {retoId === 3 && (<><li>Mantenga un objetivo cognitivo común.</li><li>Amplíe accesos sin etiquetar ni segmentar.</li><li>Proteja dignidad y agencia.</li><li>Sea replicable en otros contextos.</li></>)}
                                         </>
                                     )}
                                 </ol>
                             </div>
                         </div>
+                        {/* --- BLOQUE DE ADVERTENCIA PARA RETO 3 DOCENTE --- */}
+                        {!isDirectivo && parseInt(retoId) === 3 && (
+                            <div className="pre-mission-notice">
+                                <div className="notice-badge">LECTURA PREVIA</div>
+                                <h4>Antes de comenzar</h4>
+                                <p>Esta misión no está diseñada para resolverse en una sola sesión frente a tu dispositivo.</p>
+                                <p>Se espera que <strong>planifiques una estrategia inclusiva real, la implementes en tu aula</strong>, observes cómo interactúan distintos perfiles de estudiantes y luego regreses a documentar tu análisis.</p>
+
+                                <div className="notice-grid">
+                                    <div className="notice-item">
+                                        <strong>⏳ Tiempo</strong>
+                                        <span>Tienes alrededor de una semana para desarrollar esta misión.</span>
+                                    </div>
+                                    <div className="notice-item">
+                                        <strong>💡 Propósito</strong>
+                                        <span>No se espera rapidez, sino criterio pedagógico profundo.</span>
+                                    </div>
+                                </div>
+
+                                <ul className="notice-list">
+                                    <li>Diseñar una práctica transferible.</li>
+                                    <li>Ampliar oportunidades de aprendizaje.</li>
+                                    <li>Mantener la exigencia académica sin reducir el rigor.</li>
+                                </ul>
+
+                                <div className="notice-footer">
+
+                                    <span>Puedes usar el botón <strong>Guardar</strong> en cualquier momento para registrar avances parciales.</span>
+                                </div>
+                            </div>
+                        )}
                     </section>
                 </div>
 
@@ -947,6 +1024,46 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
                                                     <label key={d} className="check-label-row">
                                                         <input type="radio" name="decision" checked={formData.decision === d} onChange={() => handleInputChange('decision', d)} />
                                                         <span className="label-text">{d}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    {/* --- SECCIÓN: COMPROMISO DE FORTALECIMIENTO RETO 1 --- */}
+                                    <section className="form-card highlight">
+                                        <div className="form-section-title">
+                                            <i className="form-section-title"></i> PROYECCIÓN DE DESARROLLO PROFESIONAL
+                                        </div>
+
+                                        <div className="input-group">
+                                            <label className="group-main-label">
+                                                A partir de esta misión, ¿en qué áreas te gustaría fortalecer tu práctica pedagógica?
+                                            </label>
+
+                                            <div className="options-vertical-premium">
+                                                {[
+                                                    'Uso ético de IA en aula',
+                                                    'Supervisión humana en entornos IA',
+                                                    'Identificación de riesgos sistémicos',
+                                                    'Protección de datos y privacidad en IA educativa',
+                                                    'Transparencia y explicabilidad de herramientas IA',
+                                                    'Sesgo algorítmico y equidad',
+                                                    'Marco UNESCO 2024 sobre IA en educación'
+                                                ].map(item => (
+                                                    <label key={item} className="check-label-row">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={(formData.fortalecerMision1 || []).includes(item)}
+                                                            onChange={(e) => {
+                                                                const currentList = formData.fortalecerMision1 || [];
+                                                                const newList = e.target.checked
+                                                                    ? [...currentList, item]
+                                                                    : currentList.filter(i => i !== item);
+                                                                handleInputChange('fortalecerMision1', newList);
+                                                            }}
+                                                        />
+                                                        <span className="label-text">{item}</span>
                                                     </label>
                                                 ))}
                                             </div>
@@ -1413,81 +1530,528 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
                                             ))}
                                         </div>
                                     </section>
+
+                                    {/* --- SECCIÓN: COMPROMISO DE FORTALECIMIENTO RETO 2 --- */}
+                                    <section className="form-card highlight">
+                                        <div className="form-section-title">
+                                            <i className="form-section-title"></i> PROYECCIÓN DE DESARROLLO PROFESIONAL
+                                        </div>
+
+                                        <div className="input-group">
+                                            <label className="group-main-label">
+                                                A partir de esta misión, ¿en qué áreas te gustaría fortalecer tu práctica pedagógica?
+                                            </label>
+
+                                            <div className="options-vertical-premium">
+                                                {[
+                                                    'Taxonomía de Bloom aplicada a IA',
+                                                    'Diseño de secuencias didácticas con IA',
+                                                    'Agencia estudiantil y metacognición',
+                                                    'Supervisión humana significativa',
+                                                    'Evaluación con criterio común',
+                                                    'Uso ético de IA en el diseño de clases',
+                                                    'Análisis crítico de outputs generativos',
+                                                    'Estrategias para evitar dependencia tecnológica'
+                                                ].map(item => (
+                                                    <label key={item} className="check-label-row">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={(formData.fortalecerMision2 || []).includes(item)}
+                                                            onChange={(e) => {
+                                                                const currentList = formData.fortalecerMision2 || [];
+                                                                const newList = e.target.checked
+                                                                    ? [...currentList, item]
+                                                                    : currentList.filter(i => i !== item);
+                                                                handleInputChange('fortalecerMision2', newList);
+                                                            }}
+                                                        />
+                                                        <span className="label-text">{item}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </section>
                                 </>
                             )}
 
                             {/* --- FORMULARIO RETO 3 DOCENTE --- */}
-                            {retoId === 3 && (
+                            {parseInt(retoId) === 3 && (
                                 <>
                                     <section className="form-card">
-                                        <div className="form-section-title">1. Contexto de la Clase Inclusiva</div>
+                                        <div className="form-section-title">1. CONTEXTO DE LA CLASE INCLUSIVA</div>
                                         <div className="grid-2-col-premium">
-                                            <input type="text" placeholder="Grado" value={formData.grado3 || ""} onChange={(e) => handleInputChange('grado3', e.target.value)} />
-                                            <input type="text" placeholder="Asignatura" value={formData.asig3 || ""} onChange={(e) => handleInputChange('asig3', e.target.value)} />
-                                            <input type="text" placeholder="Tema" value={formData.top3 || ""} onChange={(e) => handleInputChange('top3', e.target.value)} />
+                                            <input
+                                                type="text"
+                                                placeholder="Grado/Nivel"
+                                                value={formData.grado3 || ""}
+                                                onChange={(e) => handleInputChange('grado3', e.target.value)}
+                                            />
+                                            <input
+                                                type="text"
+                                                placeholder="Asignatura"
+                                                value={formData.asig3 || ""}
+                                                onChange={(e) => handleInputChange('asig3', e.target.value)}
+                                            />
+                                            <input
+                                                type="text"
+                                                placeholder="Tema"
+                                                value={formData.top3 || ""}
+                                                onChange={(e) => handleInputChange('top3', e.target.value)}
+                                            />
                                         </div>
-                                        <label className="group-main-label">Objetivo cognitivo común (Taxonomía Bloom):</label>
+                                        <label className="group-main-label">NIVEL DE PENSAMIENTO A TRABAJAR:</label>
                                         <div className="options-vertical-premium">
-                                            {['Aplicar', 'Comprender', 'Analizar', 'Evaluar', 'Crear'].map(b => (
-                                                <label key={b} className="check-label-row"><input type="radio" name="bloom" checked={formData.bloom === b} onChange={() => handleInputChange('bloom', b)} /><span className="label-text">{b}</span></label>
+                                            {['Recordar', 'Aplicar', 'Comprender', 'Analizar', 'Evaluar', 'Crear'].map(b => (
+                                                <label key={b} className="check-label-row">
+                                                    <input
+                                                        type="radio"
+                                                        name="bloom"
+                                                        checked={formData.bloom === b}
+                                                        onChange={() => handleInputChange('bloom', b)}
+                                                    />
+                                                    <span className="label-text">{b}</span>
+                                                </label>
                                             ))}
                                         </div>
                                     </section>
 
                                     <section className="form-card">
-                                        <div className="form-section-title">2. Estrategia de Diferenciación</div>
-                                        <label>Tipo de diferenciación:</label>
+                                        <div className="form-section-title">
+                                            <i className="form-section-title"></i> 2. IDENTIFICACIÓN DE BARRERAS
+                                        </div>
+                                        <div className="input-group">
+                                            <label className="group-main-label">
+                                                Selecciona las barreras observadas o identificadas ya sea desde tu percepción o desde un diagnóstico oficial de ajustes razonables:
+                                            </label>
+                                            <div className="options-vertical-premium">
+                                                {[
+                                                    'Barreras de lenguaje',
+                                                    'Barreras de ritmo de procesamiento',
+                                                    'Barreras atencionales',
+                                                    'Barreras de representación (visual / auditiva)',
+                                                    'Barreras socioemocionales'
+                                                ].map(barrera => (
+                                                    <label key={barrera} className="check-label-row">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={(formData.barrerasIdentificadas || []).includes(barrera)}
+                                                            onChange={() => handleChecklist('barrerasIdentificadas', barrera)}
+                                                        />
+                                                        <span className="label-text">{barrera}</span>
+                                                    </label>
+                                                ))}
+
+                                                <div className="otro-wrapper-premium" style={{ width: '100%' }}>
+                                                    <label className="check-label-row">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={formData.habilitarOtraBarrera || false}
+                                                            onChange={(e) => {
+                                                                const estaActivado = e.target.checked;
+                                                                handleInputChange('habilitarOtraBarrera', estaActivado);
+                                                                if (!estaActivado) {
+                                                                    handleInputChange('otraBarreraTexto', "");
+                                                                    const opcionesFijas = [
+                                                                        'Barreras de lenguaje',
+                                                                        'Barreras de ritmo de procesamiento',
+                                                                        'Barreras atencionales',
+                                                                        'Barreras de representación (visual / auditiva)',
+                                                                        'Barreras socioemocionales'
+                                                                    ];
+                                                                    const limpias = (formData.barrerasIdentificadas || []).filter(b => opcionesFijas.includes(b));
+                                                                    handleInputChange('barrerasIdentificadas', limpias);
+                                                                }
+                                                            }}
+                                                        />
+                                                        <span className="label-text">Otras</span>
+                                                    </label>
+
+                                                    {formData.habilitarOtraBarrera && (
+                                                        <div style={{ padding: '0 5px 15px 5px', animation: 'fadeIn 0.3s ease', width: '100%' }}>
+                                                            <input
+                                                                type="text"
+                                                                placeholder="Especifica otras barreras..."
+                                                                className="inline-input-premium"
+                                                                autoFocus
+                                                                style={{
+                                                                    width: '100%',
+                                                                    minHeight: '45px',
+                                                                    padding: '12px 15px',
+                                                                    borderRadius: '10px',
+                                                                    border: '2px solid var(--atlas-gold)',
+                                                                    fontSize: '1rem',
+                                                                    boxSizing: 'border-box'
+                                                                }}
+                                                                value={formData.otraBarreraTexto || ""}
+                                                                onChange={(e) => {
+                                                                    const valor = e.target.value;
+                                                                    handleInputChange('otraBarreraTexto', valor);
+                                                                    const opcionesFijas = [
+                                                                        'Barreras de lenguaje', 'Barreras de ritmo de procesamiento', 'Barreras atencionales',
+                                                                        'Barreras de representación (visual / auditiva)', 'Barreras socioemocionales'
+                                                                    ];
+                                                                    let nuevasBarreras = (formData.barrerasIdentificadas || []).filter(b => opcionesFijas.includes(b));
+                                                                    if (valor.trim() !== "") nuevasBarreras.push(valor);
+                                                                    handleInputChange('barrerasIdentificadas', nuevasBarreras);
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <section className="form-card">
+                                        <div className="form-section-title">3. DISEÑO INCLUSIVO CON IA</div>
+                                        <label>¿Cómo amplía la IA el acceso sin reducir la complejidad cognitiva?</label>
                                         <div className="options-vertical-premium">
-                                            {['Por nivel de complejidad', 'Por formato', 'Por ritmo', 'Por tipo de andamiaje', 'Por interés contextual', 'Combinada'].map(d => (
-                                                <label key={d} className="check-label-row"><input type="checkbox" checked={(formData.tipoDif || []).includes(d)} onChange={() => handleChecklist('tipoDif', d)} /><span className="label-text">{d}</span></label>
+                                            {['Múltiples formas de representación', 'Múltiples formas de expresión', 'Múltiples formas de participación', 'Andamiaje adaptable sin etiquetado', 'Ajuste dinámico de apoyo'].map(d => (
+                                                <label key={d} className="check-label-row">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={(formData.tipoDif || []).includes(d)}
+                                                        onChange={() => handleChecklist('tipoDif', d)}
+                                                    />
+                                                    <span className="label-text">{d}</span>
+                                                </label>
                                             ))}
                                         </div>
                                     </section>
 
                                     <section className="form-card">
-                                        <div className="form-section-title">3. Rol de la IA en la diferenciación</div>
+                                        <div className="form-section-title">4. ROL DE LA IA EN EQUIDAD</div>
                                         <div className="options-vertical-premium">
-                                            {['Genera versiones adaptadas del contenido', 'Ofrece apoyos adicionales personalizados', 'Traduce o simplifica lenguaje', 'Proporciona ejemplos contextualizados', 'Ajusta nivel de preguntas', 'No interviene directamente'].map(d => (
-                                                <label key={d} className="check-label-row"><input type="checkbox" checked={(formData.tipoDifIA || []).includes(d)} onChange={() => handleChecklist('tipoDifIA', d)} /><span className="label-text">{d}</span></label>
+                                            {[
+                                                'Genera versiones adaptadas del contenido', 'Ofrece apoyos adicionales personalizados', 'Traduce o simplifica lenguaje',
+                                                'Proporciona ejemplos contextualizados', 'Ajusta nivel de preguntas', 'No interviene directamente',
+                                                'Permite múltiples caminos hacia el mismo estándar', 'Genera apoyos bajo demanda sin exposición pública',
+                                                'Facilita práctica autónoma personalizada'
+                                            ].map(d => (
+                                                <label key={d} className="check-label-row">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={(formData.tipoDifIA || []).includes(d)}
+                                                        onChange={() => handleChecklist('tipoDifIA', d)}
+                                                    />
+                                                    <span className="label-text">{d}</span>
+                                                </label>
                                             ))}
                                         </div>
                                     </section>
 
                                     <section className="form-card">
-                                        <div className="form-section-title">4. Protección de Equidad y Dignidad</div>
+                                        <div className="form-section-title">5. PROTECCIÓN DE EQUIDAD Y DIGNIDAD</div>
                                         <label>Selecciona las acciones incorporadas:</label>
                                         <div className="options-vertical-premium">
-                                            {['Todas las variantes conducen al mismo estándar final', 'No se comunica públicamente quién recibe apoyo adicional', 'Se mantienen expectativas altas para todos', 'Se evita etiquetamiento por nivel', 'Existe instancia común sin diferenciación', 'Supervisión docente activa en todas las variantes'].map(p => (
-                                                <label key={p} className="check-label-row"><input type="checkbox" checked={(formData.proteccion || []).includes(p)} onChange={() => handleChecklist('proteccion', p)} /><span className="label-text">{p}</span></label>
+                                            {[
+                                                'Todas las variantes conducen al mismo estándar final', 'No se comunica públicamente quién recibe apoyo adicional',
+                                                'Se mantienen expectativas altas para todos', 'Se evita etiquetamiento por nivel', 'Existe instancia común sin diferenciación',
+                                                'Supervisión docente activa en todas las variantes'
+                                            ].map(p => (
+                                                <label key={p} className="check-label-row">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={(formData.proteccion || []).includes(p)}
+                                                        onChange={() => handleChecklist('proteccion', p)}
+                                                    />
+                                                    <span className="label-text">{p}</span>
+                                                </label>
                                             ))}
                                         </div>
                                     </section>
 
                                     <section className="form-card">
-                                        <div className="form-section-title">5. Riesgos identificados</div>
+                                        <div className="form-section-title">
+                                            <i className="form-section-title"></i> 5.1 PROTECCIÓN DE EQUIDAD Y DIGNIDAD
+                                        </div>
+                                        <div className="textarea-group-premium">
+                                            <label>¿Cómo evitarías que la IA etiquete o prediga capacidades de forma determinista?</label>
+                                            <textarea
+                                                maxLength={1000}
+                                                placeholder="Ej: Manteniendo una observación docente activa que contraste los datos de la IA..."
+                                                value={formData.mitigacionDeterminismo || ""}
+                                                onChange={(e) => handleInputChange('mitigacionDeterminismo', e.target.value)}
+                                                rows={4}
+                                            />
+                                            <span className="char-count">
+                                                {formData.mitigacionDeterminismo?.length || 0} / 1000
+                                            </span>
+                                        </div>
+                                    </section>
+
+                                    <section className="form-card">
+                                        <div className="form-section-title">6. RIESGOS SISTEMICOS</div>
                                         <div className="options-vertical-premium">
-                                            {['Reducción de rigor académico', 'Estigmatización implícita', 'Dependencia tecnológica', 'Segmentación excesiva', 'No identifiqué riesgos'].map(p => (
-                                                <label key={p} className="check-label-row"><input type="checkbox" checked={(formData.riesgosIdent3 || []).includes(p)} onChange={() => handleChecklist('riesgosIdent3', p)} /><span className="label-text">{p}</span></label>
+                                            {[
+                                                'Reducción de rigor académico', 'Sesgo algorítmico', 'Perfilamiento', 'Dependencia diferencial',
+                                                'Invisibilización de fortalezas', 'Estigmatización implícita', 'Dependencia tecnológica',
+                                                'Segmentación excesiva', 'No identifiqué riesgos'
+                                            ].map(p => (
+                                                <label key={p} className="check-label-row">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={(formData.riesgosIdent3 || []).includes(p)}
+                                                        onChange={() => handleChecklist('riesgosIdent3', p)}
+                                                    />
+                                                    <span className="label-text">{p}</span>
+                                                </label>
                                             ))}
                                         </div>
                                     </section>
 
                                     <section className="form-card">
-                                        <div className="form-section-title">6. Mecanismos de mitigación</div>
+                                        <div className="form-section-title">7. GARANTÍAS DE EQUIDAD Y RIGOR</div>
+                                        <label className="group-main-label">
+                                            Selecciona las garantías que aseguran que tu estrategia amplía oportunidades sin reducir estándares:
+                                        </label>
                                         <div className="options-vertical-premium">
-                                            {['Objetivo común explícito', 'Evaluación con mismo criterio final', 'Revisión humana obligatoria', 'Rotación de apoyos', 'Reflexión estudiantil sobre uso de IA'].map(p => (
-                                                <label key={p} className="check-label-row"><input type="checkbox" checked={(formData.mitigacion3 || []).includes(p)} onChange={() => handleChecklist('mitigacion3', p)} /><span className="label-text">{p}</span></label>
+                                            {[
+                                                'El objetivo cognitivo es común y visible para todo el grupo.',
+                                                'Todas las variantes conducen al mismo estándar de evaluación.',
+                                                'Existe revisión humana activa antes de cualquier decisión académica relevante.',
+                                                'Los apoyos no son permanentes ni asignados de forma fija (evita etiquetamiento).',
+                                                'Se incluye reflexión estudiantil sobre el uso de IA y su impacto en el aprendizaje'
+                                            ].map(p => (
+                                                <label key={p} className="check-label-row">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={(formData.mitigacion3 || []).includes(p)}
+                                                        onChange={() => handleChecklist('mitigacion3', p)}
+                                                    />
+                                                    <span className="label-text">{p}</span>
+                                                </label>
                                             ))}
                                         </div>
                                     </section>
 
                                     <section className="form-card">
-                                        <div className="form-section-title">7. Reflexión y Mitigación</div>
+                                        <div className="form-section-title">
+                                            <i className="form-section-title"></i> 8. Reflexión y Mitigación
+                                        </div>
                                         <div className="textarea-group-premium">
                                             <label>El principal aporte inclusivo de esta estrategia es:</label>
-                                            <textarea maxLength={500} placeholder="Escribe aquí..." value={formData.aporte3 || ""} onChange={(e) => handleInputChange('aporte3', e.target.value)} />
-                                            <label>El mayor riesgo que debo vigilar es:</label>
-                                            <textarea maxLength={500} placeholder="Escribe aquí..." value={formData.riesgoVigilar3 || ""} onChange={(e) => handleInputChange('riesgoVigilar3', e.target.value)} />
+                                            <textarea
+                                                maxLength={500}
+                                                placeholder="Describe el impacto en la inclusión..."
+                                                value={formData.aporte3 || ""}
+                                                onChange={(e) => handleInputChange('aporte3', e.target.value)}
+                                            />
+                                            <span className="char-count">
+                                                {formData.aporte3?.length || 0} / 500
+                                            </span>
+
+                                            <label style={{ marginTop: '15px' }}>El mayor riesgo que debo vigilar es:</label>
+                                            <textarea
+                                                maxLength={500}
+                                                placeholder="Identifica el riesgo crítico..."
+                                                value={formData.riesgoVigilar3 || ""}
+                                                onChange={(e) => handleInputChange('riesgoVigilar3', e.target.value)}
+                                            />
+                                            <span className="char-count">
+                                                {formData.riesgoVigilar3?.length || 0} / 500
+                                            </span>
+
+                                            <label style={{ marginTop: '15px' }}>¿Por qué esta estrategia podría replicarse en otro curso o institución?</label>
+                                            <textarea
+                                                maxLength={1000}
+                                                placeholder="Ej: Por su bajo costo de implementación..."
+                                                value={formData.escalabilidad3 || ""}
+                                                onChange={(e) => handleInputChange('escalabilidad3', e.target.value)}
+                                                rows={3}
+                                            />
+                                            <span className="char-count">
+                                                {formData.escalabilidad3?.length || 0} / 1000
+                                            </span>
+                                        </div>
+                                    </section>
+
+                                    <section className="form-card highlight">
+                                        <div className="form-section-title">
+                                            <i className="form-section-title"></i> 8.1. Validación de Impacto y Estándares
+                                        </div>
+                                        <div className="input-group">
+                                            <label className="group-main-label">
+                                                ¿Cómo comprobarás que la estrategia amplió oportunidades sin reducir los estándares académicos?
+                                            </label>
+                                            <div className="options-vertical-premium">
+                                                {[
+                                                    'Comparación de desempeño final',
+                                                    'Evidencia de participación ampliada',
+                                                    'Defensa oral común',
+                                                    'Evaluación con mismo criterio final'
+                                                ].map(metodo => (
+                                                    <label key={metodo} className="check-label-row">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={(formData.validacionEstandares3 || []).includes(metodo)}
+                                                            onChange={() => handleChecklist('validacionEstandares3', metodo)}
+                                                        />
+                                                        <span className="label-text">{metodo}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    {/* --- SECCIÓN FINAL: ANÁLISIS DE IMPACTO INCLUSIVO --- */}
+                                    <section className={`form-card result-analysis-card patron-${analizado.patron}`}>
+                                        <div className="form-section-title">
+                                            <i className="fas fa-chart-line"></i> ANÁLISIS DE IMPACTO INCLUSIVO (UNESCO CREATE)
+                                        </div>
+
+                                        <div className="analysis-summary-grid">
+                                            <div className="summary-item">
+                                                <strong>Nivel cognitivo:</strong>
+                                                <span>{formData.bloom || "No definido"}</span>
+                                            </div>
+                                            <div className="summary-item">
+                                                <strong>Garantías de equidad:</strong>
+                                                <span>{(formData.mitigacion3 || []).length} / 5</span>
+                                            </div>
+                                            <div className="summary-item">
+                                                <strong>Comprobación de impacto:</strong>
+                                                <span>{(formData.validacionEstandares3 || []).length > 0 ? "Sí" : "No"}</span>
+                                            </div>
+                                            <div className="summary-item">
+                                                <strong>Riesgos sistémicos:</strong>
+                                                <span>{(formData.riesgosIdent3 || []).some(r => ['Sesgo algorítmico', 'Perfilamiento', 'Dependencia diferencial', 'Invisibilización de fortalezas'].includes(r)) ? "Identificados" : "No identificados"}</span>
+                                            </div>
+                                        </div>
+
+                                        <hr className="analysis-divider" />
+
+                                        <div className="feedback-box-premium">
+                                            <h4>Nivel alcanzado: {analizado.titulo}</h4>
+
+                                            {analizado.patron === 1 && (
+                                                <p>
+                                                    Tu estrategia evidencia un diseño inclusivo mediado por IA con impacto estructural en equidad.
+                                                    Se mantiene un objetivo cognitivo de alta complejidad, se amplían oportunidades sin reducción
+                                                    de estándares y se activan garantías claras de rigor.
+                                                    <br /><br />
+                                                    Además, identificas riesgos sistémicos y defines mecanismos para comprobar impacto,
+                                                    lo cual está alineado con:
+                                                    <br />
+                                                    • UNESCO AI Competency Framework for Teachers (CREATE, 2024)
+                                                    <br />
+                                                    • Principios de Diseño Universal para el Aprendizaje (DUA)
+                                                    <br />
+                                                    • Enfoque de equidad estructural (no segmentación)
+                                                    <br /><br />
+                                                    Tu estrategia es potencialmente transferible a otros contextos.
+                                                </p>
+                                            )}
+
+                                            {analizado.patron === 2 && (
+                                                <p>
+                                                    Tu diseño mantiene rigor cognitivo y evidencia mecanismos claros de equidad y evaluación común.
+                                                    Para consolidarse plenamente en nivel CREATE, sería recomendable fortalecer la identificación
+                                                    de riesgos sistémicos (sesgo algorítmico, perfilamiento, dependencia diferencial),
+                                                    tal como sugieren:
+                                                    <br />
+                                                    • UNESCO 2024 (dimensión ética avanzada)
+                                                    <br />
+                                                    • Recomendación UNESCO 2021 sobre IA y derechos humanos
+                                                    <br /><br />
+                                                    La innovación inclusiva requiere anticipar posibles efectos estructurales.
+                                                </p>
+                                            )}
+
+                                            {analizado.patron === 3 && (
+                                                <p>
+                                                    Tu estrategia amplía oportunidades y mantiene cierta coherencia evaluativa.
+                                                    Sin embargo, las garantías estructurales aún no son suficientes para asegurar
+                                                    que la equidad sea sostenida y replicable.
+                                                    <br /><br />
+                                                    El marco CREATE invita a pasar de ajustes puntuales a diseño estructural.
+                                                    <br /><br />
+                                                    <strong>Sugerencia:</strong>
+                                                    <br />
+                                                    Fortalecer las garantías explícitas de estándar común y supervisión humana.
+                                                </p>
+                                            )}
+
+                                            {analizado.patron === 4 && (
+                                                <p>
+                                                    Se observa intención inclusiva, pero el nivel de pensamiento trabajado podría
+                                                    no sostener la exigencia académica común.
+                                                    <br /><br />
+                                                    El Diseño Universal para el Aprendizaje no implica simplificación del objetivo cognitivo,
+                                                    sino diversificación del acceso al mismo estándar.
+                                                    <br /><br />
+                                                    Según UNESCO CREATE, la equidad no consiste en bajar la complejidad,
+                                                    sino en ampliar oportunidades para alcanzarla.
+                                                    <br /><br />
+                                                    <strong>Recomendación:</strong>
+                                                    <br />
+                                                    Revisar el nivel cognitivo y explicitar cómo se mantiene la complejidad.
+                                                </p>
+                                            )}
+
+                                            {analizado.patron === 5 && (
+                                                <p>
+                                                    Tu estrategia incorpora principios de equidad y dignidad.
+                                                    Sin embargo, no se ha definido cómo comprobarás que la estrategia
+                                                    amplió oportunidades sin reducir estándares.
+                                                    <br /><br />
+                                                    En el nivel CREATE, el diseño debe ser verificable y transferible.
+                                                    <br /><br />
+                                                    <strong>Sugerencia:</strong>
+                                                    <br />
+                                                    Incorporar evidencia comparativa, defensa común o evaluación con criterio compartido.
+                                                </p>
+                                            )}
+
+                                            {analizado.patron === 6 && (
+                                                <p>
+                                                    Tu estrategia amplía apoyos, pero no se evidencian suficientes garantías
+                                                    de estándar común.
+                                                    <br /><br />
+                                                    La inclusión estructural (UNESCO, UDL) requiere:
+                                                    <br />
+                                                    • Objetivo cognitivo común
+                                                    <br />
+                                                    • Criterio de evaluación compartido
+                                                    <br />
+                                                    • Evitar etiquetamiento implícito
+                                                    <br /><br />
+                                                    Se recomienda fortalecer las garantías de rigor.
+                                                </p>
+                                            )}
+                                        </div>
+                                    </section>
+
+                                    {/* --- SECCIÓN: COMPROMISO DE FORTALECIMIENTO --- */}
+                                    <section className="form-card highlight">
+                                        <div className="form-section-title">
+                                            <i className="form-section-title"></i> PROYECCIÓN DE DESARROLLO PROFESIONAL
+                                        </div>
+                                        <div className="input-group">
+                                            <label className="group-main-label">
+                                                A partir de esta misión, ¿en qué áreas te gustaría fortalecer tu práctica pedagógica?
+                                            </label>
+                                            <div className="options-vertical-premium">
+                                                {[
+                                                    'Diseño Universal para el Aprendizaje (DUA)',
+                                                    'Diseño inclusivo estructural con IA',
+                                                    'Estrategias de diferenciación sin segmentación',
+                                                    'Neurodiversidad y ajustes razonables',
+                                                    'Evaluación con mismo estándar para todos',
+                                                    'Evidencia y medición de impacto en equidad',
+                                                    'Prevención de perfilamiento y sesgo en inclusión mediada por IA',
+                                                    'Transferibilidad de prácticas pedagógicas'
+                                                ].map(item => (
+                                                    <label key={item} className="check-label-row">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={(formData.fortalecerMision3 || []).includes(item)}
+                                                            onChange={() => handleChecklist('fortalecerMision3', item)}
+                                                        />
+                                                        <span className="label-text">{item}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
                                         </div>
                                     </section>
                                 </>
@@ -1815,7 +2379,7 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
                     <section className="autoevaluacion-final-section">
                         <div className="autoeval-card">
                             <h3>AUTOEVALUACIÓN DE LOGRO</h3>
-                            <p className="autoeval-desc">Marca cada ítem para certificar que tu mision cumple con los estándares exigidos:</p>
+                            <p className="autoeval-desc">Certifico que esta estrategia:</p>
                             <div className="checklist-items-premium">
                                 {(
                                     // --- LÓGICA DINÁMICA POR ROL Y RETO ---
@@ -1826,7 +2390,7 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
                                         ] : retoId === 2 ? [
                                             "La intención pedagógica es explícita.", " La IA no sustituye juicio docente.", " La agencia estudiantil se mantiene o fortalece.", "Se incorporó supervisión humana clara.", "Se abordaron riesgos éticos relevantes"
                                         ] : [
-                                            "Existe objetivo común claro", "La diferenciación no reduce estándares", "Se protege dignidad y agencia", "Se identifican y mitigan riesgos", "Estrategia replicable"
+                                            "Mantiene objetivo cognitivo común.", "Amplía acceso sin etiquetar.", "No reduce nivel de exigencia.", "Incluye supervisión humana activa.", "Es replicable."
                                         ]
                                     ) : (
                                         // Checklists para DIRECTIVOS

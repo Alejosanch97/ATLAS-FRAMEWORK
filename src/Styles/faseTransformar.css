@@ -839,32 +839,188 @@
     justify-content: flex-end;
 }
 
-/* Adaptación para móviles del reporte */
-@media (max-width: 850px) {
+/* =========================================
+   ATLAS RESPONSIVE V5.0 - FASE TRANSFORMAR
+   Optimizado para: Mobile, Tablet y Dashboard
+   ========================================= */
+
+/* --- TABLETS Y PANTALLAS MEDIANAS (iPad Portrait) --- */
+@media (max-width: 1024px) {
+    .transformar-intro-container, 
+    .transformar-dashboard,
+    .reporte-profundo-container {
+        max-width: 95%;
+        padding: 30px 15px;
+    }
+
+    .retos-roadmap-v2 {
+        grid-template-columns: repeat(2, 1fr); /* 2 columnas en iPad */
+        gap: 20px;
+    }
+
+    .liderar-commitments {
+        grid-template-columns: 1fr; /* Una columna para compromisos */
+        gap: 25px;
+    }
+
+    .video-grid-content {
+        grid-template-columns: 1fr; /* Video arriba, puntos abajo */
+    }
+}
+
+/* --- IPAD HORIZONTAL / LAPTOPS PEQUEÑAS --- */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+    .retos-roadmap-v2 {
+        grid-template-columns: repeat(3, 1fr); /* Recupera 3 columnas en horizontal */
+    }
+    
+    .reporte-grid-cuadrante {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* --- MÓVILES Y IPAD VERTICAL (Quiebre Crítico) --- */
+@media (max-width: 768px) {
+    /* Ajustes de Cabecera */
+    .intro-hero h1 {
+        font-size: 2rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+
+    /* Dashboard de Retos: Una sola columna para que las cards respiren */
+    .retos-roadmap-v2 {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+
+    .reto-card-premium {
+        padding: 40px 25px;
+    }
+
+    /* Grillas Narrativas y de Reporte */
+    .narrative-grid, 
     .reporte-grid-cuadrante {
         grid-template-columns: 1fr;
     }
+
+    /* Reporte de Auditoría (Liderar) */
+    .reporte-profundo-container {
+        padding: 30px 15px;
+        border-radius: 25px;
+    }
+
     .reporte-header-grid {
         flex-direction: column;
         align-items: center;
         text-align: center;
         gap: 20px;
     }
+
+    .global-gauge {
+        width: 100%;
+        padding: 20px;
+    }
+
+    .gauge-value {
+        font-size: 2.8rem;
+    }
+
+    /* Video y Secciones Oscuras */
+    .video-full-section {
+        padding: 25px 15px;
+        border-radius: 20px;
+    }
+
+    .section-title-box {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    /* Liderar: Compromisos */
+    .liderar-protocols-card-canvas {
+        padding: 25px 15px;
+    }
+
+    .commit-item {
+        gap: 12px;
+    }
+
+    .commit-text-box p {
+        font-size: 1rem;
+    }
+
+    /* Sincronización Flotante (Ajuste para móviles) */
+    .atlas-sync-float {
+        top: auto;
+        bottom: 20px; /* Pasa abajo en móvil para no tapar el menú */
+        right: 50%;
+        transform: translateX(50%);
+        width: 90%;
+        pointer-events: none;
+    }
+
+    .atlas-sync-pill {
+        justify-content: center;
+        padding: 10px 20px;
+    }
 }
 
-/* --- ANIMACIONES --- */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+/* --- MÓVILES PEQUEÑOS (iPhone / Compactos) --- */
+@media (max-width: 480px) {
+    .intro-hero h1 {
+        font-size: 1.6rem;
+    }
 
-/* --- RESPONSIVIDAD --- */
-@media (max-width: 1024px) {
-    .narrative-grid, .video-grid-content, .retos-roadmap-v2 {
+    .btn-start-transformar-large {
+        padding: 18px 30px;
+        font-size: 1rem;
+        width: 100%;
+    }
+
+    .info-card-step {
+        padding: 25px 15px;
+    }
+
+    .narrative-content-box {
+        padding-left: 0; /* Quitar sangría en móviles muy pequeños */
+        margin-top: 15px;
+    }
+
+    .prompt-blockquote {
+        font-size: 0.9rem;
+        padding: 15px;
+    }
+
+    .indice-at-value {
+        font-size: 1.1rem;
+    }
+
+    .expectations-grid-styled {
         grid-template-columns: 1fr;
     }
-    .retos-roadmap-v2 {
-        max-width: 500px;
-        margin: 0 auto;
+
+    /* Ajuste de botones de acción en footer de reporte */
+    .reporte-actions-footer {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .btn-close-reporte {
+        width: 100%;
+    }
+}
+
+/* --- FIX PARA VISTA HORIZONTAL EN CELULARES --- */
+@media (max-height: 500px) and (orientation: landscape) {
+    .atlas-sync-float {
+        display: none; /* Ocultar píldora de carga para ganar espacio vertical */
+    }
+    
+    .intro-hero {
+        margin-bottom: 20px;
     }
 }
