@@ -11,7 +11,12 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
     
     // Estado inicial del formulario
     const [formData, setFormData] = useState({
-        cumplimiento: []
+        grado: "",
+        asignatura: "",
+        tema: "",
+        objetivo: "",
+        cumplimiento: [],
+        competenciaCognitiva: []
     });
     
     // Estado para la matriz de puntos (específico del Reto 1)
@@ -20,6 +25,16 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
     });
 
     useEffect(() => {
+        // Limpiamos el formulario antes de cargar el nuevo reto para evitar "fantasmas" de datos anteriores
+        setFormData({});
+        setPuntosMatriz({
+            transparency: 0,
+            privacy: 0,
+            bias: 0,
+            agency: 0,
+            supervision: 0
+        });
+
         fetchRetoData();
         window.scrollTo(0, 0);
     }, [retoId]);
@@ -27,57 +42,44 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
     const fetchRetoData = async () => {
         setLoading(true);
         try {
-            // 1. Definimos los parámetros base para la consulta
-            // Si es Directivo, podríamos querer traer todos los registros de la institución
-            // Si no, solo los del usuario actual
             const params = new URLSearchParams({
                 sheet: "Retos_Transformar_ATLAS"
-                // Nota: Si tu API permite filtrar por Colegio/Institución, agrégalo aquí
             });
 
             const res = await fetch(`${API_URL}?${params.toString()}`);
             const data = await res.json();
 
             if (Array.isArray(data)) {
-                // --- A. LÓGICA PARA EL DASHBOARD (Si es Directivo) ---
+                // 1. Guardamos todos los datos para el Dashboard si es directivo
                 if (isDirectivo) {
-                    // Guardamos todos los registros para que el Dashboard los procese
-                    // La función procesarEstadisticasDocentes se encargará de filtrar los que no son directivos
                     setRegistrosRaw(data);
                 }
 
-                // --- B. LÓGICA PARA CARGAR MI PROPIO PROGRESO (Lo que ya tenías) ---
-                // Buscamos mi registro personal usando mi Teacher_Key
-                const miRegistro = data.find(r =>
-                    r.Teacher_Key === userData.Teacher_Key &&
+                // 2. Buscamos el registro específico
+                const registro = data.find(r =>
+                    String(r.Teacher_Key) === String(userData.Teacher_Key) &&
                     parseInt(r.Numero_Reto) === parseInt(retoId)
                 );
 
-                if (miRegistro) {
-                    if (miRegistro.Datos_JSON) {
-                        const savedData = typeof miRegistro.Datos_JSON === 'string'
-                            ? JSON.parse(miRegistro.Datos_JSON)
-                            : miRegistro.Datos_JSON;
+                if (registro && registro.Datos_JSON) {
+                    const savedData = JSON.parse(registro.Datos_JSON);
 
-                        setFormData(savedData);
+                    // Actualizamos el estado con los datos recuperados
+                    setFormData(savedData);
 
-                        if (savedData.puntosMatriz) {
-                            setPuntosMatriz(savedData.puntosMatriz);
-                        }
+                    // Si el registro tenía puntos de matriz (Reto 1), los restauramos
+                    if (savedData.puntosMatriz) {
+                        setPuntosMatriz(savedData.puntosMatriz);
                     }
-                } else {
-                    // Si no hay registro previo para este reto, reseteamos el formulario
-                    // para que no queden datos de retos anteriores
-                    setFormData({});
-                    setPuntosMatriz({});
                 }
             }
         } catch (e) {
-            console.error("Error al cargar:", e);
+            console.error("Error al cargar datos del reto:", e);
         } finally {
             setLoading(false);
         }
     };
+
 
     const handleInputChange = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -201,11 +203,9 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
     const saveReto = async (statusFinal = 'ENVIADO') => {
         // --- 1. VALIDACIONES DE RESPUESTAS CORRECTAS (SOLO SI ES ENVÍO FINAL) ---
         if (statusFinal === 'completed') {
-            // --- VALIDACIÓN RETO 2 DIRECTIVO ---
             if (isDirectivo && parseInt(retoId) === 2) {
                 const esCorrectaDecision = formData.decisionEscenario === 'Implementar con evaluación de impacto previa';
                 const esCorrectoBiometricos = formData.sens_Datos_biométricos !== 'Baja';
-
                 const esCorrectoMatching =
                     formData.match_Transparencia === "Comunicar uso a familias" &&
                     formData["match_Supervisión humana"] === "Designar responsable institucional";
@@ -213,26 +213,23 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
                 if (!esCorrectaDecision || !esCorrectoBiometricos || !esCorrectoMatching) {
                     Swal.fire({
                         title: "Revisión técnica necesaria",
-                        text: "Algunas respuestas no coinciden con el marco regulatorio (EU AI Act). Por favor, revisa la sensibilidad de datos biométricos, la decisión del escenario o el emparejamiento de obligaciones.",
+                        text: "Algunas respuestas no coinciden con el marco regulatorio (EU AI Act).",
                         icon: "error",
                         confirmButtonColor: "#c5a059"
                     });
-                    return; // Bloquea el envío
+                    return;
                 }
             }
 
-            // --- VALIDACIÓN RETO 3 DIRECTIVO ---
             if (isDirectivo && parseInt(retoId) === 3) {
-                const esCorrectaAccionInmediata = formData.decisionCrisis === 'Activar revisión humana urgente del caso';
-
-                if (!esCorrectaAccionInmediata) {
+                if (formData.decisionCrisis !== 'Activar revisión humana urgente del caso') {
                     Swal.fire({
                         title: "Protocolo de Crisis Erróneo",
-                        text: "Ante un error crítico, la normativa exige activar la revisión humana como primera acción institucional. Por favor, rectifica.",
+                        text: "La normativa exige activar la revisión humana como primera acción.",
                         icon: "warning",
                         confirmButtonColor: "#c5a059"
                     });
-                    return; // Bloquea el envío
+                    return;
                 }
             }
         }
@@ -242,8 +239,21 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
 
         const nombresRetosDocente = ["", "Evaluación Ética", "Rediseño Human-Centred", "Diferenciación Inclusiva"];
         const nombresRetosDirectivo = ["", "Simulación de Riesgo", "Protocolo de Privacidad", "Gestión de Error Crítico"];
-
         const nombreActual = isDirectivo ? nombresRetosDirectivo[retoId] : nombresRetosDocente[retoId];
+
+        // --- CORRECCIÓN: Capturar el análisis UNESCO si es Reto 3 Docente ---
+        let datosParaGuardar = { ...formData, puntosMatriz };
+
+        if (!isDirectivo && parseInt(retoId) === 3) {
+            // Asumiendo que calcularPatronUNESCO es la función que ya tienes en tu componente
+            const resultadoAnalisis = calcularPatronUNESCO(formData);
+            datosParaGuardar.analisis_unesco_create = {
+                patron: resultadoAnalisis.patron,
+                titulo: resultadoAnalisis.titulo,
+                resultado_texto: resultadoAnalisis.resultado,
+                fecha_analisis: new Date().toISOString()
+            };
+        }
 
         const payload = {
             action: "create",
@@ -255,7 +265,7 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
                 Nombre_Reto: nombreActual,
                 Nivel_UNESCO: retoId === 1 ? "Acquire" : retoId === 2 ? "Deepen" : "Create",
                 Fecha_Creacion: new Date().toISOString(),
-                Datos_JSON: JSON.stringify({ ...formData, puntosMatriz }),
+                Datos_JSON: JSON.stringify(datosParaGuardar), // Guardamos el objeto enriquecido
                 Status_Reto: statusFinal === 'completed' ? "COMPLETADO" : "BORRADOR",
                 Autoevaluacion_Status: (formData.cumplimiento && formData.cumplimiento.length >= 3) ? "COMPLETADO" : "PENDIENTE"
             }
@@ -272,19 +282,17 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
             const result = await response.json();
 
             if (result.status === "success") {
-                // --- MEJORA: Feedback rápido con timer ---
                 await Swal.fire({
                     title: statusFinal === 'completed' ? "¡Misión Enviada!" : "Borrador Guardado",
                     text: "Sincronización exitosa con ATLAS.",
                     icon: "success",
                     confirmButtonColor: "#c5a059",
-                    timer: 1500, // Se cierra en 1.5 segundos
-                    showConfirmButton: false, // Oculta el botón para que sea más fluido
+                    timer: 1500,
+                    showConfirmButton: false,
                     timerProgressBar: true
                 });
 
                 if (statusFinal === 'completed') {
-                    // Navega de regreso a la zona de misiones
                     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
                     onNavigate('fase_transformar');
                 }
@@ -295,7 +303,7 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
             console.error("Error en saveReto:", e);
             Swal.fire({
                 title: "Error de Sincronización",
-                text: "No se pudo conectar con el servidor ATLAS. Revisa tu conexión.",
+                text: "No se pudo conectar con el servidor ATLAS.",
                 icon: "error",
                 confirmButtonColor: "#d33"
             });
@@ -534,51 +542,110 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
     const procesarEstadisticasDocentes = (registrosBD) => {
         const conteoMetricas = {
             r1: {}, r2: {}, r3: {},
+            // Métricas consolidadas del Reto 3
+            reto3: {
+                sumaGarantias: 0,
+                conteoImpacto: 0,
+                conteoRiesgos: 0,
+                nivelesCognitivos: {},
+                totalParticipantesReto3: 0
+            },
             patrones: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }
         };
-        let totalDocentes = 0;
+
+        let docentesUnicosIds = new Set();
 
         if (!registrosBD || !Array.isArray(registrosBD)) return { conteoMetricas, totalDocentes: 0 };
 
         registrosBD.forEach(reg => {
             try {
                 const data = typeof reg.Datos_JSON === 'string' ? JSON.parse(reg.Datos_JSON) : reg.Datos_JSON;
-                if (data && data.isDirectivo === false) {
-                    totalDocentes++;
+
+                if (data && data.isDirectivo !== true) {
+                    docentesUnicosIds.add(reg.Teacher_Key);
+
+                    // 1. Conteo de temas de formación (Para las barras de Misiones)
                     if (data.fortalecerMision1) data.fortalecerMision1.forEach(t => conteoMetricas.r1[t] = (conteoMetricas.r1[t] || 0) + 1);
                     if (data.fortalecerMision2) data.fortalecerMision2.forEach(t => conteoMetricas.r2[t] = (conteoMetricas.r2[t] || 0) + 1);
                     if (data.fortalecerMision3) data.fortalecerMision3.forEach(t => conteoMetricas.r3[t] = (conteoMetricas.r3[t] || 0) + 1);
-                    if (data.patronReto3) conteoMetricas.patrones[data.patronReto3]++;
-                }
-            } catch (e) { console.error("Error en JSON:", e); }
-        });
-        return { conteoMetricas, totalDocentes };
-    };
 
+                    // 2. Lógica específica para el Reto 3 (Análisis UNESCO Grupal)
+                    if (reg.Numero_Reto === 3 || reg.Numero_Reto === "3") {
+                        conteoMetricas.reto3.totalParticipantesReto3++;
+
+                        // Promedio de Garantías de Equidad (mitigacion3)
+                        conteoMetricas.reto3.sumaGarantias += (data.mitigacion3 || []).length;
+
+                        // Comprobación de Impacto (validacionEstandares3)
+                        if ((data.validacionEstandares3 || []).length > 0) {
+                            conteoMetricas.reto3.conteoImpacto++;
+                        }
+
+                        // Riesgos Sistémicos (riesgosIdent3)
+                        const tieneRiesgos = (data.riesgosIdent3 || []).some(r =>
+                            ['Sesgo algorítmico', 'Perfilamiento', 'Dependencia diferencial', 'Invisibilización de fortalezas'].includes(r)
+                        );
+                        if (tieneRiesgos) conteoMetricas.reto3.conteoRiesgos++;
+
+                        // Nivel Cognitivo (bloom)
+                        const nivel = data.bloom || "No definido";
+                        conteoMetricas.reto3.nivelesCognitivos[nivel] = (conteoMetricas.reto3.nivelesCognitivos[nivel] || 0) + 1;
+                    }
+
+                    // 3. Mapeo de Patrones UNESCO (Detección por Título o ID)
+                    if (data.analisis_unesco_create) {
+                        const analisis = data.analisis_unesco_create;
+                        if (analisis.patron) {
+                            conteoMetricas.patrones[analisis.patron]++;
+                        } else if (analisis.titulo) {
+                            const t = analisis.titulo;
+                            if (t.includes("Avanzado")) conteoMetricas.patrones[1]++;
+                            else if (t.includes("Riesgo")) conteoMetricas.patrones[2]++;
+                            else if (t.includes("Inclusión Operativa")) conteoMetricas.patrones[3]++;
+                            else if (t.includes("Bajo Rigor")) conteoMetricas.patrones[4]++;
+                            else if (t.includes("Dependencia")) conteoMetricas.patrones[5]++;
+                            else if (t.includes("Estándar")) conteoMetricas.patrones[6]++;
+                        }
+                    }
+                }
+            } catch (e) { console.error("Error procesando registro:", e); }
+        });
+
+        return {
+            conteoMetricas,
+            totalDocentes: docentesUnicosIds.size,
+            totalRegistros: registrosBD.length
+        };
+    };
     // --- 2. COMPONENTE VISUAL DEL DASHBOARD ---
     const DashboardDirectivoFinal = ({ registrosRaw }) => {
         const { conteoMetricas, totalDocentes } = procesarEstadisticasDocentes(registrosRaw);
 
-        const renderBarras = (metricasReto, titulo) => {
+        const renderBarras = (metricasReto, titulo, colorPrimario = '#C5A059') => {
+            // Unificamos todos los temas solicitados y calculamos porcentajes
             const items = Object.entries(metricasReto)
-                .map(([tema, cantidad]) => ({ tema, porcentaje: totalDocentes > 0 ? Math.round((cantidad / totalDocentes) * 100) : 0 }))
+                .map(([tema, cantidad]) => ({
+                    tema,
+                    cantidad,
+                    porcentaje: totalDocentes > 0 ? Math.round((cantidad / totalDocentes) * 100) : 0
+                }))
                 .sort((a, b) => b.porcentaje - a.porcentaje);
 
             return (
-                <div className="reto-stat-card" style={{ background: '#fff', padding: '15px', borderRadius: '12px', marginBottom: '15px', border: '1px solid #e2e8f0' }}>
-                    <h4 style={{ fontSize: '0.95rem', color: '#1e293b', marginBottom: '10px' }}>{titulo}</h4>
-                    {items.length === 0 ? <p style={{ fontSize: '0.8rem' }}>Sin datos.</p> : items.map(item => (
-                        <div key={item.tema} style={{ marginBottom: '8px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-                                <span>{item.tema}</span>
-                                <strong>{item.porcentaje}%</strong>
+                <div className="reto-stat-card" style={{ background: '#fff', padding: '20px', borderRadius: '15px', marginBottom: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                    <h4 style={{ fontSize: '1rem', color: '#1e293b', marginBottom: '15px', borderLeft: `4px solid ${colorPrimario}`, paddingLeft: '10px' }}>{titulo}</h4>
+                    {items.length === 0 ? <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Aún no hay solicitudes de formación en esta área.</p> : items.map(item => (
+                        <div key={item.tema} style={{ marginBottom: '12px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '4px' }}>
+                                <span style={{ color: '#475569', fontWeight: '500' }}>{item.tema}</span>
+                                <span style={{ color: '#1e293b', fontWeight: 'bold' }}>{item.cantidad} profes ({item.porcentaje}%)</span>
                             </div>
-                            <div style={{ width: '100%', height: '6px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden' }}>
-                                <div style={{ width: `${item.porcentaje}%`, height: '100%', background: item.porcentaje >= 40 ? '#C5A059' : '#94a3b8' }}></div>
+                            <div style={{ width: '100%', height: '8px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden' }}>
+                                <div style={{ width: `${item.porcentaje}%`, height: '100%', background: item.porcentaje >= 50 ? '#b45309' : colorPrimario, transition: 'width 0.5s ease' }}></div>
                             </div>
-                            {item.porcentaje >= 40 && (
-                                <div style={{ marginTop: '3px', fontSize: '0.65rem', color: '#854d0e', background: '#fefce8', padding: '2px 5px', borderRadius: '4px', display: 'inline-block' }}>
-                                    ✨ Se recomienda MENTORÍA
+                            {item.porcentaje >= 50 && (
+                                <div style={{ marginTop: '5px', fontSize: '0.7rem', color: '#92400e', background: '#fef3c7', padding: '3px 8px', borderRadius: '6px', display: 'inline-block', fontWeight: '600' }}>
+                                    🆘 PRIORIDAD ALTA: Organizar taller técnico
                                 </div>
                             )}
                         </div>
@@ -588,23 +655,39 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
         };
 
         return (
-            <div className="directivo-dashboard-final" style={{ marginTop: '25px', padding: '20px', background: '#f8fafc', borderRadius: '15px', border: '2px solid #C5A059' }}>
-                <h3 style={{ textAlign: 'center', marginBottom: '20px', color: '#1e293b' }}>📊 NECESIDADES FORMATIVAS DOCENTES</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
-                    {renderBarras(conteoMetricas.r1, "Reto 1: Ética")}
-                    {renderBarras(conteoMetricas.r2, "Reto 2: Pedagogía")}
-                    {renderBarras(conteoMetricas.r3, "Reto 3: Inclusión")}
+            <div className="atlas-dashboard-container">
+                {/* BLOQUE DINÁMICO DE MADUREZ UNESCO */}
+                <div className="unesco-summary-card" style={{ 
+                    background: '#1e293b', 
+                    padding: '30px', 
+                    borderRadius: '15px', 
+                    textAlign: 'center', 
+                    color: '#fff',
+                    marginBottom: '25px'
+                }}>
+                    <span style={{ fontSize: '0.9rem', color: '#C5A059', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                        Madurez UNESCO: Nivel Institucional
+                    </span>
+                    {(() => {
+                        const avanzados = conteoMetricas.patrones[1] || 0;
+                        const porcentajeLogro = totalDocentes > 0 ? Math.round((avanzados / totalDocentes) * 100) : 0;
+                        return (
+                            <>
+                                <div style={{ fontSize: '4rem', fontWeight: '900', margin: '10px 0' }}>{porcentajeLogro}%</div>
+                                <div style={{ fontSize: '1.2rem', color: '#C5A059', marginBottom: '5px' }}>Nivel CREATE</div>
+                                <p style={{ fontSize: '0.85rem', opacity: 0.8 }}>
+                                    {porcentajeLogro >= 50 ? "Diseño inclusivo institucional consolidado." : "Fortalecimiento de equidad estructural requerido."}
+                                </p>
+                            </>
+                        );
+                    })()}
+                </div>
 
-                    <div style={{ background: '#1e293b', color: '#fff', padding: '15px', borderRadius: '12px', textAlign: 'center' }}>
-                        <h4 style={{ color: '#C5A059', fontSize: '1rem' }}>Madurez UNESCO</h4>
-                        <span style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>{totalDocentes > 0 ? Math.round((conteoMetricas.patrones[1] / totalDocentes) * 100) : 0}%</span>
-                        <p style={{ fontSize: '0.7rem' }}>Nivel CREATE</p>
-                        {(conteoMetricas.patrones[4] + conteoMetricas.patrones[6]) / totalDocentes >= 0.3 && (
-                            <div style={{ background: '#7f1d1d', padding: '8px', borderRadius: '6px', fontSize: '0.7rem', marginTop: '10px' }}>
-                                ⚠ ALERTA: Tendencia a simplificar rigor cognitivo.
-                            </div>
-                        )}
-                    </div>
+                {/* PROYECCIONES DE DESARROLLO (BARRAS) */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                    {renderBarras(conteoMetricas.r1, "Misión 1: Ética y Privacidad")}
+                    {renderBarras(conteoMetricas.r2, "Misión 2: Diseño Human-Centred")}
+                    {renderBarras(conteoMetricas.r3, "Misión 3: Inclusión y Equidad")}
                 </div>
             </div>
         );
@@ -2490,35 +2573,117 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
                                         </div>
                                     </section>
 
-                                    <section className="form-card">
-                                        <div className="form-section-title">Reflexión Directiva</div>
-                                        <label>El mayor riesgo institucional ante error de IA es:</label>
-                                        <textarea maxLength={400} value={formData.refErrorRiesgo || ""} onChange={(e) => handleInputChange('refErrorRiesgo', e.target.value)} />
-                                        <span className="char-count">{(formData.refErrorRiesgo?.length || 0)} / 400</span><label>La mejora estructural más urgente es:</label>
-                                        <textarea maxLength={400} value={formData.refErrorMejora || ""} onChange={(e) => handleInputChange('refErrorMejora', e.target.value)} />
-                                        <span className="char-count">{(formData.refErrorMejora?.length || 0)} / 400</span>
-                                    </section>
-
-                                    {/* --- SECCIÓN DASHBOARD ESTRATÉGICO --- */}
+                                    {/* --- SECCIÓN DASHBOARD ESTRATÉGICO: MONITOREO GRUPAL --- */}
                                     {isDirectivo && registrosRaw.length > 0 && (
-                                        <div className="atlas-dashboard-outer-container" style={{ marginTop: '2rem' }}>
-                                            <DashboardDirectivoFinal registrosRaw={registrosRaw} />
+                                        <div className="atlas-dashboard-outer-container" style={{
+                                            marginTop: '3rem',
+                                            padding: '25px',
+                                            background: '#f8fafc',
+                                            borderRadius: '20px',
+                                            border: '2px solid #e2e8f0'
+                                        }}>
+                                            <div className="dashboard-header-inline" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                                                <h2 style={{ margin: 0, fontSize: '1.4rem', color: '#1e293b' }}>Análisis de Capacidad Institucional (Consolidado)</h2>
+                                            </div>
 
-                                            {/* Validación de totales para la nota al pie */}
                                             {(() => {
                                                 const stats = procesarEstadisticasDocentes(registrosRaw);
-                                                return stats.totalDocentes > 0 && (
-                                                    <div className="mentoria-footer-note" style={{
-                                                        padding: '15px', background: '#fffbeb', borderRadius: '12px',
-                                                        border: '1px solid #fef08a', marginTop: '15px', fontSize: '0.9rem', color: '#854d0e'
-                                                    }}>
-                                                        <strong>Nota:</strong> Se analizan {stats.totalDocentes} docentes.
-                                                    </div>
+                                                const r3 = stats.conteoMetricas.reto3;
+                                                const n3 = r3.totalParticipantesReto3;
+
+                                                const promGarantias = n3 > 0 ? (r3.sumaGarantias / n3).toFixed(1) : 0;
+                                                const porcImpacto = n3 > 0 ? Math.round((r3.conteoImpacto / n3) * 100) : 0;
+                                                const porcRiesgos = n3 > 0 ? Math.round((r3.conteoRiesgos / n3) * 100) : 0;
+                                                const bloomTop = Object.entries(r3.nivelesCognitivos).sort((a, b) => b[1] - a[1])[0]?.[0] || "---";
+
+                                                return (
+                                                    <>
+                                                        {/* 1. CABECERA ÚNICA: MADUREZ UNESCO (Eliminada la duplicada) */}
+                                                        <div className="unesco-summary-card" style={{
+                                                            background: '#1e293b', padding: '30px', borderRadius: '15px', color: '#fff', marginBottom: '25px', textAlign: 'center'
+                                                        }}>
+                                                            <span style={{ color: '#C5A059', fontWeight: 'bold', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                                                Madurez UNESCO: Capacidad Grupal (Reto 3)
+                                                            </span>
+
+                                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '15px', marginTop: '20px' }}>
+                                                                <div style={{ padding: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
+                                                                    <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>Nivel Cognitivo</div>
+                                                                    <div style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{bloomTop}</div>
+                                                                </div>
+                                                                <div style={{ padding: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
+                                                                    <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>Garantías Equidad</div>
+                                                                    <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#C5A059' }}>{promGarantias} / 5</div>
+                                                                </div>
+                                                                <div style={{ padding: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
+                                                                    <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>Comp. de Impacto</div>
+                                                                    <div style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{porcImpacto}% Profes</div>
+                                                                </div>
+                                                                <div style={{ padding: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
+                                                                    <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>Riesgos Sistémicos</div>
+                                                                    <div style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{porcRiesgos}% Ident.</div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div style={{ marginTop: '25px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}>
+                                                                <div style={{ fontSize: '3rem', fontWeight: '900', color: '#C5A059' }}>
+                                                                    {Math.round((porcImpacto + (promGarantias * 20)) / 2)}%
+                                                                </div>
+                                                                <div style={{ fontSize: '1rem', fontWeight: 'bold' }}>ÍNDICE DE INCLUSIÓN ESTRUCTURAL</div>
+                                                                <p style={{ fontSize: '0.85rem', opacity: 0.8, marginTop: '10px' }}>
+                                                                    Promedio institucional basado en el Marco UNESCO CREATE
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* 2. GRILLA DE MISIONES (BARRAS DE PROGRESO) */}
+                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                                                            {[
+                                                                { id: 'r1', titulo: "Misión 1: Ética y Privacidad", color: '#C5A059' },
+                                                                { id: 'r2', titulo: "Misión 2: Diseño Human-Centred", color: '#C5A059' },
+                                                                { id: 'r3', titulo: "Misión 3: Inclusión y Equidad", color: '#C5A059' }
+                                                            ].map((mision) => (
+                                                                <div key={mision.id} style={{ background: '#fff', padding: '20px', borderRadius: '15px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                                                                    <h4 style={{ fontSize: '0.9rem', color: '#1e293b', marginBottom: '15px', borderLeft: `4px solid ${mision.color}`, paddingLeft: '10px' }}>
+                                                                        {mision.titulo}
+                                                                    </h4>
+                                                                    {Object.entries(stats.conteoMetricas[mision.id]).length === 0 ? (
+                                                                        <p style={{ fontSize: '0.75rem', color: '#64748b' }}>Sin solicitudes aún.</p>
+                                                                    ) : (
+                                                                        Object.entries(stats.conteoMetricas[mision.id]).map(([tema, cantidad]) => {
+                                                                            const porcentaje = Math.round((cantidad / stats.totalDocentes) * 100);
+                                                                            return (
+                                                                                <div key={tema} style={{ marginBottom: '12px' }}>
+                                                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px' }}>
+                                                                                        <span style={{ color: '#475569', fontWeight: '500' }}>{tema}</span>
+                                                                                        <span style={{ color: '#1e293b', fontWeight: 'bold' }}>{porcentaje}%</span>
+                                                                                    </div>
+                                                                                    <div style={{ width: '100%', height: '6px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden' }}>
+                                                                                        <div style={{ width: `${porcentaje}%`, height: '100%', background: porcentaje >= 50 ? '#b45309' : mision.color, transition: 'width 0.5s ease' }}></div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            );
+                                                                        })
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+
+                                                        {/* 3. NOTA INFORMATIVA FINAL */}
+                                                        <div className="mentoria-footer-note" style={{
+                                                            padding: '15px', background: '#fffbeb', borderRadius: '12px', border: '1px solid #fef08a',
+                                                            marginTop: '20px', fontSize: '0.9rem', color: '#854d0e', display: 'flex', alignItems: 'center', gap: '10px'
+                                                        }}>
+                                                            <span style={{ fontSize: '1.2rem' }}>📊</span>
+                                                            <span>
+                                                                <strong>Estado de la muestra:</strong> Se han procesado respuestas de <strong>{stats.totalDocentes} docentes</strong> únicos.
+                                                            </span>
+                                                        </div>
+                                                    </>
                                                 );
                                             })()}
                                         </div>
                                     )}
-
                                     
                                 </>
                             )}
