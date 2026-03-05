@@ -1166,6 +1166,95 @@ input[type="range"] {
 }
 .patron-6 h4 { color: #dc2626; }
 
+/* Contenedor de la sección de priorización */
+.atlas-prio-section {
+    padding: 20px;
+}
+
+.atlas-prio-main-label {
+    display: block;
+    margin-bottom: 20px;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.atlas-prio-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* Espacio entre filas */
+}
+
+/* Fila individual */
+.atlas-prio-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 20px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.atlas-prio-row:hover {
+    border-color: #C5A059;
+    box-shadow: 0 4px 12px rgba(197, 160, 89, 0.1);
+}
+
+.atlas-prio-text {
+    font-size: 0.9rem;
+    color: #1e293b;
+    font-weight: 500;
+    max-width: 70%; /* Evita que el texto pise al input */
+}
+
+/* Wrapper del input para control de ancho */
+.atlas-prio-input-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+/* Estilo del input numérico */
+.atlas-prio-number-input {
+    width: 60px;
+    height: 40px;
+    text-align: center;
+    border: 2px solid #f1f5f9;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #C5A059;
+    font-weight: 800;
+    font-size: 1.1rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.atlas-prio-number-input:focus {
+    border-color: #C5A059;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.2);
+}
+
+/* Quitar flechas del input number para estética limpia */
+.atlas-prio-number-input::-webkit-inner-spin-button,
+.atlas-prio-number-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Estilo específico para secciones resaltadas con listas de ordenamiento */
+.form-card.highlight.atlas-prio-section {
+    border-left: 5px solid #C5A059; /* Borde dorado ATLAS a la izquierda */
+    background: linear-gradient(to right, #ffffff, #fffdf9);
+}
+
+/* Opcional: Si quieres que los números en esta sección sean un poco más grandes */
+.form-card.highlight .atlas-prio-number-input {
+    border-color: #C5A059;
+    box-shadow: 0 0 5px rgba(197, 160, 89, 0.1);
+}
+
 /* Ajuste Responsivo para la Grilla de Análisis */
 @media (max-width: 600px) {
     .analysis-summary-grid {

@@ -27,27 +27,49 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
     const fetchRetoData = async () => {
         setLoading(true);
         try {
-            // GET para traer el registro existente de este reto
+            // 1. Definimos los parámetros base para la consulta
+            // Si es Directivo, podríamos querer traer todos los registros de la institución
+            // Si no, solo los del usuario actual
             const params = new URLSearchParams({
-                sheet: "Retos_Transformar_ATLAS",
-                user_key: userData.Teacher_Key
+                sheet: "Retos_Transformar_ATLAS"
+                // Nota: Si tu API permite filtrar por Colegio/Institución, agrégalo aquí
             });
 
             const res = await fetch(`${API_URL}?${params.toString()}`);
             const data = await res.json();
-            
+
             if (Array.isArray(data)) {
-                // Buscamos específicamente el reto por su número
-                const registro = data.find(r => parseInt(r.Numero_Reto) === parseInt(retoId));
-                
-                if (registro) {
-                    // Mapeamos los datos guardados en el JSON_Data al estado del formulario
-                    if (registro.Datos_JSON) {
-                        const savedData = JSON.parse(registro.Datos_JSON);
+                // --- A. LÓGICA PARA EL DASHBOARD (Si es Directivo) ---
+                if (isDirectivo) {
+                    // Guardamos todos los registros para que el Dashboard los procese
+                    // La función procesarEstadisticasDocentes se encargará de filtrar los que no son directivos
+                    setRegistrosRaw(data);
+                }
+
+                // --- B. LÓGICA PARA CARGAR MI PROPIO PROGRESO (Lo que ya tenías) ---
+                // Buscamos mi registro personal usando mi Teacher_Key
+                const miRegistro = data.find(r =>
+                    r.Teacher_Key === userData.Teacher_Key &&
+                    parseInt(r.Numero_Reto) === parseInt(retoId)
+                );
+
+                if (miRegistro) {
+                    if (miRegistro.Datos_JSON) {
+                        const savedData = typeof miRegistro.Datos_JSON === 'string'
+                            ? JSON.parse(miRegistro.Datos_JSON)
+                            : miRegistro.Datos_JSON;
+
                         setFormData(savedData);
-                        // Si hay puntos guardados en el objeto, los restauramos
-                        if (savedData.puntosMatriz) setPuntosMatriz(savedData.puntosMatriz);
+
+                        if (savedData.puntosMatriz) {
+                            setPuntosMatriz(savedData.puntosMatriz);
+                        }
                     }
+                } else {
+                    // Si no hay registro previo para este reto, reseteamos el formulario
+                    // para que no queden datos de retos anteriores
+                    setFormData({});
+                    setPuntosMatriz({});
                 }
             }
         } catch (e) {
@@ -505,6 +527,89 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
     };
 
     const analizado = obtenerAnalisisInclusivo();
+
+    const [registrosRaw, setRegistrosRaw] = useState([]);
+
+    // --- 1. PROCESADOR DE DATOS DE DOCENTES (VA AL INICIO DEL ARCHIVO) ---
+    const procesarEstadisticasDocentes = (registrosBD) => {
+        const conteoMetricas = {
+            r1: {}, r2: {}, r3: {},
+            patrones: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }
+        };
+        let totalDocentes = 0;
+
+        if (!registrosBD || !Array.isArray(registrosBD)) return { conteoMetricas, totalDocentes: 0 };
+
+        registrosBD.forEach(reg => {
+            try {
+                const data = typeof reg.Datos_JSON === 'string' ? JSON.parse(reg.Datos_JSON) : reg.Datos_JSON;
+                if (data && data.isDirectivo === false) {
+                    totalDocentes++;
+                    if (data.fortalecerMision1) data.fortalecerMision1.forEach(t => conteoMetricas.r1[t] = (conteoMetricas.r1[t] || 0) + 1);
+                    if (data.fortalecerMision2) data.fortalecerMision2.forEach(t => conteoMetricas.r2[t] = (conteoMetricas.r2[t] || 0) + 1);
+                    if (data.fortalecerMision3) data.fortalecerMision3.forEach(t => conteoMetricas.r3[t] = (conteoMetricas.r3[t] || 0) + 1);
+                    if (data.patronReto3) conteoMetricas.patrones[data.patronReto3]++;
+                }
+            } catch (e) { console.error("Error en JSON:", e); }
+        });
+        return { conteoMetricas, totalDocentes };
+    };
+
+    // --- 2. COMPONENTE VISUAL DEL DASHBOARD ---
+    const DashboardDirectivoFinal = ({ registrosRaw }) => {
+        const { conteoMetricas, totalDocentes } = procesarEstadisticasDocentes(registrosRaw);
+
+        const renderBarras = (metricasReto, titulo) => {
+            const items = Object.entries(metricasReto)
+                .map(([tema, cantidad]) => ({ tema, porcentaje: totalDocentes > 0 ? Math.round((cantidad / totalDocentes) * 100) : 0 }))
+                .sort((a, b) => b.porcentaje - a.porcentaje);
+
+            return (
+                <div className="reto-stat-card" style={{ background: '#fff', padding: '15px', borderRadius: '12px', marginBottom: '15px', border: '1px solid #e2e8f0' }}>
+                    <h4 style={{ fontSize: '0.95rem', color: '#1e293b', marginBottom: '10px' }}>{titulo}</h4>
+                    {items.length === 0 ? <p style={{ fontSize: '0.8rem' }}>Sin datos.</p> : items.map(item => (
+                        <div key={item.tema} style={{ marginBottom: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                                <span>{item.tema}</span>
+                                <strong>{item.porcentaje}%</strong>
+                            </div>
+                            <div style={{ width: '100%', height: '6px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden' }}>
+                                <div style={{ width: `${item.porcentaje}%`, height: '100%', background: item.porcentaje >= 40 ? '#C5A059' : '#94a3b8' }}></div>
+                            </div>
+                            {item.porcentaje >= 40 && (
+                                <div style={{ marginTop: '3px', fontSize: '0.65rem', color: '#854d0e', background: '#fefce8', padding: '2px 5px', borderRadius: '4px', display: 'inline-block' }}>
+                                    ✨ Se recomienda MENTORÍA
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        return (
+            <div className="directivo-dashboard-final" style={{ marginTop: '25px', padding: '20px', background: '#f8fafc', borderRadius: '15px', border: '2px solid #C5A059' }}>
+                <h3 style={{ textAlign: 'center', marginBottom: '20px', color: '#1e293b' }}>📊 NECESIDADES FORMATIVAS DOCENTES</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
+                    {renderBarras(conteoMetricas.r1, "Reto 1: Ética")}
+                    {renderBarras(conteoMetricas.r2, "Reto 2: Pedagogía")}
+                    {renderBarras(conteoMetricas.r3, "Reto 3: Inclusión")}
+
+                    <div style={{ background: '#1e293b', color: '#fff', padding: '15px', borderRadius: '12px', textAlign: 'center' }}>
+                        <h4 style={{ color: '#C5A059', fontSize: '1rem' }}>Madurez UNESCO</h4>
+                        <span style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>{totalDocentes > 0 ? Math.round((conteoMetricas.patrones[1] / totalDocentes) * 100) : 0}%</span>
+                        <p style={{ fontSize: '0.7rem' }}>Nivel CREATE</p>
+                        {(conteoMetricas.patrones[4] + conteoMetricas.patrones[6]) / totalDocentes >= 0.3 && (
+                            <div style={{ background: '#7f1d1d', padding: '8px', borderRadius: '6px', fontSize: '0.7rem', marginTop: '10px' }}>
+                                ⚠ ALERTA: Tendencia a simplificar rigor cognitivo.
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
 
     return (
         <div className="atlas-unique-page-wrapper">
@@ -2224,30 +2329,35 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
                                         ))}
                                     </section>
 
-                                    <section className="form-card">
+                                    <section className="form-card atlas-prio-section">
                                         <div className="form-section-title">3. Priorización Estratégica</div>
-                                        <label>Ordena según prioridad (1 = Más urgente / 5 = Menos urgente):</label>
+                                        <label className="atlas-prio-main-label">Ordena según prioridad (1 = Más urgente / 5 = Menos urgente):</label>
 
-                                        {[
-                                            { id: 'contratos', label: 'Revisar contratos vigentes' },
-                                            { id: 'registro', label: 'Crear registro institucional IA' },
-                                            { id: 'comite', label: 'Establecer comité de aprobación' },
-                                            { id: 'protocolo', label: 'Diseñar protocolo ante incidente' },
-                                            { id: 'docentes', label: 'Capacitar docentes en privacidad' }
-                                        ].map(acc => (
-                                            <div key={acc.id} className="input-group-row-premium">
-                                                <span>{acc.label}</span>
-                                                <input
-                                                    type="number"
-                                                    min="1" max="5"
-                                                    className="inline-input-premium"
-                                                    style={{ width: '60px' }}
-                                                    value={formData[`prioridad_${acc.id}`] || ""}
-                                                    onChange={(e) => handleInputChange(`prioridad_${acc.id}`, e.target.value)}
-                                                />
-                                            </div>
-                                        ))}
-                                        </section>
+                                        <div className="atlas-prio-list-container">
+                                            {[
+                                                { id: 'contratos', label: 'Revisar contratos vigentes' },
+                                                { id: 'registro', label: 'Crear registro institucional IA' },
+                                                { id: 'comite', label: 'Establecer comité de aprobación' },
+                                                { id: 'protocolo', label: 'Diseñar protocolo ante incidente' },
+                                                { id: 'docentes', label: 'Capacitar docentes en privacidad' }
+                                            ].map(acc => (
+                                                <div key={acc.id} className="atlas-prio-row">
+                                                    <span className="atlas-prio-text">{acc.label}</span>
+                                                    <div className="atlas-prio-input-wrapper">
+                                                        <input
+                                                            type="number"
+                                                            min="1"
+                                                            max="5"
+                                                            className="atlas-prio-number-input"
+                                                            value={formData[`prioridad_${acc.id}`] || ""}
+                                                            onChange={(e) => handleInputChange(`prioridad_${acc.id}`, e.target.value)}
+                                                            placeholder="-"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </section>
 
                                     <section className="form-card highlight">
                                         <div className="form-section-title">4. Escenario de Decisión</div>
@@ -2349,15 +2459,35 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
                                         </div>
                                     </section>
 
-                                    <section className="form-card highlight">
+                                    <section className="form-card highlight atlas-prio-section">
                                         <div className="form-section-title">FASE 5: Diseño de Protocolo de Respuesta (Orden)</div>
-                                        <p>Indique el orden de los pasos (1 al 6):</p>
-                                        {['Recepción de queja', 'Activación de revisión técnica', 'Suspensión temporal del sistema', 'Comunicación a familia', 'Evaluación de impacto', 'Documentación formal'].map(paso => (
-                                            <div key={paso} className="input-group-row-premium">
-                                                <span>{paso}</span>
-                                                <input type="number" min="1" max="6" className="inline-input-premium" style={{ width: '60px' }} onChange={(e) => handleInputChange(`orden_proto_${paso}`, e.target.value)} />
-                                            </div>
-                                        ))}
+                                        <p className="atlas-prio-main-label">Indique el orden de los pasos (1 al 6):</p>
+
+                                        <div className="atlas-prio-list-container">
+                                            {[
+                                                'Recepción de queja',
+                                                'Activación de revisión técnica',
+                                                'Suspensión temporal del sistema',
+                                                'Comunicación a familia',
+                                                'Evaluación de impacto',
+                                                'Documentación formal'
+                                            ].map(paso => (
+                                                <div key={paso} className="atlas-prio-row">
+                                                    <span className="atlas-prio-text">{paso}</span>
+                                                    <div className="atlas-prio-input-wrapper">
+                                                        <input
+                                                            type="number"
+                                                            min="1"
+                                                            max="6"
+                                                            className="atlas-prio-number-input"
+                                                            value={formData[`orden_proto_${paso}`] || ""}
+                                                            onChange={(e) => handleInputChange(`orden_proto_${paso}`, e.target.value)}
+                                                            placeholder="-"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </section>
 
                                     <section className="form-card">
@@ -2368,6 +2498,28 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
                                         <textarea maxLength={400} value={formData.refErrorMejora || ""} onChange={(e) => handleInputChange('refErrorMejora', e.target.value)} />
                                         <span className="char-count">{(formData.refErrorMejora?.length || 0)} / 400</span>
                                     </section>
+
+                                    {/* --- SECCIÓN DASHBOARD ESTRATÉGICO --- */}
+                                    {isDirectivo && registrosRaw.length > 0 && (
+                                        <div className="atlas-dashboard-outer-container" style={{ marginTop: '2rem' }}>
+                                            <DashboardDirectivoFinal registrosRaw={registrosRaw} />
+
+                                            {/* Validación de totales para la nota al pie */}
+                                            {(() => {
+                                                const stats = procesarEstadisticasDocentes(registrosRaw);
+                                                return stats.totalDocentes > 0 && (
+                                                    <div className="mentoria-footer-note" style={{
+                                                        padding: '15px', background: '#fffbeb', borderRadius: '12px',
+                                                        border: '1px solid #fef08a', marginTop: '15px', fontSize: '0.9rem', color: '#854d0e'
+                                                    }}>
+                                                        <strong>Nota:</strong> Se analizan {stats.totalDocentes} docentes.
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                    )}
+
+                                    
                                 </>
                             )}
                         </div>
