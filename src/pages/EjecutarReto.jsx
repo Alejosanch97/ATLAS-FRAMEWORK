@@ -2516,11 +2516,16 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
                                     <section className="form-card">
                                         <div className="form-section-title">FASE 3: Análisis de Responsabilidad</div>
                                         <p>Arrastra cada actor a su nivel de responsabilidad:</p>
-                                        
+
                                         {['Directivo', 'Docente', 'Proveedor tecnológico', 'Comité académico', 'Área jurídica'].map(actor => (
                                             <div key={actor} className="input-group-row-premium">
                                                 <label>{actor}:</label>
-                                                <select className="atlas-select-small" onChange={(e) => handleInputChange(`resp_${actor}`, e.target.value)}>
+                                                <select
+                                                    className="atlas-select-small"
+                                                    // AGREGAR ESTA LÍNEA: Vincula el valor al estado cargado
+                                                    value={formData[`resp_${actor}`] || ""}
+                                                    onChange={(e) => handleInputChange(`resp_${actor}`, e.target.value)}
+                                                >
                                                     <option value="">Rol...</option>
                                                     <option value="Principal">Responsable Principal</option>
                                                     <option value="Compartido">Responsable Compartido</option>

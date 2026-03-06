@@ -680,7 +680,7 @@ footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de
                                         className={activeTab === "fase_auditar" ? "active-phase" : "phase-btn"}
                                         onClick={() => switchTab("fase_auditar")}
                                     >
-                                        Diagnóstico
+                                        {userData.Rol === "DIRECTIVO" ? "Diagnóstico Institucional" : "Diagnóstico"}
                                     </button>
                                 )}
                                 {userData.Rol === "ADMIN" && (
@@ -743,7 +743,7 @@ footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de
                                     className={(activeTab === "fase_liderar" || activeTab === "retos_liderar") ? "active-phase" : "phase-btn"}
                                     onClick={() => switchTab("fase_liderar")}
                                 >
-                                    Laboratorio Ético
+                                    {userData.Rol === "DIRECTIVO" ? "Dashboard de Gobernanza" : "Laboratorio Ético"}
                                 </button>
                             </div>
                         )}
@@ -767,7 +767,7 @@ footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de
                                     className={(activeTab === "fase_asegurar" || activeTab === "taller_asegurar") ? "active-phase" : "phase-btn"}
                                     onClick={() => switchTab("fase_asegurar")}
                                 >
-                                    Protocolos y Mejora
+                                    {userData.Rol === "DIRECTIVO" ? "Panorama Estratégico" : "Protocolos y Mejora"}
                                 </button>
                             </div>
                         )}
@@ -834,7 +834,9 @@ footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de
                             >
                                 <div className="compass-title-group-unique">
                                     <div className="compass-text-stack-unique">
-                                        <h2 className="compass-h2-unique">¿Qué es el COMPASS de IA?</h2>
+                                        <h2 className="compass-h2-unique">
+                                            {userData.Rol === "DIRECTIVO" ? "¿Qué es el COMPASS institucional de IA?" : "¿Qué es el COMPASS de IA?"}
+                                        </h2>
                                         {!isCompassInfoExpanded && <p className="compass-tap-unique">Instrumento de madurez pedagógica basado en el modelo ATLAS</p>}
                                     </div>
                                 </div>
