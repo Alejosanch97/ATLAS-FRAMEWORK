@@ -848,14 +848,41 @@ footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de
                             {isCompassInfoExpanded && (
                                 <div className="compass-body-interactive">
                                     <div className="compass-full-intro">
-                                        <p>
-                                            El <strong>COMPASS de IA</strong> es el instrumento de madurez pedagógica basado en el modelo ATLAS.
-                                            No mide cuánto usas la inteligencia artificial; mide cómo la <strong>integras, la regulas y la documentas</strong> en tu práctica educativa.
-                                        </p>
-                                        <p>
-                                            Funciona como una brújula profesional: te orienta sobre el nivel de coherencia, evidencia y criterio con el que estás tomando decisiones frente a la IA en el aula.
-                                            Cada avance se basa en <strong>evidencia demostrada</strong>, no en tiempo invertido ni en cantidad de herramientas utilizadas. Alineado con estándares internacionales de IA confiable y gobernanza educativa.
-                                        </p>
+                                        {userData.Rol === "DIRECTIVO" ? (
+                                            // Vista para DIRECTIVO
+                                            <>
+                                                <h3>Panorama Estratégico</h3>
+                                                <p>
+                                                    El <strong>COMPASS Institucional</strong> es el sistema integral de medición del modelo ATLAS.
+                                                    No mide herramientas; mide cultura, gobernanza y sostenibilidad del uso de la IA en toda la organización.
+                                                </p>
+                                                <p>
+                                                    Evalúa cinco dimensiones clave: gobernanza, competencia docente, gestión de datos, supervisión humana y transparencia.
+                                                    Su propósito es determinar si la institución ha pasado de iniciativas individuales a una arquitectura formal y sostenible.
+                                                </p>
+                                                <p>
+                                                    Funciona como un sistema de trazabilidad institucional: permite demostrar evidencia exportable, establecer estándares internos
+                                                    y consolidar una hoja de ruta anual de mejora continua. Está alineado con directrices internacionales sobre uso responsable
+                                                    y ético de IA en educación.
+                                                </p>
+                                                <p>
+                                                    <em>No certifica innovación aislada. Demuestra madurez organizacional.</em>
+                                                </p>
+                                            </>
+                                        ) : (
+                                            // Vista para otros roles (DOCENTE / Protocolos y Mejora)
+                                            <>
+                                                <h3>Protocolos y Mejora</h3>
+                                                <p>
+                                                    El <strong>COMPASS de IA</strong> es el instrumento de madurez pedagógica basado en el modelo ATLAS.
+                                                    No mide cuánto usas la inteligencia artificial; mide cómo la <strong>integras, la regulas y la documentas</strong> en tu práctica educativa.
+                                                </p>
+                                                <p>
+                                                    Funciona como una brújula profesional: te orienta sobre el nivel de coherencia, evidencia y criterio con el que estás tomando decisiones frente a la IA en el aula.
+                                                    Cada avance se basa en <strong>evidencia demostrada</strong>, no en tiempo invertido ni en cantidad de herramientas utilizadas. Alineado con estándares internacionales de IA confiable y gobernanza educativa.
+                                                </p>
+                                            </>
+                                        )}
                                     </div>
 
                                     {/* BOTONES DE SECCIÓN */}
