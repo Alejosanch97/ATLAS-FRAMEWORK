@@ -355,7 +355,8 @@ export const FaseTransformar = ({ userData, API_URL, onNavigate }) => {
                     <div className="retos-roadmap-v2">
                         {misionesConfig.map((reto) => {
                             const isCompleted = retosCompletados.includes(reto.id);
-                            const isLocked = reto.id > 1 && !retosCompletados.includes(reto.id - 1);
+                            // const isLocked = reto.id > 1 && !retosCompletados.includes(reto.id - 1);
+                            const isLocked = false;
 
                             return (
                                 <div key={reto.id} className={`reto-card-premium ${isCompleted ? 'completed' : ''} ${isLocked ? 'locked' : 'active'}`}>
