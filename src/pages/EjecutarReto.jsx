@@ -55,11 +55,20 @@ export const EjecutarReto = ({ userData, API_URL, retoId, onNavigate }) => {
                     setRegistrosRaw(data);
                 }
 
-                // 2. Buscamos el registro específico
-                const registro = data.find(r =>
+                // 2. Buscamos el registro específico con la lógica de prioridad
+                // Primero filtramos los registros que pertenecen a este usuario y reto
+                const registrosUsuario = data.filter(r =>
                     String(r.Teacher_Key) === String(userData.Teacher_Key) &&
                     parseInt(r.Numero_Reto) === parseInt(retoId)
                 );
+
+                // Buscamos el más reciente (último en la lista) que esté COMPLETADO
+                let registro = [...registrosUsuario].reverse().find(r => r.Status_Reto === "COMPLETADO");
+
+                // Si no hay ninguno completado, buscamos el último BORRADOR
+                if (!registro) {
+                    registro = [...registrosUsuario].reverse().find(r => r.Status_Reto === "BORRADOR");
+                }
 
                 if (registro && registro.Datos_JSON) {
                     const savedData = JSON.parse(registro.Datos_JSON);
@@ -201,59 +210,59 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
     };
 
     const saveReto = async (statusFinal = 'ENVIADO') => {
-        // --- 1. VALIDACIONES DE RESPUESTAS CORRECTAS (SOLO SI ES ENVÍO FINAL) ---
-        if (statusFinal === 'completed') {
-            if (isDirectivo && parseInt(retoId) === 2) {
-                const esCorrectaDecision = formData.decisionEscenario === 'Implementar con evaluación de impacto previa';
-                const esCorrectoBiometricos = formData.sens_Datos_biométricos !== 'Baja';
-                const esCorrectoMatching =
-                    formData.match_Transparencia === "Comunicar uso a familias" &&
-                    formData["match_Supervisión humana"] === "Designar responsable institucional";
+    // --- 1. VALIDACIONES DE RESPUESTAS (INFORMATIVAS, NO BLOQUEANTES) ---
+    if (statusFinal === 'completed') {
+        if (isDirectivo && parseInt(retoId) === 2) {
+            const esCorrectaDecision = formData.decisionEscenario === 'Implementar con evaluación de impacto previa';
+            const esCorrectoBiometricos = formData.sens_Datos_biométricos !== 'Baja';
+            const esCorrectoMatching =
+                formData.match_Transparencia === "Comunicar uso a familias" &&
+                formData["match_Supervisión humana"] === "Designar responsable institucional";
 
-                if (!esCorrectaDecision || !esCorrectoBiometricos || !esCorrectoMatching) {
-                    Swal.fire({
-                        title: "Revisión técnica necesaria",
-                        text: "Algunas respuestas no coinciden con el marco regulatorio (EU AI Act).",
-                        icon: "error",
-                        confirmButtonColor: "#c5a059"
-                    });
-                    return;
-                }
-            }
-
-            if (isDirectivo && parseInt(retoId) === 3) {
-                if (formData.decisionCrisis !== 'Activar revisión humana urgente del caso') {
-                    Swal.fire({
-                        title: "Protocolo de Crisis Erróneo",
-                        text: "La normativa exige activar la revisión humana como primera acción.",
-                        icon: "warning",
-                        confirmButtonColor: "#c5a059"
-                    });
-                    return;
-                }
+            if (!esCorrectaDecision || !esCorrectoBiometricos || !esCorrectoMatching) {
+                // Usamos await para que el usuario lea el mensaje, pero quitamos el 'return'
+                await Swal.fire({
+                    title: "Revisión técnica",
+                    text: "Algunas respuestas no coinciden con el marco regulatorio (EU AI Act). Tu progreso se guardará con estas observaciones.",
+                    icon: "info",
+                    confirmButtonColor: "#c5a059"
+                });
             }
         }
 
-        // --- 2. INICIO DEL PROCESO DE GUARDADO ---
-        setIsSaving(true);
-
-        const nombresRetosDocente = ["", "Evaluación Ética", "Rediseño Human-Centred", "Diferenciación Inclusiva"];
-        const nombresRetosDirectivo = ["", "Simulación de Riesgo", "Protocolo de Privacidad", "Gestión de Error Crítico"];
-        const nombreActual = isDirectivo ? nombresRetosDirectivo[retoId] : nombresRetosDocente[retoId];
-
-        // --- CORRECCIÓN: Capturar el análisis UNESCO si es Reto 3 Docente ---
-        let datosParaGuardar = { ...formData, puntosMatriz };
-
-        if (!isDirectivo && parseInt(retoId) === 3) {
-            // Asumiendo que calcularPatronUNESCO es la función que ya tienes en tu componente
-            const resultadoAnalisis = calcularPatronUNESCO(formData);
-            datosParaGuardar.analisis_unesco_create = {
-                patron: resultadoAnalisis.patron,
-                titulo: resultadoAnalisis.titulo,
-                resultado_texto: resultadoAnalisis.resultado,
-                fecha_analisis: new Date().toISOString()
-            };
+        if (isDirectivo && parseInt(retoId) === 3) {
+            if (formData.decisionCrisis !== 'Activar revisión humana urgente del caso') {
+                // Quitamos el 'return' para que no detenga el proceso
+                await Swal.fire({
+                    title: "Protocolo de Crisis",
+                    text: "La normativa sugiere activar la revisión humana como prioridad. Se registrará tu respuesta para el análisis institucional.",
+                    icon: "warning",
+                    confirmButtonColor: "#c5a059"
+                });
+            }
         }
+    }
+
+    // --- 2. INICIO DEL PROCESO DE GUARDADO ---
+    setIsSaving(true);
+
+    const nombresRetosDocente = ["", "Evaluación Ética", "Rediseño Human-Centred", "Diferenciación Inclusiva"];
+    const nombresRetosDirectivo = ["", "Simulación de Riesgo", "Protocolo de Privacidad", "Gestión de Error Crítico"];
+    const nombreActual = isDirectivo ? nombresRetosDirectivo[retoId] : nombresRetosDocente[retoId];
+
+    // --- CORRECCIÓN: Capturar el análisis UNESCO si es Reto 3 Docente ---
+    let datosParaGuardar = { ...formData, puntosMatriz };
+
+    if (!isDirectivo && parseInt(retoId) === 3) {
+        // Asegúrate de que calcularPatronUNESCO esté definida en el mismo componente
+        const resultadoAnalisis = calcularPatronUNESCO(formData);
+        datosParaGuardar.analisis_unesco_create = {
+            patron: resultadoAnalisis.patron,
+            titulo: resultadoAnalisis.titulo,
+            resultado_texto: resultadoAnalisis.resultado,
+            fecha_analisis: new Date().toISOString()
+        };
+    }
 
         const payload = {
             action: "create",
@@ -265,52 +274,58 @@ En este nivel, la IA se integra como parte de una arquitectura pedagógica consc
                 Nombre_Reto: nombreActual,
                 Nivel_UNESCO: retoId === 1 ? "Acquire" : retoId === 2 ? "Deepen" : "Create",
                 Fecha_Creacion: new Date().toISOString(),
-                Datos_JSON: JSON.stringify(datosParaGuardar), // Guardamos el objeto enriquecido
+                Datos_JSON: JSON.stringify(datosParaGuardar),
+                // CAMBIO AQUÍ: Aseguramos que el status sea consistente
                 Status_Reto: statusFinal === 'completed' ? "COMPLETADO" : "BORRADOR",
-                Autoevaluacion_Status: (formData.cumplimiento && formData.cumplimiento.length >= 3) ? "COMPLETADO" : "PENDIENTE"
+                // CAMBIO AQUÍ: Si es borrador, no importa la autoevaluación aún
+                Autoevaluacion_Status: statusFinal === 'completed'
+                    ? ((formData.cumplimiento && formData.cumplimiento.length >= 3) ? "COMPLETADO" : "PENDIENTE")
+                    : "BORRADOR"
             }
         };
 
-        try {
-            const response = await fetch(API_URL, {
-                method: "POST",
-                mode: "cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify(payload)
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            mode: "cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+            await Swal.fire({
+                title: statusFinal === 'completed' ? "¡Misión Enviada!" : "Borrador Guardado",
+                text: statusFinal === 'completed'
+                    ? "Sincronización exitosa con ATLAS."
+                    : "Tu progreso se ha guardado correctamente.",
+                icon: "success",
+                confirmButtonColor: "#c5a059", // Mantengo tu dorado original
+                timer: 1500,
+                showConfirmButton: false,
+                timerProgressBar: true
             });
 
-            const result = await response.json();
-
-            if (result.status === "success") {
-                await Swal.fire({
-                    title: statusFinal === 'completed' ? "¡Misión Enviada!" : "Borrador Guardado",
-                    text: "Sincronización exitosa con ATLAS.",
-                    icon: "success",
-                    confirmButtonColor: "#c5a059",
-                    timer: 1500,
-                    showConfirmButton: false,
-                    timerProgressBar: true
-                });
-
-                if (statusFinal === 'completed') {
-                    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-                    onNavigate('fase_transformar');
-                }
-            } else {
-                throw new Error("Error en respuesta del servidor");
+            if (statusFinal === 'completed') {
+                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                onNavigate('fase_transformar');
             }
-        } catch (e) {
-            console.error("Error en saveReto:", e);
-            Swal.fire({
-                title: "Error de Sincronización",
-                text: "No se pudo conectar con el servidor ATLAS.",
-                icon: "error",
-                confirmButtonColor: "#d33"
-            });
-        } finally {
-            setIsSaving(false);
+        } else {
+            throw new Error("Error en respuesta del servidor");
         }
-    };
+    } catch (e) {
+        console.error("Error en saveReto:", e);
+        Swal.fire({
+            title: "Error de Sincronización",
+            text: "No se pudo conectar con el servidor ATLAS.",
+            icon: "error",
+            confirmButtonColor: "#d33"
+        });
+    } finally {
+        setIsSaving(false);
+    }
+};
 
     const calcularPatronUNESCO = (data) => {
 
