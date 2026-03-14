@@ -247,7 +247,7 @@ export const Home = ({ onLoginSuccess }) => {
 
                                 <div className="column-item">
                                     <p className="intro-text-compliance-refined">
-                                        Se fundamenta en los principios internacionales de la <strong>UNESCO, la OECD y la Unión Europea</strong>,
+                                        Se fundamenta en los principios internacionales de la <strong>UNESCO, la OCDE y la Unión Europea</strong>,
                                         traduciendo lineamientos globales en un modelo operativo real.
                                     </p>
                                 </div>
