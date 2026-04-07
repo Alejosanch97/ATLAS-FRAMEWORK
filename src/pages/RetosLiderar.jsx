@@ -517,13 +517,13 @@ const RetosLiderar = ({ userData, API_URL, retoId, onNavigate, datosIniciales })
                 <section className="latlab-card">
                     <div className="latlab-card-title-row">
                         <span className="latlab-step-badge">Paso 1</span>
-                        <h3>Input del Prompt</h3>
+                        <h3>En este laboratorio analizarás prompts desde una perspectiva ética y pedagógica. Escribe un prompt en español que sueles utilizar con IA generativa; idealmente, revisa tus interacciones previas y copia uno real aquí. Esto nos permitirá identificar riesgos, sesgos o usos inadecuados, y transformarlo en una instrucción responsable que mantenga tu rol como docente y promueva el aprendizaje auténtico. No se trata solo de mejorar el prompt, sino de asegurar que su uso sea coherente con principios de evaluación justa, transparencia y supervisión humana.</h3>
                     </div>
                     <textarea 
                         className="latlab-textarea"
                         value={formData.promptReal}
                         onChange={(e) => setFormData({...formData, promptReal: e.target.value})}
-                        placeholder="En este laboratorio analizarás prompts desde una perspectiva ética y pedagógica. Escribe un prompt que sueles utilizar con IA generativa; idealmente, revisa tus interacciones previas y copia uno real aquí. Esto nos permitirá identificar riesgos, sesgos o usos inadecuados, y transformarlo en una instrucción responsable que mantenga tu rol como docente y promueva el aprendizaje auténtico. No se trata solo de mejorar el prompt, sino de asegurar que su uso sea coherente con principios de evaluación justa, transparencia y supervisión humana."
+                        placeholder="Input del Prompt"
                     />
                 </section>
 
