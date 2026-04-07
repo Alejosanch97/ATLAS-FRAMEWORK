@@ -16,19 +16,27 @@ const AnalisisLiderazgo = ({ userData, API_URL, onNavigate }) => {
         const fetchDashboardData = async () => {
             setLoading(true);
             try {
-                const [resProgreso, resRespuestas, resRetos, resPrompts] = await Promise.all([
+                // 1. Agregamos resUsers para traer la base de datos de roles
+                const [resProgreso, resRespuestas, resRetos, resPrompts, resUsers] = await Promise.all([
                     fetch(`${API_URL}?sheet=Progreso_Fases_ATLAS`),
                     fetch(`${API_URL}?sheet=Respuestas_Usuarios`),
                     fetch(`${API_URL}?sheet=Retos_Transformar_ATLAS`),
-                    fetch(`${API_URL}?sheet=Liderar_Prompts_Docentes`)
+                    fetch(`${API_URL}?sheet=Liderar_Prompts_Docentes`),
+                    fetch(`${API_URL}?sheet=Users_ATLAS`)
                 ]);
 
                 const progreData = await resProgreso.json();
                 const respData = await resRespuestas.json();
                 const retosData = await resRetos.json();
                 const promptsData = await resPrompts.json();
+                const usersData = await resUsers.json();
 
-                const todosLosDocentes = [...new Set(progreData.map(p => p.Teacher_Key))];
+                // 2. FILTRO MAESTRO: Solo incluimos a quienes tengan Rol 'DOCENTE'
+                // Esto excluye automáticamente a 1DIRECTIVO, 1ATLAS, etc.
+                const todosLosDocentes = usersData
+                    .filter(u => u.Rol?.toUpperCase() === 'DOCENTE')
+                    .map(u => u.Teacher_Key);
+
                 const totalDocentes = todosLosDocentes.length;
 
                 let conteoAuditar = 0;
@@ -41,6 +49,7 @@ const AnalisisLiderazgo = ({ userData, API_URL, onNavigate }) => {
                 let transformarFaltantes = [];
                 let listaRanking = [];
 
+                // 3. La iteración ahora se hace sobre la lista ya filtrada
                 todosLosDocentes.forEach(key => {
                     const c1Auditar = progreData.some(p => p.Teacher_Key === key && p.Fase === 'AUDITAR' && p.Capa_1_Sentido === 'COMPLETADO');
                     const c2Auditar = respData.some(r => r.Teacher_Key === key);
@@ -54,7 +63,7 @@ const AnalisisLiderazgo = ({ userData, API_URL, onNavigate }) => {
                     if (retosOK.length === 3) {
                         conteoTransformar++;
                     } else {
-                        transformarFaltantes.push(key); 
+                        transformarFaltantes.push(key);
                     }
 
                     const promptData = promptsData.find(p => p.Teacher_Key === key && p.Status === 'completed');
@@ -64,7 +73,7 @@ const AnalisisLiderazgo = ({ userData, API_URL, onNavigate }) => {
                         const pPriv = Number(promptData.Puntaje_Privacidad || 0);
                         const pAgen = Number(promptData.Puntaje_Agencia || 0);
                         const pCogn = Number(promptData.Puntaje_Dependencia || 0);
-                        
+
                         sumaRiesgos.etica += pEtica;
                         sumaRiesgos.priv += pPriv;
                         sumaRiesgos.agen += pAgen;
@@ -103,7 +112,7 @@ const AnalisisLiderazgo = ({ userData, API_URL, onNavigate }) => {
                         auditarIds: auditarFaltantes,
                         transformarIds: transformarFaltantes
                     },
-                    rankingCritico: listaRanking.sort((a,b) => a.promedio - b.promedio).slice(0,5)
+                    rankingCritico: listaRanking.sort((a, b) => a.promedio - b.promedio).slice(0, 5)
                 });
             } catch (error) {
                 console.error("Error Dashboard:", error);

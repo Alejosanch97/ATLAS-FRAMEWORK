@@ -447,7 +447,7 @@ export const Dashboard = ({ onLogout }) => {
             case "ejecutar_reto": return { title: `Mision ${activeRetoId}`, subtitle: "Consignación de Evidencia Pedagógica" };
             case "fase_auditar": return { title: "Fase: Auditar", subtitle: "Gobernanza y Sentido Crítico de la IA" };
             case "responder_fase": 
-            case "fase_liderar": return { title: "Fase: Auditar", subtitle: "Gobernanza y Ética de la IA" };
+            case "fase_liderar": return { title: "Fase: Liderar", subtitle: "Gobernanza y Ética de la IA" };
             case "retos_liderar": return { title: `Misión`, subtitle: "Auditoría de Responsabilidad Pedagógica" };
             case "fase_asegurar":
                 return { title: "Fase: Asegurar", subtitle: "Gobernanza y Sostenibilidad de la IA" };
