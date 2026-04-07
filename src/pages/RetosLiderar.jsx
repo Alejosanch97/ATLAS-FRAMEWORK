@@ -523,7 +523,7 @@ const RetosLiderar = ({ userData, API_URL, retoId, onNavigate, datosIniciales })
                         className="latlab-textarea"
                         value={formData.promptReal}
                         onChange={(e) => setFormData({...formData, promptReal: e.target.value})}
-                        placeholder="Pega aquí el prompt que quieres auditar éticamente..."
+                        placeholder="En este laboratorio analizarás prompts desde una perspectiva ética y pedagógica. Escribe un prompt que sueles utilizar con IA generativa; idealmente, revisa tus interacciones previas y copia uno real aquí. Esto nos permitirá identificar riesgos, sesgos o usos inadecuados, y transformarlo en una instrucción responsable que mantenga tu rol como docente y promueva el aprendizaje auténtico. No se trata solo de mejorar el prompt, sino de asegurar que su uso sea coherente con principios de evaluación justa, transparencia y supervisión humana."
                     />
                 </section>
 
