@@ -408,7 +408,7 @@ const AnalisisLiderazgo = ({ userData, API_URL, onNavigate }) => {
                     <section className="dash-lider-2026-card" style={{flex: 1.3}}>
                         <div className="dash-lider-2026-card-head">
                             <span className="dash-lider-2026-panel-id">Panel 4</span>
-                            <h3>Ranking de Intervención (Peores Resultados)</h3>
+                            <h3>Ranking de Intervención (Resultados Criticos)</h3>
                         </div>
                         <div className="dash-lider-2026-table-wrapper">
                             <table className="dash-lider-2026-table">
