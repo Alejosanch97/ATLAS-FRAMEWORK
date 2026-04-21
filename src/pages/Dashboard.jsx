@@ -790,8 +790,9 @@ footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de
                                 <button
                                     className={(activeTab === "fase_sostener" || activeTab === "modulo_sostener_directivo") ? "active-phase" : "phase-btn"}
                                     onClick={() => {
-                                        const destino = userData.Rol === "DIRECTIVO" ? "modulo_sostener_directivo" : "fase_sostener";
-                                        switchTab(destino);
+                                        // ERROR CORREGIDO: Ambos roles deben pasar primero por "fase_sostener"
+                                        // para ver la intro y activar la fase.
+                                        switchTab("fase_sostener");
                                     }}
                                 >
                                     {userData.Rol === "DIRECTIVO" ? "Impacto Institucional" : "Radar y Huella"}

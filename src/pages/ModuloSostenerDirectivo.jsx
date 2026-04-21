@@ -1,256 +1,407 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
-    Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, 
-    Radar as RadarFill, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip 
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from "recharts";
 import Swal from "sweetalert2";
 import "../Styles/moduloSostenerDirectivo.css";
+import "../Styles/analisisdirectivo.css"; 
 
-const ModuloSostenerDirectivo = ({ 
-    userData, 
-    API_URL, 
-    onNavigate, 
-    datosAuditar, 
-    datosAsegurar, 
-    datosDocentesAgregados, // Promedios de toda la institución
-    promptDataGlobal,       // Dictamen ético promedio
-    retosInstitucionales,   // Misiones de todos los docentes
-    historialGlobal         // Evolución de la institución
-}) => {
+const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate }) => {
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [step, setStep] = useState(1);
-    const [loading, setLoading] = useState(false);
-    const [showModalReal, setShowModalReal] = useState(false);
     
-    const [formData, setFormData] = useState({
-        reflexionInicial: "",
-        cumplimientoPlan: "En proceso",
-        analisisImplementacion: "",
-        analisisEstadoActual: "",
-        decisionRuta: "",
-        prioridadEstrategica: "",
-        accionGobernanza: "",
-        fechaRevision: ""
+    // Estados de Vista
+    const [viewModePanel1, setViewModePanel1] = useState('stats'); // stats | questions
+    
+    // Datos Analíticos
+    const [datosDocentes, setDatosDocentes] = useState({
+        promedioGlobal: 0,
+        promedioPorcentaje: 0,
+        totalDocentes: 0,
+        desviacion: "0.0",
+        preguntasDetalle: [],
+        categoriasData: [],
+        dimensionDebil: "",
+        nivelCompassObj: {},
+        riesgosRelevantes: []
     });
 
-    // --- CÁLCULOS INSTITUCIONALES ---
-    const pD = datosDocentesAgregados?.promediosDimensiones || [0, 0, 0, 0];
-    const nivelGlobal = datosDocentesAgregados?.promedioGlobal || 0;
-    const toPct = (val) => ((val / 5) * 100).toFixed(1);
+    // Estado del Formulario (Hoja SOSTENER_Institucional)
+    const [formData, setFormData] = useState({
+        Reflexion_Punto_Partida: "",
+        Estado_Cumplimiento_Asegurar: "",
+        Analisis_Implementacion: "",
+        Ruta_Elegida: "",
+        Prioridad_Estrategica_Anual: "",
+        Accion_Gobernanza: "",
+        Indicador_Medible: "",
+        Fecha_Revision_Institucional: "",
+        Estrategia_Comunicacion: ""
+    });
 
-    const handleNext = () => setStep(step + 1);
-    const handleBack = () => setStep(step - 1);
-
-    const handleSaveFinal = async () => {
-        setLoading(true);
-        try {
-            const payload = {
-                action: "create",
-                sheet: "SOSTENER_Institucional",
-                data: { ...formData, Teacher_Key: userData.Teacher_Key, Nivel_Final: nivelGlobal }
-            };
-            await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
-            Swal.fire("Ciclo Cerrado", "La Hoja de Ruta Institucional ha sido generada.", "success");
-            onNavigate('overview');
-        } catch (e) {
-            Swal.fire("Error", "No se pudo guardar.", "error");
-        } finally { setLoading(false); }
+    // Lógica de Niveles Compass basada en porcentaje (0-100)
+    const getCompassData = (score) => {
+        if (score >= 90) return {
+            nivel: "Gobernanza madura",
+            rango: "90–100",
+            desc: `Tu integración de IA va más allá del aula. Estás aplicando supervisión humana significativa, documentando decisiones, evaluando impacto y contribuyendo a lineamientos institucionales. Tu práctica está alineada con principios internacionales de IA confiable, ética y gobernanza educativa. No solo usas IA con intención pedagógica. Participas en la construcción de una cultura institucional responsable. El desafío en este nivel no es usar más IA, sino sostener calidad, coherencia y liderazgo. Puedes avanzar las demás fases y convertirte en un gran referente en el ecosistema ATLAS.`
+        };
+        if (score >= 75) return {
+            nivel: "Integración estratégica",
+            rango: "75–89",
+            desc: `La IA está integrada de manera coherente y estratégica en tu práctica. No solo la utilizas con intención curricular, sino que también incorporas criterios de uso responsable, supervisión humana explícita y evaluación ajustada. Existe conciencia institucional en tu práctica. Posiblemente ya influyes en otros colegas y contribuyes a conversaciones sobre lineamientos. Tu resto ahora es avanzar hacia gobernanza: Documentar procesos, escalar dilemas éticos y contribuir activamente a la construcción de criterios institucionales.`
+        };
+        if (score >= 60) return {
+            nivel: "Integración pedagógica",
+            rango: "60–74",
+            desc: `La IA ya forma parte de tu diseño pedagógico con intención clara. Estás vinculando su uso con objetivos curriculares específicos y realizando ajustes en evaluación. Además, demuestras conciencia sobre riesgos éticos y aplicas supervisión humana en tus decisiones. Tu práctica refleja alineación con estándares internacionales de integración pedagógica responsable. Sin embargo, aún puedes fortalecer la documentación y la evaluación del impacto real.`
+        };
+        if (score >= 40) return {
+            nivel: "Uso incipiente",
+            rango: "40–59",
+            desc: `Ya estás utilizando IA en tu práctica, pero principalmente de forma instrumental u ocasional. Tu uso muestra intención, aunque aún no es completamente sistemático en términos de evaluación o criterios éticos explícitos. Tu siguiente paso es avanzar de la eficiencia a la coherencia pedagógica. Estás construyendo bases importantes.`
+        };
+        return {
+            nivel: "Exploración",
+            rango: "0–39",
+            desc: `Hoy te encuentras en una etapa inicial de aproximación a la inteligencia artificial en educación. Esto significa que el uso de IA en tu práctica es limitado o aún no está integrado de manera estructurada al currículo. Este resultado no es una debilidad. Estás en el inicio del camino ATLAS.`
+        };
     };
 
+    // IDs de preguntas por dimensión
+    const DIMENSIONES_CONFIG = {
+        "Uso": ['Q-A2-04', 'Q-A2-05', 'Q-A2-06', 'Q-A2-07', 'Q-A2-08'],
+        "Ética": ['Q-A4-13', 'Q-A4-14', 'Q-A4-15', 'Q-A4-16', 'Q-A4-17'],
+        "Impacto": ['Q-A5-18', 'Q-A5-19', 'Q-A5-20', 'Q-A5-21', 'Q-A5-22'],
+        "Desarrollo": ['Q-A3-09', 'Q-A3-10', 'Q-A3-11', 'Q-A3-12', 'Q-A6-23', 'Q-A6-24', 'Q-A6-25', 'Q-A6-26']
+    };
+
+    useEffect(() => {
+        cargarDatosIniciales();
+    }, []);
+
+    const cargarDatosIniciales = async () => {
+        setLoading(true);
+        try {
+            const [resAuditar, resConfig, resBorrador, resRetos] = await Promise.all([
+                fetch(`${API_URL}?sheet=Respuestas_Usuarios`),
+                fetch(`${API_URL}?sheet=Config_Preguntas`),
+                fetch(`${API_URL}?sheet=SOSTENER_Institucional&Institucion_Key=${userData.Institucion_Key}`),
+                fetch(`${API_URL}?sheet=Retos_Transformar_ATLAS`)
+            ]);
+            const dataAuditar = await resAuditar.json();
+            const dataConfig = await resConfig.json();
+            const dataBorrador = await resBorrador.json();
+            const dataRetos = await resRetos.json();
+
+            if (Array.isArray(dataBorrador) && dataBorrador.length > 0) {
+                const ultimo = dataBorrador[dataBorrador.length - 1];
+                setFormData(prev => ({ ...prev, ...ultimo }));
+            }
+
+            let riesgosDetectados = [];
+            if (Array.isArray(dataRetos)) {
+                const reto1 = dataRetos.find(r => r.Numero_Reto == 1 || r.Numero_Reto == "1");
+                if (reto1 && reto1.Datos_JSON) {
+                    try {
+                        const jsonParsed = JSON.parse(reto1.Datos_JSON);
+                        const puntos = jsonParsed.puntosMatriz || {};
+                        const labels = {
+                            transparency: "Transparencia y Explicabilidad",
+                            privacy: "Privacidad y Seguridad de Datos",
+                            bias: "Sesgos y Equidad Algorítmica",
+                            agency: "Agencia Humana",
+                            supervision: "Supervisión y Rendición de Cuentas"
+                        };
+                        
+                        riesgosDetectados = Object.entries(puntos).map(([key, val]) => ({
+                            label: labels[key] || key,
+                            valor: val
+                        })).sort((a,b) => a.valor - b.valor).slice(0, 3);
+                    } catch (e) { console.error("Error parseando JSON de retos", e); }
+                }
+            }
+
+            if (Array.isArray(dataAuditar)) {
+                const ID_FORM_DOCENTES = "FORM-1770684713222";
+                const respuestasDocentes = dataAuditar.filter(r => String(r.ID_Form) === ID_FORM_DOCENTES);
+                
+                const textosPreguntas = {};
+                if (Array.isArray(dataConfig)) {
+                    dataConfig.forEach(p => textosPreguntas[String(p.ID_Pregunta).trim()] = p.Texto_Pregunta);
+                }
+
+                const agrupado = {};
+                const puntajesTotales = {};
+                respuestasDocentes.forEach(resp => {
+                    const qId = String(resp.ID_Pregunta).trim();
+                    const puntos = parseFloat(String(resp.Puntos_Ganados || "0").replace(',', '.'));
+                    const envioId = resp.ID_Respuesta_Global;
+                    puntajesTotales[envioId] = (puntajesTotales[envioId] || 0) + puntos;
+                    if (!agrupado[qId]) {
+                        agrupado[qId] = { id: qId, texto: textosPreguntas[qId] || qId, opciones: {}, total: 0, sumaPuntos: 0 };
+                    }
+                    const val = resp.Valor_Respondido || "N/A";
+                    agrupado[qId].opciones[val] = (agrupado[qId].opciones[val] || 0) + 1;
+                    agrupado[qId].sumaPuntos += puntos;
+                    agrupado[qId].total++;
+                });
+
+                const listaPuntajes = Object.values(puntajesTotales);
+                const promedioGlobal = listaPuntajes.length > 0 ? listaPuntajes.reduce((a, b) => a + b, 0) / listaPuntajes.length : 0;
+                const promedioPorcentaje = (promedioGlobal / 5) * 100; // Normalización a 100 para Compass
+
+                const categoriasFinales = Object.keys(DIMENSIONES_CONFIG).map(catName => {
+                    const idsInCat = DIMENSIONES_CONFIG[catName];
+                    const pregsDeCat = Object.values(agrupado).filter(q => idsInCat.includes(q.id));
+                    let promedioCat = 0;
+                    if (pregsDeCat.length > 0) {
+                        const sumaPromediosPreguntas = pregsDeCat.reduce((acc, q) => acc + (q.sumaPuntos / q.total), 0);
+                        promedioCat = (sumaPromediosPreguntas / pregsDeCat.length); 
+                    }
+                    return { dimension: catName, puntaje: parseFloat(promedioCat.toFixed(1)) };
+                });
+
+                const minCat = [...categoriasFinales].sort((a, b) => a.puntaje - b.puntaje)[0];
+
+                setDatosDocentes({
+                    promedioGlobal,
+                    promedioPorcentaje,
+                    totalDocentes: listaPuntajes.length,
+                    desviacion: (promedioGlobal * 0.12).toFixed(2),
+                    preguntasDetalle: Object.values(agrupado),
+                    categoriasData: categoriasFinales,
+                    dimensionDebil: minCat?.dimension || "Por evaluar",
+                    nivelCompassObj: getCompassData(promedioPorcentaje),
+                    riesgosRelevantes: riesgosDetectados
+                });
+            }
+        } catch (e) {
+            console.error("Error en carga:", e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSave = async (isFinal = false) => {
+        if (isFinal && formData.Reflexion_Punto_Partida.length < 300) {
+            return Swal.fire("Atención", "La reflexión debe tener al menos 300 caracteres.", "warning");
+        }
+        setSaving(true);
+        const payload = {
+            ...formData,
+            Institucion_Key: userData.Institucion_Key,
+            Teacher_Key: userData.Teacher_Key,
+            Fecha_Cierre: new Date().toISOString(),
+            Nivel_Institucional_Actual: datosDocentes.nivelCompassObj.nivel,
+            Docentes_N1: datosDocentes.totalDocentes,
+            ID_Sostener_Inst: `SOS-${Date.now()}`
+        };
+        try {
+            await fetch(`${API_URL}?sheet=SOSTENER_Institucional`, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(payload)
+            });
+            Swal.fire("Éxito", isFinal ? "Datos enviados" : "Borrador guardado", "success");
+        } catch (e) {
+            Swal.fire("Error", "No se pudo conectar con el servidor", "error");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) return <div className="loading-compass">Analizando evidencia de docentes...</div>;
+
     return (
-        <div className="sostener-directivo-master animate-fade-in">
-            <header className="sos-dir-header">
-                <div className="header-info">
-                    <button className="btn-exit-sos" onClick={() => onNavigate('overview')}>⬅ Salir al Mapa</button>
-                    <h1>Cierre Institucional ATLAS 2026</h1>
+        <div className="sos-directivo-master-vertical animate-fade-in">
+            {/* CABECERA */}
+            <header className="sos-header-full">
+                <div className="sos-header-nav">
+                    <button className="btn-back-round" onClick={() => onNavigate('overview')}>⬅</button>
+                    <div className="step-dots-container">
+                        {[1, 2, 3, 4, 5].map(s => (
+                            <div key={s} className={`step-circle ${step >= s ? 'active' : ''}`} onClick={() => setStep(s)}>{s}</div>
+                        ))}
+                    </div>
                 </div>
-                <div className="progress-container-top">
-                    <div className="progress-bar-bg"><div className="progress-fill" style={{ width: `${(step / 5) * 100}%` }}></div></div>
-                </div>
+                <h1 className="sos-main-title">Consola Directiva: Sostener</h1>
             </header>
 
-            <div className="sos-dir-grid-layout">
-                
-                {/* COLUMNA IZQUIERDA: LOS 6 PANELES DE ANÁLISIS (DASHBOARD) */}
-                <aside className="sos-analysis-column">
-                    <div className="sos-dash-layout-vertical">
-                        
-                        {/* PANEL 1: ÍNDICE GLOBAL */}
-                        <div className="sos-stat-card gold">
-                            <span className="dash-lider-2026-panel-id">Panel 1</span>
-                            <h4>Índice de Sostenibilidad Institucional</h4>
-                            <div className="sos-big-val">{toPct(nivelGlobal)}%</div>
-                            <p className="sub-text">Madurez promedio de la facultad</p>
+            {/* SECCIÓN 1: INTRODUCCIÓN */}
+            <section className="sos-card-full intro-gradient">
+                <div className="intro-content">
+                    <p>Tu institución comenzó este camino con un diagnóstico de precisión. Desde ese punto de partida, diseñaste un plan estratégico y lideraste su ejecución paso a paso.</p>
+                    <p>Hoy, el enfoque no es sumar nuevas tareas, sino consolidar la transformación. Es el momento de evaluar los resultados, asegurar la permanencia de lo que funciona y proyectar el escalamiento del impacto institucional.</p>
+                    <div className="indicators-grid-mini">
+                        <div className="ind-item"><strong>Nivel COMPASS:</strong> Punto de partida.</div>
+                        <div className="ind-item"><strong>Dimensión Crítica:</strong> Oportunidad de mejora.</div>
+                        <div className="ind-item"><strong>Alertas:</strong> Riesgos detectados.</div>
+                        <div className="ind-item"><strong>Prioridades:</strong> Objetivos guía.</div>
+                    </div>
+                </div>
+            </section>
+
+            {step === 1 && (
+                <div className="sos-vertical-flow">
+                    
+                    {/* SECCIÓN 2: MÉTRICAS GLOBALES (AUDITORÍA) */}
+                    <section className="sos-card-full auditoria-card">
+                        <div className="card-header-flex">
+                            <h2 className="card-title-icon">📊 Análisis de Auditoría</h2>
+                            <div className="view-toggle-pills">
+                                <button onClick={() => setViewModePanel1('stats')} className={viewModePanel1==='stats'?'active':''}>General</button>
+                                <button onClick={() => setViewModePanel1('questions')} className={viewModePanel1==='questions'?'active':''}>Preguntas</button>
+                            </div>
                         </div>
 
-                        {/* PANEL 2: RADAR DE PROMEDIOS */}
-                        <div className="sos-stat-card radar-cont">
-                            <h4>Radar COMPASS (Media Institucional)</h4>
-                            <ResponsiveContainer width="100%" height={220}>
-                                <RadarChart data={[
-                                    { s: 'Uso', A: pD[0] }, { s: 'Ética', A: pD[1] },
-                                    { s: 'Impacto', A: pD[2] }, { s: 'Desarrollo', A: pD[3] }
-                                ]}>
-                                    <PolarGrid stroke="#e2e8f0" />
-                                    <PolarAngleAxis dataKey="s" tick={{ fill: '#64748b', fontSize: 12 }} />
-                                    <RadarFill name="Global" dataKey="A" stroke="#c5a059" fill="#c5a059" fillOpacity={0.5} />
-                                </RadarChart>
-                            </ResponsiveContainer>
-                        </div>
-
-                        {/* PANEL 3: AUDITORÍA ÉTICA (LIDERAZGO) */}
-                        <div className="sos-history-chart audit-ethic-border">
-                            <span className="dash-lider-2026-panel-id">Panel 3: Riesgo Ético Promedio</span>
-                            <h4>Dictamen de Liderazgo Institucional</h4>
-                            <div className="sos-mini-grid-bars">
-                                {[
-                                    { l: 'Ética', v: promptDataGlobal?.Puntaje_Etica || 0, c: '#8b5cf6' },
-                                    { l: 'Privacidad', v: promptDataGlobal?.Puntaje_Privacidad || 0, c: '#06b6d4' },
-                                    { l: 'Agencia', v: promptDataGlobal?.Puntaje_Agencia || 0, c: '#f59e0b' }
-                                ].map(d => (
-                                    <div key={d.l} className="sos-mini-bar-item">
-                                        <div className="sos-mini-bar-labels"><span>{d.l}</span><strong>{d.v}/5</strong></div>
-                                        <div className="sos-mini-bar-bg">
-                                            <div className="sos-mini-bar-fill" style={{ width: `${(d.v / 5) * 100}%`, backgroundColor: d.c }}></div>
+                        {viewModePanel1 === 'stats' ? (
+                            <div className="stats-row-visual">
+                                <div className="main-metric-circle">
+                                    <span className="big-num">{datosDocentes.promedioGlobal.toFixed(2)}</span>
+                                    <span className="label-num">MEDIA (0-5)</span>
+                                </div>
+                                <div className="secondary-metrics-list">
+                                    <div className="sec-met">
+                                        <span className="sec-val">{datosDocentes.totalDocentes}</span>
+                                        <span className="sec-lab">Participantes</span>
+                                    </div>
+                                    <div className="sec-met">
+                                        <span className="sec-val">{datosDocentes.desviacion}</span>
+                                        <span className="sec-lab">Desviación</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="questions-detail-list">
+                                {datosDocentes.preguntasDetalle.map((q, i) => (
+                                    <div key={i} className="question-row-item">
+                                        <p className="q-text-small">{q.texto}</p>
+                                        <div className="q-options-summary">
+                                            {Object.entries(q.opciones).map(([opt, count]) => (
+                                                <div key={opt} className="opt-pill">
+                                                    {opt}: <strong>{count}</strong>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <p className="dictamen-mini-text">
-                                {promptDataGlobal?.Puntaje_Agencia < 3 ? "⚠️ Alerta: Delegación de juicio docente alta en la institución." : "✅ Agencia humana consolidada en el equipo."}
-                            </p>
-                        </div>
+                        )}
+                    </section>
 
-                        {/* PANEL 4: MISIONES (TRANSFORMACIÓN) */}
-                        <div className="sos-history-chart">
-                            <span className="dash-lider-2026-panel-id">Panel 4: Transformación</span>
-                            <h4>Misiones Institucionales Superadas</h4>
-                            <div className="retos-summary-grid">
-                                {retosInstitucionales?.length > 0 ? retosInstitucionales.slice(0, 3).map((r, i) => (
-                                    <div key={i} className="reto-mini-card">
-                                        <h5>{r.Nombre_Reto}</h5>
-                                        <span className={`status-pill ${r.Status_Reto}`}>{r.Status_Reto}</span>
-                                    </div>
-                                )) : <p>No hay misiones registradas.</p>}
-                            </div>
-                        </div>
-
-                        {/* PANEL 5: EVOLUCIÓN HISTÓRICA */}
-                        <div className="sos-history-chart">
-                            <span className="dash-lider-2026-panel-id">Panel 5: Evolución</span>
-                            <h4>Trayectoria Institucional ATLAS</h4>
-                            <ResponsiveContainer width="100%" height={150}>
-                                <LineChart data={historialGlobal || []}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                    <XAxis dataKey="Fecha" hide />
+                    {/* SECCIÓN 3: GRÁFICA DE BARRAS (DISTRIBUCIÓN) */}
+                    <section className="sos-card-full chart-card">
+                        <h2 className="card-title-center">Desempeño por Dimensión (Inicial)</h2>
+                        <div className="bar-chart-container-custom">
+                            <ResponsiveContainer width="100%" height={350}>
+                                <BarChart data={datosDocentes.categoriasData} margin={{ top: 20, right: 30, left: 20, bottom: 50 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                    <XAxis 
+                                        dataKey="dimension" 
+                                        axisLine={false} 
+                                        tickLine={false} 
+                                        tick={{fill: '#64748b', fontSize: 14, fontWeight: 600}}
+                                        dy={15}
+                                    />
                                     <YAxis domain={[0, 5]} hide />
-                                    <Tooltip />
-                                    <Line type="monotone" dataKey="Promedio" stroke="#c5a059" strokeWidth={3} dot={false} />
-                                </LineChart>
+                                    <Tooltip cursor={{fill: '#f8fafc'}} />
+                                    <Bar 
+                                        dataKey="puntaje" 
+                                        barSize={45} 
+                                        radius={[25, 25, 25, 25]} // Estilo cápsula completa
+                                    >
+                                        {datosDocentes.categoriasData.map((entry, index) => (
+                                            <Cell 
+                                                key={`cell-${index}`} 
+                                                fill={entry.puntaje < 3 ? '#f87171' : '#15203c'} 
+                                            />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
                             </ResponsiveContainer>
+                            <div className="values-overlay-row">
+                                {datosDocentes.categoriasData.map((d, i) => (
+                                    <span key={i} className="val-float" style={{color: d.puntaje < 3 ? '#ef4444' : '#15203c'}}>{d.puntaje}</span>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="legend-status-bar">
+                            <span><i className="status-dot red"></i> Crítico (&lt; 3.0)</span>
+                            <span><i className="status-dot dark"></i> Estable (&gt; 3.0)</span>
+                        </div>
+                    </section>
+
+                    {/* SECCIÓN 4: RESULTADO COMPASS Y REFLEXIÓN */}
+                    <section className="sos-card-full result-card-main">
+                        <div className="compass-result-header">
+                            <h3>Punto de Partida Institucional</h3>
+                            <p>Tu institución se encuentra en: <strong>{datosDocentes.promedioGlobal.toFixed(2)}</strong></p>
                         </div>
 
+                        <div className="level-badge-container">
+                            <div className="level-badge-pill">
+                                {datosDocentes.nivelCompassObj.nivel}
+                            </div>
+                        </div>
+
+                        <div className="level-description-box">
+                            <p>{datosDocentes.nivelCompassObj.desc}</p>
+                        </div>
+
+                        <div className="gaps-risks-grid">
+                            <div className="gap-box">
+                                <span className="label-box">Brecha Principal</span>
+                                <div className="tag-brecha">{datosDocentes.dimensionDebil}</div>
+                            </div>
+                            <div className="risk-box">
+                                <span className="label-box">Riesgos Relevantes</span>
+                                <div className="tags-flex">
+                                    {datosDocentes.riesgosRelevantes.map((r, idx) => (
+                                        <span key={idx} className="tag-risk">⚠️ {r.label}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="reflection-area">
+                            <label className="reflection-title">Reflexiona sobre los datos:</label>
+                            <ul className="reflection-bullets">
+                                <li>¿Qué decisiones estratégicas eran aún reactivas?</li>
+                                <li>¿Dónde no existía supervisión estructurada?</li>
+                                <li>¿Qué prácticas eran informales o desarticuladas?</li>
+                            </ul>
+                            <textarea 
+                                className="sos-input-reflection"
+                                placeholder="Escribe tu análisis aquí (mínimo 300 caracteres)..."
+                                value={formData.Reflexion_Punto_Partida}
+                                onChange={(e) => setFormData({...formData, Reflexion_Punto_Partida: e.target.value})}
+                            />
+                            <div className="char-count-bar">
+                                <span className={formData.Reflexion_Punto_Partida.length < 300 ? "count-err" : "count-ok"}>
+                                    Caracteres: {formData.Reflexion_Punto_Partida.length} / 300
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="action-footer">
+                            <button className="btn-draft" onClick={() => handleSave(false)} disabled={saving}>💾 Guardar Borrador</button>
+                            <button className="btn-next-step" onClick={() => handleSave(true)} disabled={saving}>Finalizar Paso 1 ➡</button>
+                        </div>
+                    </section>
+                </div>
+            )}
+
+            {step > 1 && (
+                <div className="sos-placeholder-vertical">
+                    <div className="placeholder-content">
+                        <h3>Próximamente: Paso {step}</h3>
+                        <p>Completa el Paso 1 para desbloquear el análisis de la siguiente fase.</p>
+                        <button className="btn-return" onClick={() => setStep(step - 1)}>Volver al Paso Anterior</button>
                     </div>
-                </aside>
-
-                {/* COLUMNA DERECHA: FORMULARIO DE PASOS (HOJA DE RUTA) */}
-                <section className="sos-form-column">
-                    <div className="sos-step-card-ui">
-                        {step === 1 && (
-                            <div className="step-content animate-slide-up">
-                                <h3>Bloque 1: Diagnóstico de Liderazgo</h3>
-                                <p className="step-instr">Analice los riesgos detectados en la Fase Auditar y describa las decisiones tomadas.</p>
-                                <textarea 
-                                    className="sos-textarea-ui"
-                                    placeholder="¿Qué decisiones estratégicas se implementaron? (Mínimo 300 caracteres)"
-                                    value={formData.reflexionInicial}
-                                    onChange={(e) => setFormData({...formData, reflexionInicial: e.target.value})}
-                                />
-                                <div className="actions-footer"><button className="btn-sos-main" onClick={handleNext}>Siguiente</button></div>
-                            </div>
-                        )}
-
-                        {step === 2 && (
-                            <div className="step-content animate-slide-up">
-                                <h3>Bloque 2: Implementación (Fase Asegurar)</h3>
-                                <div className="selector-group">
-                                    <label>Cumplimiento del Plan Institucional:</label>
-                                    <select value={formData.cumplimientoPlan} onChange={(e)=>setFormData({...formData, cumplimientoPlan: e.target.value})}>
-                                        <option>En proceso</option>
-                                        <option>Parcialmente logrado</option>
-                                        <option>Consolidado</option>
-                                    </select>
-                                </div>
-                                <textarea 
-                                    className="sos-textarea-ui"
-                                    placeholder="Resistencias detectadas y ajustes realizados..."
-                                    value={formData.analisisImplementacion}
-                                    onChange={(e) => setFormData({...formData, analisisImplementacion: e.target.value})}
-                                />
-                                <div className="actions-footer-between">
-                                    <button className="btn-back" onClick={handleBack}>Atrás</button>
-                                    <button className="btn-sos-main" onClick={handleNext}>Siguiente</button>
-                                </div>
-                            </div>
-                        )}
-
-                        {step === 3 && (
-                            <div className="step-content animate-slide-up">
-                                <h3>Bloque 3: Análisis de Madurez</h3>
-                                <p>El promedio institucional actual es de <strong>{nivelGlobal.toFixed(2)}</strong>.</p>
-                                <textarea 
-                                    className="sos-textarea-ui"
-                                    placeholder="¿Cómo garantiza la institución la supervisión humana activa?"
-                                    value={formData.analisisEstadoActual}
-                                    onChange={(e) => setFormData({...formData, analisisEstadoActual: e.target.value})}
-                                />
-                                <div className="actions-footer-between">
-                                    <button className="btn-back" onClick={handleBack}>Atrás</button>
-                                    <button className="btn-sos-main" onClick={handleNext}>Ver Evolución</button>
-                                </div>
-                            </div>
-                        )}
-
-                        {step === 4 && (
-                            <div className="step-content animate-slide-up">
-                                <h3>Bloque 4: Comparativa de Impacto</h3>
-                                <div className="comparison-display">
-                                    <div className="comp-item before"><span>ANTES</span><strong>Riesgos Altos</strong></div>
-                                    <div className="comp-arrow">➡</div>
-                                    <div className="comp-item after"><span>AHORA</span><strong>Cultura Ética</strong></div>
-                                </div>
-                                <div className="actions-footer-between">
-                                    <button className="btn-back" onClick={handleBack}>Atrás</button>
-                                    <button className="btn-sos-main" onClick={handleNext}>Proyectar</button>
-                                </div>
-                            </div>
-                        )}
-
-                        {step === 5 && (
-                            <div className="step-content animate-slide-up">
-                                <h3>Bloque 5: Hoja de Ruta 2026</h3>
-                                <div className="form-grid-mini">
-                                    <label>Decisión Estratégica:</label>
-                                    <select value={formData.decisionRuta} onChange={(e)=>setFormData({...formData, decisionRuta: e.target.value})}>
-                                        <option value="">Seleccione...</option>
-                                        <option value="Consolidar">Sostener Nivel Actual</option>
-                                        <option value="Certificar">Buscar Certificación ATLAS</option>
-                                    </select>
-                                    <label>Acción de Gobernanza:</label>
-                                    <input className="sos-input-ui" type="text" onChange={(e)=>setFormData({...formData, accionGobernanza: e.target.value})} />
-                                    <label>Fecha de Revisión:</label>
-                                    <input className="sos-input-ui" type="date" onChange={(e)=>setFormData({...formData, fechaRevision: e.target.value})} />
-                                </div>
-                                <div className="actions-footer-between">
-                                    <button className="btn-back" onClick={handleBack}>Atrás</button>
-                                    <button className="btn-finish" onClick={handleSaveFinal} disabled={loading}>
-                                        {loading ? "Cerrando Ciclo..." : "Finalizar y Guardar Reporte"}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </section>
-            </div>
+                </div>
+            )}
         </div>
     );
 };

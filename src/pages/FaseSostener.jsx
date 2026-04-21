@@ -142,7 +142,7 @@ const FaseSostener = ({ userData, API_URL, onNavigate, onRefreshProgreso, datosE
                         <h1>{isDirectivo ? "Cierre Institucional ATLAS" : "Autoevaluación Docente IA"}</h1>
                         <p className="hero-subtitle">
                             {isDirectivo ? 
-                                "Institucionalizar la cultura de IA y proyectar la estrategia de sostenibilidad a largo plazo." : 
+                                "Institucionalice la gobernanza de la IA y consolide la arquitectura estratégica que permitirá la sostenibilidad y escalabilidad de su proyecto educativo." : 
                                 "Un espacio de reflexión para acompañarte en el desarrollo consciente, ético y estratégico de tu práctica."}
                         </p>
                     </header>
@@ -155,7 +155,7 @@ const FaseSostener = ({ userData, API_URL, onNavigate, onRefreshProgreso, datosE
                             </div>
                             <p>
                                 {isDirectivo ? 
-                                "Consolidar lo que ya funciona. Evaluar la madurez institucional y decidir el camino hacia la certificación o el escalamiento estratégico." : 
+                                "Consolidar los pilares que ya operan. En esta fase, evaluará la madurez institucional acumulada para decidir la ruta definitiva: el sostenimiento de estándares o el escalamiento hacia la Certificación Internacional ATLAS." : 
                                 "Analizar cómo usas la IA, identificar fortalezas y visualizar tu evolución. La sostenibilidad depende de la reflexión constante."}
                             </p>
                             <div className="unesco-stack">
