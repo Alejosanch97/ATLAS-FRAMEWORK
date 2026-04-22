@@ -906,6 +906,9 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                         {dimensiones.map(dim => (
                             <section key={dim.id} className="atl-q-dimension-section">
                                 <h3 className="atl-q-dim-title">{dim.nombre}</h3>
+                                <p className="atl-q-dim-description">
+                                    A continuación, realizarás la siguiente evaluación. Valora cada aspecto en una escala de 1 a 5, donde 1 significa que el criterio no se evidencia o se aplica de manera muy limitada, y 5 significa que se cumple de forma sobresaliente, con un uso estratégico, crítico y adecuado al contexto.
+                                </p>
                                 <div className="atl-q-questions-list">
                                     {dim.preguntas.map(p => (
                                         <div key={p.id} className="atl-q-item-row">
