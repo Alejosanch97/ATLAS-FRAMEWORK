@@ -452,11 +452,6 @@
     gap: 20px;
 }
 
-.main-metric-circle {
-    width: 150px; !important; /* Un poco más pequeño para ser compacto */
-    height: 150px; !important;
-    margin: 0 auto;
-}
 
 /* --- CONTENEDOR DE MÉTRICAS (REEMPLAZA EL GRID ANTERIOR) --- */
 .stats-row-visual {
