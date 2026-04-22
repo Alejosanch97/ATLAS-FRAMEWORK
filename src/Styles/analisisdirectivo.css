@@ -452,7 +452,6 @@
     gap: 20px;
 }
 
-
 /* --- CONTENEDOR DE MÉTRICAS (REEMPLAZA EL GRID ANTERIOR) --- */
 .stats-row-visual {
     display: flex;
