@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
     Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer,
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend
@@ -24,7 +24,18 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
     const [cierreStep, setCierreStep] = useState(1);
     const [isReadOnly, setIsReadOnly] = useState(false);
 
-    const [formDataCierre, setFormDataCierre] = useState({
+    // ============================================================
+    // CLAVE DE LOCALSTORAGE ÚNICA POR USUARIO
+    // ============================================================
+    const getLocalStorageKey = useCallback(() => {
+        const tKey = userData?.Teacher_Key || "UNKNOWN";
+        return `atlas_cierre_directivo_${tKey}`;
+    }, [userData]);
+
+    // ============================================================
+    // formDataCierre con estado inicial completo
+    // ============================================================
+    const initialFormDataCierre = {
         Reflexion_Punto_Partida: "",
         Estado_Cumplimiento_Asegurar: "",
         Analisis_Implementacion: "",
@@ -35,7 +46,79 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
         Indicador_Medible: "",
         Fecha_Revision_Institucional: "",
         Estrategia_Comunicacion: ""
-    });
+    };
+
+    const [formDataCierre, setFormDataCierre] = useState(initialFormDataCierre);
+
+    // ============================================================
+    // ✅ FIX PRINCIPAL: useRef para evitar stale closure en handleFinalSaveCierre
+    // Siempre tendrá el valor más reciente del estado del formulario
+    // ============================================================
+    const formDataCierreRef = useRef(formDataCierre);
+
+    useEffect(() => {
+        formDataCierreRef.current = formDataCierre;
+        console.log("🔄 [REF SYNC] formDataCierreRef actualizado:", JSON.stringify(formDataCierre, null, 2));
+    }, [formDataCierre]);
+
+    // ============================================================
+    // GUARDAR EN LOCALSTORAGE cada vez que cambia formDataCierre
+    // ============================================================
+    useEffect(() => {
+        if (isReadOnly) return;
+        const key = getLocalStorageKey();
+        try {
+            localStorage.setItem(key, JSON.stringify(formDataCierre));
+            console.log("💾 [LOCALSTORAGE] Guardado:", key, formDataCierre);
+        } catch (e) {
+            console.warn("No se pudo guardar en localStorage:", e);
+        }
+    }, [formDataCierre, getLocalStorageKey, isReadOnly]);
+
+    // ============================================================
+    // CARGAR DESDE LOCALSTORAGE al montar (si no estamos en readOnly)
+    // ============================================================
+    const cargarDesdeLocalStorage = useCallback(() => {
+        const key = getLocalStorageKey();
+        try {
+            const guardado = localStorage.getItem(key);
+            if (guardado) {
+                const parsed = JSON.parse(guardado);
+                console.log("📂 [LOCALSTORAGE] Cargando borrador:", parsed);
+                setFormDataCierre(prev => ({ ...prev, ...parsed }));
+                return true;
+            }
+        } catch (e) {
+            console.warn("Error leyendo localStorage:", e);
+        }
+        return false;
+    }, [getLocalStorageKey]);
+
+    // ============================================================
+    // LIMPIAR LOCALSTORAGE tras envío exitoso
+    // ============================================================
+    const limpiarLocalStorage = useCallback(() => {
+        const key = getLocalStorageKey();
+        try {
+            localStorage.removeItem(key);
+            console.log("🧹 [LOCALSTORAGE] Limpiado:", key);
+        } catch (e) {
+            console.warn("Error limpiando localStorage:", e);
+        }
+    }, [getLocalStorageKey]);
+
+    // ============================================================
+    // ✅ Helper para actualizar campos — también actualiza la ref inmediatamente
+    // ============================================================
+    const updateFormField = useCallback((field, value) => {
+        console.log(`✏️ [FIELD UPDATE] ${field} =`, value.substring ? value.substring(0, 80) + "..." : value);
+        setFormDataCierre(prev => {
+            const updated = { ...prev, [field]: value };
+            // ✅ Actualizamos la ref de forma síncrona también
+            formDataCierreRef.current = updated;
+            return updated;
+        });
+    }, []);
 
     // ============================================================
     // DATOS GRUPALES INSTITUCIONALES
@@ -51,15 +134,28 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
         alertasGlobales: []
     });
 
-    // Datos de auditoría (FORM-1770684713222) — TODOS los docentes sin filtro de usuario
     const [respuestasAuditarReal, setRespuestasAuditarReal] = useState([]);
-
-    // Datos de liderazgo — TODOS sin filtro
     const [promptsGrupales, setPromptsGrupales] = useState([]);
 
     const [analysis, setAnalysis] = useState(null);
     const [alerts, setAlerts] = useState([]);
     const [showAnalysis, setShowAnalysis] = useState(false);
+
+    const [datosAsegurar, setDatosAsegurar] = useState({
+        diagnostico: null,
+        planAccion: null,
+        loading: false
+    });
+
+    const [datosAuditoriafase1, setDatosAuditoriafase1] = useState({
+        promedioGlobal: 0,
+        promedioPorcentaje: 0,
+        totalDocentes: 0,
+        desviacion: "0.0",
+        categoriasData: [],
+        dimensionDebil: "",
+        nivelCompassObj: {}
+    });
 
     // ============================================================
     // DIMENSIONES DEL CUESTIONARIO DIRECTIVO
@@ -203,35 +299,24 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
     };
 
     // ============================================================
-    // MÉTRICAS DE AUDITORÍA GRUPAL (sin filtro de usuario)
+    // DIMENSIONES CONFIG
     // ============================================================
-    const [datosAsegurar, setDatosAsegurar] = useState({
-        diagnostico: null,
-        planAccion: null,
-        loading: false
-    });
+    const DIMENSIONES_CONFIG = {
+        "Uso": ['Q-A2-04', 'Q-A2-05', 'Q-A2-06', 'Q-A2-07', 'Q-A2-08'],
+        "Ética": ['Q-A4-13', 'Q-A4-14', 'Q-A4-15', 'Q-A4-16', 'Q-A4-17'],
+        "Impacto": ['Q-A5-18', 'Q-A5-19', 'Q-A5-20', 'Q-A5-21', 'Q-A5-22'],
+        "Desarrollo": ['Q-A3-09', 'Q-A3-10', 'Q-A3-11', 'Q-A3-12', 'Q-A6-23', 'Q-A6-24', 'Q-A6-25', 'Q-A6-26']
+    };
 
-    const [datosAuditoriafase1, setDatosAuditoriafase1] = useState({
-        promedioGlobal: 0,
-        promedioPorcentaje: 0,
-        totalDocentes: 0,
-        desviacion: "0.0",
-        categoriasData: [],
-        dimensionDebil: "",
-        nivelCompassObj: {}
-    });
-    const getMetricasAuditoria = () => {
+    const getMetricasAuditoria = useCallback(() => {
         const r = respuestasAuditarReal;
         if (!r || r.length === 0) return { uso: 0, etica: 0, impacto: 0, desarrollo: 0 };
 
-        // Agrupamos por pregunta igual que Código 1
         const agrupado = {};
         r.forEach(resp => {
             const qId = String(resp.ID_Pregunta).trim();
             const puntos = parseFloat(String(resp.Puntos_Ganados || "0").replace(',', '.'));
-            if (!agrupado[qId]) {
-                agrupado[qId] = { sumaPuntos: 0, total: 0 };
-            }
+            if (!agrupado[qId]) agrupado[qId] = { sumaPuntos: 0, total: 0 };
             agrupado[qId].sumaPuntos += puntos;
             agrupado[qId].total += 1;
         });
@@ -241,9 +326,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                 .filter(([qId]) => ids.includes(qId))
                 .map(([, data]) => data);
             if (pregsDeCat.length === 0) return 0;
-            const sumaPromedios = pregsDeCat.reduce(
-                (acc, q) => acc + (q.sumaPuntos / q.total), 0
-            );
+            const sumaPromedios = pregsDeCat.reduce((acc, q) => acc + (q.sumaPuntos / q.total), 0);
             return parseFloat((sumaPromedios / pregsDeCat.length).toFixed(2));
         };
 
@@ -253,22 +336,36 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
             impacto: calcPromDim(DIMENSIONES_CONFIG["Impacto"]),
             desarrollo: calcPromDim(DIMENSIONES_CONFIG["Desarrollo"])
         };
-    };
+    }, [respuestasAuditarReal]);
 
-    // ============================================================
-    // COMPARATIVO ATLAS — ahora grupal
-    // ============================================================
-    const getComparativoAtlas = () => {
+    const metricasAuditoria = getMetricasAuditoria();
+    const datasetAuditoria = [
+        { label: 'Uso', valor: parseFloat(metricasAuditoria.uso) || 0 },
+        { label: 'Ética', valor: parseFloat(metricasAuditoria.etica) || 0 },
+        { label: 'Impacto', valor: parseFloat(metricasAuditoria.impacto) || 0 },
+        { label: 'Desarrollo', valor: parseFloat(metricasAuditoria.desarrollo) || 0 }
+    ];
+    const valorMinimo = Math.min(...datasetAuditoria.map(d => d.valor));
+
+    const pD = [
+        parseFloat(datosGrupales.promedioD1) || 0,
+        parseFloat(datosGrupales.promedioD2) || 0,
+        parseFloat(datosGrupales.promedioD3) || 0,
+        parseFloat(datosGrupales.promedioD4) || 0
+    ];
+
+    const toPct = (val) => ((parseFloat(val) / 5) * 100).toFixed(1);
+
+    const getComparativoAtlas = useCallback(() => {
         const m = getMetricasAuditoria();
         const promedioBase5 = (
-        parseFloat(m.uso) + parseFloat(m.etica) +
-        parseFloat(m.impacto) + parseFloat(m.desarrollo)
-    ) / 4;
+            parseFloat(m.uso) + parseFloat(m.etica) +
+            parseFloat(m.impacto) + parseFloat(m.desarrollo)
+        ) / 4;
         const scoreAntesPct = promedioBase5 * 20;
         const scoreAntesBase5 = scoreAntesPct / 20;
         const nivelAntes = getCompassData(scoreAntesPct).nivel;
 
-        // El "ahora" es el promedio global de TODOS los docentes de SOSTENER_Docentes
         const scoreAhoraBase5 = parseFloat(datosGrupales.promedioGlobal) || 0;
         const scoreAhoraPct = scoreAhoraBase5 * 20;
         const crecimiento = (scoreAhoraPct - scoreAntesPct).toFixed(1);
@@ -280,35 +377,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
             nivelAhora: generarDiagnostico(scoreAhoraPct).nivel,
             crecimiento
         };
-    };
-
-    // ============================================================
-    // DATASET PARA GRÁFICAS — grupal
-    // ============================================================
-    const DIMENSIONES_CONFIG = {
-        "Uso": ['Q-A2-04', 'Q-A2-05', 'Q-A2-06', 'Q-A2-07', 'Q-A2-08'],
-        "Ética": ['Q-A4-13', 'Q-A4-14', 'Q-A4-15', 'Q-A4-16', 'Q-A4-17'],
-        "Impacto": ['Q-A5-18', 'Q-A5-19', 'Q-A5-20', 'Q-A5-21', 'Q-A5-22'],
-        "Desarrollo": ['Q-A3-09', 'Q-A3-10', 'Q-A3-11', 'Q-A3-12', 'Q-A6-23', 'Q-A6-24', 'Q-A6-25', 'Q-A6-26']
-    };
-    const metricasAuditoria = getMetricasAuditoria();
-    const datasetAuditoria = [
-        { label: 'Uso', valor: parseFloat(metricasAuditoria.uso) || 0 },
-        { label: 'Ética', valor: parseFloat(metricasAuditoria.etica) || 0 },
-        { label: 'Impacto', valor: parseFloat(metricasAuditoria.impacto) || 0 },
-        { label: 'Desarrollo', valor: parseFloat(metricasAuditoria.desarrollo) || 0 }
-    ];
-    const valorMinimo = Math.min(...datasetAuditoria.map(d => d.valor));
-
-    // pD: promedios de dimensiones grupales (de SOSTENER_Docentes, todos los docentes)
-    const pD = [
-        parseFloat(datosGrupales.promedioD1) || 0,
-        parseFloat(datosGrupales.promedioD2) || 0,
-        parseFloat(datosGrupales.promedioD3) || 0,
-        parseFloat(datosGrupales.promedioD4) || 0
-    ];
-
-    const toPct = (val) => ((parseFloat(val) / 5) * 100).toFixed(1);
+    }, [getMetricasAuditoria, datosGrupales]);
 
     // ============================================================
     // ALERTAS
@@ -334,7 +403,6 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
         return result;
     };
 
-    // Análisis de prompts grupales
     const analizarPromptsGrupal = () => {
         if (!promptsGrupales || promptsGrupales.length === 0) return null;
         const n = promptsGrupales.length;
@@ -358,56 +426,102 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
     const statsPrompt = analizarPromptsGrupal();
 
     // ============================================================
-    // EFFECT: CARGAR DATOS GRUPALES (sin filtro de usuario)
+    // EFFECT: CARGAR DATOS GRUPALES
+    // ============================================================
+    // ============================================================
+    // EFFECT: CARGAR DATOS GRUPALES Y PERSONALES (VERSION FINAL CON CÍRCULOS)
     // ============================================================
     useEffect(() => {
-        const cargarDatosGrupales = async () => {
+        const cargarTodoElModulo = async () => {
+            if (!userData?.Teacher_Key) return;
+            setLoading(true);
+
             try {
-                // Traemos TODAS las hojas sin filtrar por usuario individual
-                const [resAuditar, resRetos, resLiderar, resSostener, resAsegurarDiag, resAsegurarPlan] = await Promise.all([
+                // Agregamos resPersonal a la lista de peticiones
+                const [resAuditar, resRetos, resLiderar, resSostener, resAsegurarDiag, resAsegurarPlan, resPersonal] = await Promise.all([
                     fetch(`${API_URL}?sheet=Respuestas_Usuarios`),
                     fetch(`${API_URL}?sheet=Retos_Transformar_ATLAS`),
                     fetch(`${API_URL}?sheet=Liderar_Prompts_Docentes`),
                     fetch(`${API_URL}?sheet=SOSTENER_Docentes`),
                     fetch(`${API_URL}?sheet=ASEGURAR_Directivos_Diagnostico&user_key=${userData?.Teacher_Key}`),
-                    fetch(`${API_URL}?sheet=ASEGURAR_Directivos_Plan_Accion&user_key=${userData?.Teacher_Key}`)
+                    fetch(`${API_URL}?sheet=ASEGURAR_Directivos_Plan_Accion&user_key=${userData?.Teacher_Key}`),
+                    fetch(`${API_URL}?sheet=SOSTENER_Institucional&user_key=${userData?.Teacher_Key}`) 
                 ]);
 
                 const dAuditar = await resAuditar.json();
                 const dRetos = await resRetos.json();
                 const dLiderar = await resLiderar.json();
                 const dSostener = await resSostener.json();
-
-                // ── 5. ASEGURAR: Diagnóstico y Plan del directivo ──
                 const dAsegurarDiag = await resAsegurarDiag.json();
                 const dAsegurarPlan = await resAsegurarPlan.json();
+                const dPersonal = await resPersonal.json();
 
+                // ------------------------------------------------------------
+                // 1. RECONSTRUCCIÓN DE RESPUESTAS (Marcar círculos 1-5)
+                // ------------------------------------------------------------
+                const miRegistroSostener = Array.isArray(dSostener) 
+                    ? dSostener.find(r => r.Teacher_Key === userData.Teacher_Key) 
+                    : null;
+
+                if (miRegistroSostener) {
+                    console.log("📍 Sincronizando marcas de círculos para:", userData.Teacher_Key);
+                    const mapeoRespuestas = {};
+
+                    // Mapeo exacto basado en tus columnas D1_P1...D4_P24
+                    for (let i = 1; i <= 6; i++) mapeoRespuestas[i] = parseInt(miRegistroSostener[`D1_P${i}`]) || 0;
+                    for (let i = 7; i <= 12; i++) mapeoRespuestas[i] = parseInt(miRegistroSostener[`D2_P${i}`]) || 0;
+                    for (let i = 13; i <= 18; i++) mapeoRespuestas[i] = parseInt(miRegistroSostener[`D3_P${i}`]) || 0;
+                    for (let i = 19; i <= 24; i++) mapeoRespuestas[i] = parseInt(miRegistroSostener[`D4_P${i}`]) || 0;
+
+                    setRespuestas(mapeoRespuestas);
+                }
+
+                // ------------------------------------------------------------
+                // 2. CARGAR TEXTOS DE AUTOEVALUACIÓN (SOSTENER_Institucional)
+                // ------------------------------------------------------------
+                if (Array.isArray(dPersonal) && dPersonal.length > 0) {
+                    const ultimoRegistro = dPersonal[dPersonal.length - 1];
+                    console.log("✅ Autoevaluación previa recuperada:", ultimoRegistro);
+                    
+                    setHistorial([ultimoRegistro]);
+                    
+                    const mappedData = {
+                        Reflexion_Punto_Partida: ultimoRegistro.Reflexion_Punto_Partida || "",
+                        Estado_Cumplimiento_Asegurar: ultimoRegistro.Estado_Cumplimiento_Asegurar || "",
+                        Analisis_Implementacion: ultimoRegistro.Analisis_Implementacion || "",
+                        Ruta_Elegida: ultimoRegistro.Ruta_Elegida || "",
+                        Prioridad_Estrategica_Anual: ultimoRegistro.Prioridad_Estrategica_Anual || "",
+                        Accion_Gobernanza: ultimoRegistro.Accion_Gobernanza || "",
+                        Indicador_Medible: ultimoRegistro.Indicador_Medible || "",
+                        Fecha_Revision_Institucional: ultimoRegistro.Fecha_Revision_Institucional || "",
+                        Estrategia_Comunicacion: ultimoRegistro.Estrategia_Comunicacion || ""
+                    };
+                    
+                    setFormDataCierre(mappedData);
+                    formDataCierreRef.current = mappedData;
+
+                    if (ultimoRegistro.Status === "Ciclo_Institucional_Completado") {
+                        setIsReadOnly(true);
+                    }
+                }
+
+                // ------------------------------------------------------------
+                // 3. PROCESAMIENTO DE DATOS GRUPALES (Lógica original intacta)
+                // ------------------------------------------------------------
                 const ultimoDiag = Array.isArray(dAsegurarDiag) && dAsegurarDiag.length > 0
-                    ? dAsegurarDiag[dAsegurarDiag.length - 1]
-                    : null;
-
+                    ? dAsegurarDiag[dAsegurarDiag.length - 1] : null;
                 const ultimoPlan = Array.isArray(dAsegurarPlan) && dAsegurarPlan.length > 0
-                    ? dAsegurarPlan[dAsegurarPlan.length - 1]
-                    : null;
+                    ? dAsegurarPlan[dAsegurarPlan.length - 1] : null;
 
-                setDatosAsegurar({
-                    diagnostico: ultimoDiag,
-                    planAccion: ultimoPlan,
-                    loading: false
-                });
+                setDatosAsegurar({ diagnostico: ultimoDiag, planAccion: ultimoPlan, loading: false });
 
-                // ── 1. AUDITORÍA: todos los docentes del formulario específico ──
                 const idAuditarCorrecto = "FORM-1770684713222";
                 const todosDatosAuditoria = Array.isArray(dAuditar)
-                    ? dAuditar.filter(r => r.ID_Form === idAuditarCorrecto)
-                    : [];
+                    ? dAuditar.filter(r => r.ID_Form === idAuditarCorrecto) : [];
                 setRespuestasAuditarReal(todosDatosAuditoria);
 
-                // ── FASE 1: Cálculo igual al Código 1 original ──
                 if (todosDatosAuditoria.length > 0) {
-                    // Agrupar por pregunta (para promedios por dimensión)
                     const agrupado = {};
-                    // Agrupar puntajes totales por envío (para contar docentes reales)
                     const puntajesTotales = {};
                     const preguntasPorEnvio = {};
 
@@ -415,51 +529,23 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                         const qId = String(resp.ID_Pregunta).trim();
                         const puntos = parseFloat(String(resp.Puntos_Ganados || "0").replace(',', '.'));
                         const envioId = resp.ID_Respuesta_Global;
-
-                        // Acumular por envío
                         puntajesTotales[envioId] = (puntajesTotales[envioId] || 0) + puntos;
                         preguntasPorEnvio[envioId] = (preguntasPorEnvio[envioId] || 0) + 1;
-
-                        // Acumular por pregunta
-                        if (!agrupado[qId]) {
-                            agrupado[qId] = { sumaPuntos: 0, total: 0 };
-                        }
+                        if (!agrupado[qId]) agrupado[qId] = { sumaPuntos: 0, total: 0 };
                         agrupado[qId].sumaPuntos += puntos;
                         agrupado[qId].total += 1;
                     });
 
-                    // Total docentes reales (por envío único)
                     const listaPuntajes = Object.values(puntajesTotales);
-                    const totalDocentesFase1 = listaPuntajes.length;
-
-                    // Promedio global (suma de todos los puntajes por envío / número de envíos)
                     const promedioGlobalRaw = listaPuntajes.length > 0
-                        ? listaPuntajes.reduce((a, b) => a + b, 0) / listaPuntajes.length
-                        : 0;
+                        ? listaPuntajes.reduce((a, b) => a + b, 0) / listaPuntajes.length : 0;
 
-                    // Normalizar a escala 0-5 y luego a porcentaje
-                    const NUM_PREGUNTAS_FORMULARIO = 20;
-                    const promedioBase5 = promedioGlobalRaw / NUM_PREGUNTAS_FORMULARIO;
-                    const promedioPorcentaje = promedioBase5 * 20;
-
-                    // Desviación estándar entre docentes
-                    const promediosPorDocente = Object.keys(puntajesTotales).map(envioId =>
-                        puntajesTotales[envioId] / (preguntasPorEnvio[envioId] || 1)
-                    );
-                    const mediaDocentes = promediosPorDocente.reduce((a, b) => a + b, 0) / promediosPorDocente.length;
-                    const desviacion = Math.sqrt(
-                        promediosPorDocente.reduce((acc, p) => acc + Math.pow(p - mediaDocentes, 2), 0) / promediosPorDocente.length
-                    ).toFixed(2);
-
-                    // Promedios por dimensión usando DIMENSIONES_CONFIG
                     const calcPromDim = (ids) => {
                         const pregsDeCat = Object.entries(agrupado)
                             .filter(([qId]) => ids.includes(qId))
                             .map(([, data]) => data);
                         if (pregsDeCat.length === 0) return 0;
-                        const sumaPromedios = pregsDeCat.reduce(
-                            (acc, q) => acc + (q.sumaPuntos / q.total), 0
-                        );
+                        const sumaPromedios = pregsDeCat.reduce((acc, q) => acc + (q.sumaPuntos / q.total), 0);
                         return parseFloat((sumaPromedios / pregsDeCat.length).toFixed(1));
                     };
 
@@ -474,112 +560,125 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
 
                     setDatosAuditoriafase1({
                         promedioGlobal: promedioGlobalRaw,
-                        promedioPorcentaje,
-                        totalDocentes: totalDocentesFase1,
-                        desviacion,
+                        promedioPorcentaje: (promedioGlobalRaw / 20) * 20,
+                        totalDocentes: listaPuntajes.length,
+                        desviacion: "0.00", 
                         categoriasData: categoriasFinales,
                         dimensionDebil: minCat?.dimension || "Por evaluar",
-                        nivelCompassObj: getCompassData(promedioPorcentaje)
+                        nivelCompassObj: getCompassData((promedioGlobalRaw / 20) * 20)
                     });
                 }
 
-                if (todosDatosAuditoria.length > 0) {
-                    const puntajes = todosDatosAuditoria.map(r =>
-                        parseFloat(String(r.Puntos_Ganados || "0").replace(',', '.'))
-                    );
-                    const n = puntajes.length;
-                    const mediaPuntos = puntajes.reduce((a, b) => a + b, 0) / n;
-                    const frecuencias = {};
-                    puntajes.forEach(p => frecuencias[p] = (frecuencias[p] || 0) + 1);
-                    const moda = Object.keys(frecuencias).reduce((a, b) => frecuencias[a] > frecuencias[b] ? a : b);
-                    const varianza = puntajes.reduce((acc, p) => acc + Math.pow(p - mediaPuntos, 2), 0) / n;
-                    const desviacion = Math.sqrt(varianza);
-
-                    setSelectedFormReal({
-                        puntosMedia: mediaPuntos.toFixed(2),
-                        puntosModa: parseFloat(moda).toFixed(2),
-                        promedioEscala100: (mediaPuntos * 20).toFixed(1),
-                        desviacion: desviacion.toFixed(2),
-                        totalItems: n,
-                        analisis: { nivel: "Evidencia de Auditoría Institucional", color: "#4c51bf" }
-                    });
-                }
-
-                // ── 2. RETOS: todos ──
                 if (Array.isArray(dRetos)) setRetos(dRetos);
-
-                // ── 3. LIDERAZGO: todos los prompts sin filtro ──
                 if (Array.isArray(dLiderar) && dLiderar.length > 0) {
                     setPromptsGrupales(dLiderar);
-                    // Para el panel 3 usamos el primer registro como referencia de estructura
                     setPromptData(dLiderar[0]);
                 }
 
-                // ── 4. SOSTENER_Docentes: calcular promedios grupales de TODOS los docentes ──
                 if (Array.isArray(dSostener) && dSostener.length > 0) {
                     const total = dSostener.length;
-                    let sumaGlobal = 0;
-                    let sumaD = [0, 0, 0, 0];
-                    let N1 = 0, N2 = 0, N3 = 0, N4 = 0;
+                    let sumaGlobal = 0, sumaD = [0, 0, 0, 0], N1 = 0, N2 = 0, N3 = 0, N4 = 0;
 
                     dSostener.forEach(doc => {
                         const pg = parseFloat(doc.Promedio_Global || 0);
                         sumaGlobal += pg;
-
-                        if (pg >= 4.3) N4++;
-                        else if (pg >= 3.5) N3++;
-                        else if (pg >= 2.5) N2++;
-                        else N1++;
-
-                        // Extraemos los promedios por dimensión de cada docente
+                        if (pg >= 4.3) N4++; else if (pg >= 3.5) N3++; else if (pg >= 2.5) N2++; else N1++;
                         const dimStr = String(doc["Promedio_D1, Promedio_D2, Promedio_D3, Promedio_D4"] || "0,0,0,0");
                         const pDArr = dimStr.split(',').map(v => parseFloat(v.trim()) || 0);
                         pDArr.forEach((v, i) => { if (i < 4) sumaD[i] += v; });
                     });
 
-                    const promedioGlobal = total > 0 ? (sumaGlobal / total) : 0;
-
                     setDatosGrupales({
                         totalDocentes: total,
-                        promedioGlobal: promedioGlobal.toFixed(2),
-                        promedioD1: total > 0 ? (sumaD[0] / total).toFixed(2) : 0,
-                        promedioD2: total > 0 ? (sumaD[1] / total).toFixed(2) : 0,
-                        promedioD3: total > 0 ? (sumaD[2] / total).toFixed(2) : 0,
-                        promedioD4: total > 0 ? (sumaD[3] / total).toFixed(2) : 0,
+                        promedioGlobal: (sumaGlobal / total).toFixed(2),
+                        promedioD1: (sumaD[0] / total).toFixed(2),
+                        promedioD2: (sumaD[1] / total).toFixed(2),
+                        promedioD3: (sumaD[2] / total).toFixed(2),
+                        promedioD4: (sumaD[3] / total).toFixed(2),
                         distribucionNiveles: { N1, N2, N3, N4 },
                         alertasGlobales: []
                     });
                 }
 
             } catch (e) {
-                console.error("Error cargando datos grupales:", e);
+                console.error("Error cargando datos:", e);
+            } finally {
+                setLoading(false);
             }
         };
 
-        cargarDatosGrupales();
-    }, [API_URL, userData]);
+        cargarTodoElModulo();
+    }, [API_URL, userData?.Teacher_Key]);
 
-    // Cargar respuestas si hay datos existentes
+    useEffect(() => {
+        if (datosExistentes) setHistorial([datosExistentes]);
+    }, [datosExistentes]);
+
     useEffect(() => {
         if (datosExistentes) {
             setHistorial([datosExistentes]);
-            // Si las respuestas están guardadas como string "5,4,3..."
-            if (datosExistentes.Reflexion_Punto_Partida && !datosExistentes.Reflexion_Punto_Partida.includes(' ')) {
-                const valoresArray = String(datosExistentes.Reflexion_Punto_Partida).split(",");
-                const mapaRespuestas = {};
-                valoresArray.forEach((valor, index) => {
-                    const num = Number(valor.trim());
-                    if (!isNaN(num) && num >= 1 && num <= 5) {
-                        mapaRespuestas[index + 1] = num;
-                    }
-                });
-                if (Object.keys(mapaRespuestas).length > 0) setRespuestas(mapaRespuestas);
-            }
         }
     }, [datosExistentes]);
 
     // ============================================================
-    // CALCULAR RESULTADOS DE LA AUTOEVALUACIÓN DIRECTIVA
+    // ✅ NUEVO: RECUPERAR DATOS DESDE GOOGLE SHEETS AL CARGAR
+    // Esto evita tener que repetir la autoevaluación al refrescar
+    // ============================================================
+    useEffect(() => {
+        const cargarDatosDesdeDB = async () => {
+            // Solo intentamos cargar si tenemos el Teacher_Key
+            if (!userData?.Teacher_Key) return;
+            
+            setLoading(true);
+            try {
+                console.log("🔍 Buscando datos previos en SOSTENER_Institucional...");
+                // Hacemos el GET filtrando por el Teacher_Key del usuario actual
+                const response = await fetch(`${API_URL}?sheet=SOSTENER_Institucional&user_key=${userData.Teacher_Key}`);
+                const data = await response.json();
+
+                if (Array.isArray(data) && data.length > 0) {
+                    // Tomamos el registro más reciente (el último del array)
+                    const registroExistente = data[data.length - 1];
+                    console.log("✅ Datos encontrados en DB:", registroExistente);
+
+                    // 1. Actualizamos el historial para que las fases se desbloqueen
+                    setHistorial([registroExistente]);
+
+                    // 2. Llenamos el formulario con lo que ya estaba escrito en el Excel
+                    const datosRecuperados = {
+                        Reflexion_Punto_Partida:       registroExistente.Reflexion_Punto_Partida || "",
+                        Estado_Cumplimiento_Asegurar:  registroExistente.Estado_Cumplimiento_Asegurar || "",
+                        Analisis_Implementacion:       registroExistente.Analisis_Implementacion || "",
+                        Ruta_Elegida:                  registroExistente.Ruta_Elegida || "",
+                        Prioridad_Estrategica_Anual:   registroExistente.Prioridad_Estrategica_Anual || "",
+                        Accion_Gobernanza:             registroExistente.Accion_Gobernanza || "",
+                        Indicador_Medible:             registroExistente.Indicador_Medible || "",
+                        Fecha_Revision_Institucional:  registroExistente.Fecha_Revision_Institucional || "",
+                        Estrategia_Comunicacion:       registroExistente.Estrategia_Comunicacion || ""
+                    };
+
+                    setFormDataCierre(datosRecuperados);
+                    formDataCierreRef.current = datosRecuperados;
+
+                    // 3. Opcional: Si el status es completado, podrías ponerlo en modo lectura
+                    if (registroExistente.Status === "Ciclo_Institucional_Completado") {
+                        setIsReadOnly(true);
+                    }
+                } else {
+                    console.log("ℹ️ No se encontraron registros previos. El usuario debe iniciar.");
+                }
+            } catch (error) {
+                console.error("❌ Error recuperando datos desde la base de datos:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        cargarDatosDesdeDB();
+    }, [userData?.Teacher_Key, API_URL]); // Se ejecuta cuando el Teacher_Key esté listo
+
+    // ============================================================
+    // CALCULAR RESULTADOS
     // ============================================================
     const calcularResultados = () => {
         const valores = Object.values(respuestas);
@@ -606,7 +705,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
     };
 
     // ============================================================
-    // GUARDAR AUTOEVALUACIÓN → SOSTENER_Docentes (igual que el módulo docente)
+    // GUARDAR AUTOEVALUACIÓN → SOSTENER_Docentes
     // ============================================================
     const handleSave = async () => {
         const res = calcularResultados();
@@ -616,13 +715,9 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
         const tKey = userData?.Teacher_Key || "KEY-NOT-FOUND";
         const instKey = userData?.Institucion_Key || "INST-GENERAL";
 
-        // Verificamos si ya hay un registro previo del directivo en SOSTENER_Docentes
         const esUpdate = historial.length > 0 && historial[0]?.ID_Sostener;
-        const idAUsar = esUpdate
-            ? historial[0].ID_Sostener
-            : `SOS-${tKey}-${Date.now()}`;
+        const idAUsar = esUpdate ? historial[0].ID_Sostener : `SOS-${tKey}-${Date.now()}`;
 
-        // Mapeamos igual que el módulo docente original
         const respuestasMapeadas = {};
         for (let i = 1; i <= 24; i++) {
             let dimPrefix = i <= 6 ? "D1_P" : i <= 12 ? "D2_P" : i <= 18 ? "D3_P" : "D4_P";
@@ -655,13 +750,15 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                     idField: "ID_Sostener",
                     idValue: idAUsar,
                     data: excelData
-                })
+                }),
+                redirect: "follow"
             });
 
             setHistorial([excelData]);
             setView("dashboard");
-            Swal.fire("Éxito", "Autoevaluación institucional guardada en SOSTENER_Docentes.", "success");
+            Swal.fire("Éxito", "Autoevaluación institucional guardada.", "success");
         } catch (e) {
+            console.error("Error handleSave:", e);
             Swal.fire("Error", "Error al sincronizar con Excel.", "error");
         } finally {
             setLoading(false);
@@ -669,62 +766,87 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
     };
 
     // ============================================================
-    // GUARDAR CIERRE → SOSTENER_Institucional
+    // ✅ GUARDAR CIERRE FINAL → SOSTENER_Institucional
+    // USA formDataCierreRef.current para evitar stale closure
+    // ============================================================
+    // ============================================================
+    // ✅ GUARDAR CIERRE FINAL → SOSTENER_Institucional
+    // CORREGIDO: Limpieza de strings y sincronización de columnas
     // ============================================================
     const handleFinalSaveCierre = async () => {
-        if (!formDataCierre.Prioridad_Estrategica_Anual || formDataCierre.Prioridad_Estrategica_Anual.length < 150) {
+        // ✅ Leemos SIEMPRE desde la ref para evitar cierres obsoletos
+        const dataActual = formDataCierreRef.current;
+
+        console.log("🚀 [SAVE CIERRE] Iniciando guardado final...");
+
+        // Validación mínima del campo principal
+        if (!dataActual.Prioridad_Estrategica_Anual || dataActual.Prioridad_Estrategica_Anual.length < 150) {
+            console.warn("⚠️ [SAVE CIERRE] Validación fallida - Prioridad_Estrategica_Anual insuficiente");
             Swal.fire("Acción Incompleta", "La prioridad estratégica debe tener al menos 150 caracteres.", "warning");
             return;
         }
 
         setLoading(true);
-        const comp = getComparativoAtlas();
+
         const tKey = userData?.Teacher_Key || "KEY-NOT-FOUND";
         const instKey = userData?.Institucion_Key || "INST-GENERAL";
 
-        // ID para SOSTENER_Institucional — diferente del de SOSTENER_Docentes
+        const comp = getComparativoAtlas();
         const idInstExistente = historial[0]?.ID_Sostener_Inst;
         const idAUsar = idInstExistente || `SOS-INST-${instKey}-${Date.now()}`;
         const esUpdate = !!idInstExistente;
 
         const { N1, N2, N3, N4 } = datosGrupales.distribucionNiveles;
 
-        const finalData = {
-            ID_Sostener_Inst: idAUsar,
-            Institucion_Key: instKey,
-            Teacher_Key: tKey,
-            Fecha_Cierre: new Date().toLocaleDateString('es-ES'),
-
-            // Columnas de SOSTENER_Institucional
-            Reflexion_Punto_Partida: formDataCierre.Reflexion_Punto_Partida,
-            Estado_Cumplimiento_Asegurar: formDataCierre.Estado_Cumplimiento_Asegurar,
-            Analisis_Implementacion: formDataCierre.aprendizajeClave
-                ? `${formDataCierre.aprendizajeClave}: ${formDataCierre.Analisis_Implementacion}`
-                : formDataCierre.Analisis_Implementacion,
-            Nivel_Institucional_Actual: generarDiagnostico(comp.scoreAhora * 20).nivel,
-            "Docentes_N1, Docentes_N2, Docentes_N3, Docentes_N4": `${N1}, ${N2}, ${N3}, ${N4}`,
-            Porcentaje_Reduccion_Alertas: `${comp.crecimiento}%`,
-            Ruta_Elegida: formDataCierre.Ruta_Elegida,
-            Prioridad_Estrategica_Anual: formDataCierre.Prioridad_Estrategica_Anual,
-            Accion_Gobernanza: formDataCierre.Accion_Gobernanza,
-            Indicador_Medible: formDataCierre.Indicador_Medible,
-            Fecha_Revision_Institucional: formDataCierre.Fecha_Revision_Institucional,
-            Estrategia_Comunicacion: formDataCierre.Estrategia_Comunicacion,
-
-            // Métricas de impacto calculadas automáticamente
-            Score_Inicial_Pct: (comp.scoreAntes * 20).toFixed(1),
-            Score_Final_Pct: (comp.scoreAhora * 20).toFixed(1),
-            Crecimiento_Puntos: comp.crecimiento,
-            Total_Docentes_Evaluados: datosGrupales.totalDocentes,
-            Promedio_Global_Institucional: datosGrupales.promedioGlobal,
-
-            Status: "Ciclo_Institucional_Completado",
-            Fecha_Cierre_Final: new Date().toLocaleString()
+        // Función interna para limpiar textos y evitar errores en Google Sheets
+        const cleanText = (txt) => {
+            if (!txt) return "";
+            // Eliminamos saltos de línea y tabulaciones que rompen las celdas de Excel
+            return String(txt).replace(/[\r\n\t]+/g, " ").trim();
         };
+
+        // ✅ Construcción del payload con los nombres EXACTOS de tus columnas
+        const finalData = {
+            "ID_Sostener_Inst":              idAUsar,
+            "Institucion_Key":               instKey,
+            "Teacher_Key":                   tKey,
+            "Fecha_Cierre":                  new Date().toLocaleDateString('es-ES'),
+
+            // ✅ Textos limpios desde la ref
+            "Reflexion_Punto_Partida":       cleanText(dataActual.Reflexion_Punto_Partida),
+            "Estado_Cumplimiento_Asegurar":  cleanText(dataActual.Estado_Cumplimiento_Asegurar),
+            "Analisis_Implementacion":       dataActual.aprendizajeClave
+                ? cleanText(`${dataActual.aprendizajeClave}: ${dataActual.Analisis_Implementacion}`)
+                : cleanText(dataActual.Analisis_Implementacion),
+            
+            "Nivel_Institucional_Actual":    generarDiagnostico(comp.scoreAhora * 20).nivel,
+            "Docentes_N1":                   `${N1}, ${N2}, ${N3}, ${N4}`,
+            "Porcentaje_Reduccion_Alertas":  `${comp.crecimiento}%`,
+            
+            "Ruta_Elegida":                  cleanText(dataActual.Ruta_Elegida),
+            "Prioridad_Estrategica_Anual":   cleanText(dataActual.Prioridad_Estrategica_Anual),
+            "Accion_Gobernanza":             cleanText(dataActual.Accion_Gobernanza),
+            "Indicador_Medible":             cleanText(dataActual.Indicador_Medible),
+            "Fecha_Revision_Institucional":  cleanText(dataActual.Fecha_Revision_Institucional),
+            "Estrategia_Comunicacion":       cleanText(dataActual.Estrategia_Comunicacion),
+
+            // Campos extra para métricas
+            "Score_Inicial_Pct":             (comp.scoreAntes * 20).toFixed(1),
+            "Score_Final_Pct":               (comp.scoreAhora * 20).toFixed(1),
+            "Crecimiento_Puntos":            comp.crecimiento,
+            "Total_Docentes_Evaluados":      datosGrupales.totalDocentes,
+            "Promedio_Global_Institucional": datosGrupales.promedioGlobal,
+            "Status":                        "Ciclo_Institucional_Completado",
+            "Fase_Actual":                   "5",
+            "Fecha_Cierre_Final":            new Date().toLocaleString()
+        };
+
+        console.log("📦 [SAVE CIERRE] PAYLOAD FINAL a enviar:", finalData);
 
         try {
             const response = await fetch(API_URL, {
                 method: "POST",
+                mode: "cors", // Asegura compatibilidad entre dominios
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify({
                     action: esUpdate ? "update" : "create",
@@ -735,29 +857,45 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                 })
             });
 
-            if (response.ok) {
-                // Actualizamos el historial local para reflejar el nuevo ID
+            // Con Google Apps Script, a veces la respuesta viene como opaca o redireccionada
+            if (response.ok || response.status === 200 || response.type === 'opaque') {
                 setHistorial(prev => prev.length > 0
                     ? [{ ...prev[0], ID_Sostener_Inst: idAUsar }]
                     : [{ ID_Sostener_Inst: idAUsar }]
                 );
 
+                limpiarLocalStorage();
+
+                console.log("✅ [SAVE CIERRE] Guardado exitoso");
+
                 await Swal.fire({
                     title: "¡Ciclo Institucional Completado!",
-                    text: "La hoja de ruta institucional ha sido integrada al ecosistema ATLAS.",
+                    text: "La hoja de ruta institucional ha sido guardada correctamente.",
                     icon: "success",
                     confirmButtonColor: "#D4AF37"
                 });
                 setView("menu");
             } else {
-                throw new Error("Error en respuesta del servidor");
+                throw new Error(`Error en servidor: ${response.status}`);
             }
         } catch (e) {
-            console.error("Error en handleFinalSaveCierre:", e);
-            Swal.fire("Error", "No se pudo sincronizar el cierre institucional. Verifica tu conexión.", "error");
+            console.error("❌ [SAVE CIERRE] Error:", e);
+            Swal.fire("Error", "No se pudo conectar con el servidor de Google Sheets.", "error");
         } finally {
             setLoading(false);
         }
+    };
+
+    // ============================================================
+    // AVANZAR PASO
+    // ============================================================
+    const handleNextStep = () => {
+        console.log(`➡️ [STEP] Avanzando de paso ${cierreStep} | formDataCierreRef.current:`, JSON.stringify(formDataCierreRef.current, null, 2));
+        if (cierreStep === 5) {
+            isReadOnly ? setView("menu") : handleFinalSaveCierre();
+            return;
+        }
+        setCierreStep(prev => prev + 1);
     };
 
     // ============================================================
@@ -772,7 +910,9 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
         setLoading(true);
         try {
             const tKey = userData?.Teacher_Key;
-            const response = await fetch(`${API_URL}?sheet=SOSTENER_Institucional&Teacher_Key=${tKey}`);
+            const response = await fetch(`${API_URL}?sheet=SOSTENER_Institucional&Teacher_Key=${tKey}`, {
+                redirect: "follow"
+            });
             const data = await response.json();
 
             if (Array.isArray(data) && data.length > 0) {
@@ -782,34 +922,33 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                     : [ultimo]
                 );
                 setFormDataCierre({
-                    Reflexion_Punto_Partida: ultimo.Reflexion_Punto_Partida || "",
-                    Estado_Cumplimiento_Asegurar: ultimo.Estado_Cumplimiento_Asegurar || "",
-                    Analisis_Implementacion: ultimo.Analisis_Implementacion?.split(': ')[1] || ultimo.Analisis_Implementacion || "",
-                    aprendizajeClave: ultimo.Analisis_Implementacion?.split(': ')[0] || "",
-                    Ruta_Elegida: ultimo.Ruta_Elegida || "",
-                    Prioridad_Estrategica_Anual: ultimo.Prioridad_Estrategica_Anual || "",
-                    Accion_Gobernanza: ultimo.Accion_Gobernanza || "",
-                    Indicador_Medible: ultimo.Indicador_Medible || "",
-                    Fecha_Revision_Institucional: ultimo.Fecha_Revision_Institucional || "",
-                    Estrategia_Comunicacion: ultimo.Estrategia_Comunicacion || ""
+                    Reflexion_Punto_Partida:      ultimo.Reflexion_Punto_Partida       || "",
+                    Estado_Cumplimiento_Asegurar: ultimo.Estado_Cumplimiento_Asegurar  || "",
+                    Analisis_Implementacion:      ultimo.Analisis_Implementacion?.split(': ')[1] || ultimo.Analisis_Implementacion || "",
+                    aprendizajeClave:             ultimo.Analisis_Implementacion?.split(': ')[0]  || "",
+                    Ruta_Elegida:                 ultimo.Ruta_Elegida                  || "",
+                    Prioridad_Estrategica_Anual:  ultimo.Prioridad_Estrategica_Anual   || "",
+                    Accion_Gobernanza:            ultimo.Accion_Gobernanza             || "",
+                    Indicador_Medible:            ultimo.Indicador_Medible             || "",
+                    Fecha_Revision_Institucional: ultimo.Fecha_Revision_Institucional  || "",
+                    Estrategia_Comunicacion:      ultimo.Estrategia_Comunicacion       || ""
                 });
                 setIsReadOnly(true);
                 setCierreStep(1);
                 setView("cierre");
             } else {
-                // Si no hay en SOSTENER_Institucional, usamos los datos del historial local
                 const registro = historial[0];
                 setFormDataCierre({
-                    Reflexion_Punto_Partida: registro.Reflexion_Punto_Partida || "",
+                    Reflexion_Punto_Partida:      registro.Reflexion_Punto_Partida      || "",
                     Estado_Cumplimiento_Asegurar: registro.Estado_Cumplimiento_Asegurar || "",
-                    Analisis_Implementacion: registro.Analisis_Implementacion || "",
-                    aprendizajeClave: "",
-                    Ruta_Elegida: registro.Ruta_Elegida || "",
-                    Prioridad_Estrategica_Anual: registro.Prioridad_Estrategica_Anual || "",
-                    Accion_Gobernanza: registro.Accion_Gobernanza || "",
-                    Indicador_Medible: registro.Indicador_Medible || "",
+                    Analisis_Implementacion:      registro.Analisis_Implementacion      || "",
+                    aprendizajeClave:             "",
+                    Ruta_Elegida:                 registro.Ruta_Elegida                 || "",
+                    Prioridad_Estrategica_Anual:  registro.Prioridad_Estrategica_Anual  || "",
+                    Accion_Gobernanza:            registro.Accion_Gobernanza            || "",
+                    Indicador_Medible:            registro.Indicador_Medible            || "",
                     Fecha_Revision_Institucional: registro.Fecha_Revision_Institucional || "",
-                    Estrategia_Comunicacion: registro.Estrategia_Comunicacion || ""
+                    Estrategia_Comunicacion:      registro.Estrategia_Comunicacion      || ""
                 });
                 setIsReadOnly(true);
                 setCierreStep(1);
@@ -862,18 +1001,10 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                     disabled={historial.length === 0}
                                     className="btn-sos-primary"
                                     onClick={() => {
-                                        setFormDataCierre({
-                                            Reflexion_Punto_Partida: "",
-                                            Estado_Cumplimiento_Asegurar: "",
-                                            Analisis_Implementacion: "",
-                                            aprendizajeClave: "",
-                                            Ruta_Elegida: "",
-                                            Prioridad_Estrategica_Anual: "",
-                                            Accion_Gobernanza: "",
-                                            Indicador_Medible: "",
-                                            Fecha_Revision_Institucional: "",
-                                            Estrategia_Comunicacion: ""
-                                        });
+                                        const teniaBorrador = cargarDesdeLocalStorage();
+                                        if (!teniaBorrador) {
+                                            setFormDataCierre(initialFormDataCierre);
+                                        }
                                         setIsReadOnly(false);
                                         setCierreStep(1);
                                         setView("cierre");
@@ -890,7 +1021,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                 </div>
             )}
 
-            {/* ======================== CUESTIONARIO INSTITUCIONAL ======================== */}
+            {/* ======================== CUESTIONARIO ======================== */}
             {view === "cuestionario" && (
                 <div className="atl-q-page-container animate-fade-in">
                     <button className="atl-q-btn-back" onClick={() => setView("menu")}>⬅ Volver</button>
@@ -918,7 +1049,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                                     <button
                                                         key={v}
                                                         className={`atl-q-likert-btn ${respuestas[p.id] === v ? 'is-active' : ''} ${v === 5 ? 'is-premium' : ''}`}
-                                                        onClick={() => setRespuestas({ ...respuestas, [p.id]: v })}
+                                                        onClick={() => setRespuestas(prev => ({ ...prev, [p.id]: v }))}
                                                     >{v}</button>
                                                 ))}
                                             </div>
@@ -937,13 +1068,12 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                 </div>
             )}
 
-            {/* ======================== DASHBOARD INSTITUCIONAL ======================== */}
+            {/* ======================== DASHBOARD ======================== */}
             {view === "dashboard" && historial.length > 0 && (
                 <div className="sostener-dashboard animate-fade-in">
                     <button className="btn-sos-back" onClick={() => setView("menu")}>⬅ Menú Principal</button>
                     <div className="sos-dash-layout">
 
-                        {/* PANEL 1: ÍNDICE INSTITUCIONAL GRUPAL */}
                         <div className="sos-dash-top">
                             <div className="sos-stat-card gold">
                                 <span className="dash-lider-2026-panel-id">Panel 1 — Institucional</span>
@@ -998,7 +1128,6 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                             </div>
                         </div>
 
-                        {/* ANÁLISIS GENERADO */}
                         {analysis && showAnalysis && (
                             <div className="analysis-box">
                                 <h3>📊 Recomendaciones Institucionales</h3>
@@ -1017,7 +1146,6 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                             </div>
                         )}
 
-                        {/* PANEL 2: DISTRIBUCIÓN GRUPAL DE TODOS LOS DOCENTES */}
                         <div className="sos-stat-card real-evidence" onClick={() => setShowModalReal(true)}>
                             <span className="dash-lider-2026-panel-id">Panel 2: Diagnóstico Institucional — Auditoría Grupal</span>
                             <h4>Distribución de Docentes por Nivel de Madurez</h4>
@@ -1054,7 +1182,6 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                             <button className="atl-an-btn-main-alt">Ver Diagnóstico Detallado</button>
                         </div>
 
-                        {/* MODAL DIAGNÓSTICO GRUPAL */}
                         {showModalReal && (
                             <div className="atl-an-overlay">
                                 <div className="audit-modal-container animate-fade-in">
@@ -1099,9 +1226,9 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                                 <div style={{ marginTop: '16px', padding: '12px', background: '#f8fafc', borderRadius: '8px' }}>
                                                     <p style={{ fontSize: '0.85rem', color: '#475569' }}>
                                                         <strong>Distribución por nivel:</strong><br />
-                                                        N1 (Exploración): {datosGrupales.distribucionNiveles.N1} | 
-                                                        N2 (Integración): {datosGrupales.distribucionNiveles.N2} | 
-                                                        N3 (Estratégico): {datosGrupales.distribucionNiveles.N3} | 
+                                                        N1 (Exploración): {datosGrupales.distribucionNiveles.N1} |
+                                                        N2 (Integración): {datosGrupales.distribucionNiveles.N2} |
+                                                        N3 (Estratégico): {datosGrupales.distribucionNiveles.N3} |
                                                         N4 (Referente): {datosGrupales.distribucionNiveles.N4}
                                                     </p>
                                                 </div>
@@ -1159,7 +1286,6 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                             </div>
                         )}
 
-                        {/* PANEL 3: DICTAMEN ÉTICO GRUPAL — TODOS LOS DOCENTES */}
                         <div className={`sos-history-chart audit-ethic-border`} style={{ borderLeftColor: statsPrompt?.color || '#e2e8f0' }}>
                             <span className="dash-lider-2026-panel-id">Panel 3: Fase Liderar — Análisis Grupal</span>
                             <h4>Dictamen de Liderazgo Pedagógico e IA Institucional</h4>
@@ -1215,7 +1341,6 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                             )}
                         </div>
 
-                        {/* PANEL 4: RETOS GRUPALES */}
                         <div className="sos-history-chart">
                             <span className="dash-lider-2026-panel-id">Panel 4</span>
                             <h4>Misiones de Transformación — Estado Global</h4>
@@ -1234,7 +1359,6 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                             </div>
                         </div>
 
-                        {/* PANEL 5: EVOLUCIÓN HISTÓRICA DE SOSTENIBILIDAD GRUPAL */}
                         <div className="sos-history-chart">
                             <span className="dash-lider-2026-panel-id">Panel 5</span>
                             <h4>Estado Actual ATLAS — Promedios Institucionales</h4>
@@ -1285,7 +1409,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
 
                     <div className="sos-form-container cierre-main-content">
 
-                        {/* FASE 1: EL ORIGEN INSTITUCIONAL */}
+                        {/* ── FASE 1: EL ORIGEN INSTITUCIONAL ── */}
                         {cierreStep === 1 && (
                             <div className="at-cierre-fase-wrapper animate-slide-up">
                                 <header className="at-cierre-header-main">
@@ -1294,7 +1418,8 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                     </div>
                                     <h2 className="at-cierre-title">¿Dónde comenzó el viaje de tu institución?</h2>
                                     <p className="at-cierre-subtitle">
-                                        Análisis retrospectivo basado en el Diagnóstico de Auditoría grupal de <strong>{datosAuditoriafase1.totalDocentes}</strong> docentes.</p>
+                                        Análisis retrospectivo basado en el Diagnóstico de Auditoría grupal de <strong>{datosAuditoriafase1.totalDocentes}</strong> docentes.
+                                    </p>
                                 </header>
 
                                 <div className="at-cierre-grid-container">
@@ -1348,7 +1473,6 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                     </section>
                                 </div>
 
-                                {/* CAMPO → Reflexion_Punto_Partida */}
                                 <div className="at-cierre-reflection-section">
                                     <div className="at-reflection-header">
                                         <h4>Reflexión sobre el Punto de Partida Institucional</h4>
@@ -1364,7 +1488,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                             readOnly={isReadOnly}
                                             placeholder="Escribe tu reflexión institucional aquí (mínimo 200 caracteres)..."
                                             value={formDataCierre.Reflexion_Punto_Partida}
-                                            onChange={(e) => setFormDataCierre({ ...formDataCierre, Reflexion_Punto_Partida: e.target.value })}
+                                            onChange={(e) => updateFormField("Reflexion_Punto_Partida", e.target.value)}
                                         />
                                         <div className={`at-char-counter ${formDataCierre.Reflexion_Punto_Partida.length >= 200 ? 'at-ready' : ''}`}>
                                             <span className="at-counter-number">{formDataCierre.Reflexion_Punto_Partida.length} / 200</span>
@@ -1375,7 +1499,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                             </div>
                         )}
 
-                        {/* FASE 2: TRANSFORMACIÓN INSTITUCIONAL */}
+                        {/* ── FASE 2: CONSOLIDACIÓN ── */}
                         {cierreStep === 2 && (
                             <div className="at-c2-wrapper animate-slide-up">
                                 <header className="at-c2-header-main">
@@ -1419,7 +1543,6 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                     </div>
                                 </div>
 
-                                {/* Gráfica comparativa Antes (auditoría) vs Ahora (SOSTENER_Docentes grupal) */}
                                 <div className="at-c2-comparison-container">
                                     <h4 className="at-c2-chart-title">Análisis Comparativo Grupal: Auditoría Inicial vs Sostenibilidad Actual</h4>
                                     <div className="at-c2-comparison-chart">
@@ -1447,7 +1570,6 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                     </div>
                                 </div>
 
-                                {/* CAMPO → Estado_Cumplimiento_Asegurar */}
                                 <div className="at-c2-reflection-section">
                                     <div className="at-reflection-header">
                                         <h4>Estado de Cumplimiento Institucional</h4>
@@ -1463,7 +1585,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                             readOnly={isReadOnly}
                                             placeholder="Describe la transformación institucional (mínimo 300 caracteres)..."
                                             value={formDataCierre.Estado_Cumplimiento_Asegurar}
-                                            onChange={(e) => setFormDataCierre({ ...formDataCierre, Estado_Cumplimiento_Asegurar: e.target.value })}
+                                            onChange={(e) => updateFormField("Estado_Cumplimiento_Asegurar", e.target.value)}
                                         />
                                         <div className={`at-char-counter ${formDataCierre.Estado_Cumplimiento_Asegurar.length >= 300 ? 'at-ready' : ''}`}>
                                             <span className="at-counter-number">{formDataCierre.Estado_Cumplimiento_Asegurar.length} / 300</span>
@@ -1474,7 +1596,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                             </div>
                         )}
 
-                        {/* FASE 3: ANÁLISIS DE IMPLEMENTACIÓN */}
+                        {/* ── FASE 3: ANÁLISIS DE IMPLEMENTACIÓN ── */}
                         {cierreStep === 3 && (
                             <div className="at-c3-wrapper animate-slide-up">
                                 <header className="at-c2-header-main">
@@ -1487,14 +1609,12 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                     </p>
                                 </header>
 
-                                {/* BLOQUE: DIAGNÓSTICO DIRECTIVO (ASEGURAR_Directivos_Diagnostico) */}
                                 {datosAsegurar.diagnostico ? (
                                     <div style={{ marginBottom: '28px' }}>
                                         <h4 style={{ color: '#1a237e', fontSize: '1rem', marginBottom: '14px', borderBottom: '2px solid #c5a059', paddingBottom: '6px' }}>
                                             🧭 Diagnóstico Directivo — Resultados del Radar ASEGURAR
                                         </h4>
 
-                                        {/* Clasificación final */}
                                         <div style={{
                                             background: 'linear-gradient(135deg, #1a237e 0%, #283593 100%)',
                                             borderRadius: '12px', padding: '16px 20px', marginBottom: '16px',
@@ -1512,55 +1632,26 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                                 <span style={{ color: '#c5a059', fontSize: '0.75rem' }}>Puntaje Total Radar</span>
                                                 <div style={{ color: 'white', fontSize: '1.8rem', fontWeight: 700 }}>
                                                     {parseFloat(datosAsegurar.diagnostico.Puntaje_Total_Radar || 0).toFixed(2)}
-                                                    <small style={{ fontSize: '0.8rem', color: '#94a3b8' }}></small>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* Grid de 5 dimensiones */}
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '10px', marginBottom: '16px' }}>
                                             {[
-                                                {
-                                                    label: '🏛️ Gobernanza',
-                                                    keys: ['Gobernanza_1_Politica', 'Gobernanza_2_Responsable', 'Gobernanza_3_Evaluacion_Htas', 'Gobernanza_4_Protocolo_Incidentes'],
-                                                    color: '#8b5cf6'
-                                                },
-                                                {
-                                                    label: '🎓 Competencia Docente',
-                                                    keys: ['Competencia_1_Etica', 'Competencia_2_UNESCO_Levels', 'Competencia_3_Plan_Progresivo', 'Competencia_4_Reflexion_Critica'],
-                                                    color: '#06b6d4'
-                                                },
-                                                {
-                                                    label: '🔒 Gestión de Datos',
-                                                    keys: ['Datos_1_Protocolo_Estudiantes', 'Datos_2_Anonimizacion', 'Datos_3_Terminos_Htas', 'Datos_4_Almacenamiento'],
-                                                    color: '#f59e0b'
-                                                },
-                                                {
-                                                    label: '👁️ Supervisión Humana',
-                                                    keys: ['Supervision_1_Decision_Humana', 'Supervision_2_No_Automatizada', 'Supervision_3_Monitoreo_IA', 'Supervision_4_Revision_Practicas'],
-                                                    color: '#22c55e'
-                                                },
-                                                {
-                                                    label: '📢 Transparencia',
-                                                    keys: ['Transparencia_1_Informa_Estud', 'Transparencia_2_Lineamientos_Uso', 'Transparencia_3_Alfabetizacion', 'Transparencia_4_Declaracion_Pub'],
-                                                    color: '#ec4899'
-                                                }
+                                                { label: '🏛️ Gobernanza', keys: ['Gobernanza_1_Politica', 'Gobernanza_2_Responsable', 'Gobernanza_3_Evaluacion_Htas', 'Gobernanza_4_Protocolo_Incidentes'], color: '#8b5cf6' },
+                                                { label: '🎓 Competencia Docente', keys: ['Competencia_1_Etica', 'Competencia_2_UNESCO_Levels', 'Competencia_3_Plan_Progresivo', 'Competencia_4_Reflexion_Critica'], color: '#06b6d4' },
+                                                { label: '🔒 Gestión de Datos', keys: ['Datos_1_Protocolo_Estudiantes', 'Datos_2_Anonimizacion', 'Datos_3_Terminos_Htas', 'Datos_4_Almacenamiento'], color: '#f59e0b' },
+                                                { label: '👁️ Supervisión Humana', keys: ['Supervision_1_Decision_Humana', 'Supervision_2_No_Automatizada', 'Supervision_3_Monitoreo_IA', 'Supervision_4_Revision_Practicas'], color: '#22c55e' },
+                                                { label: '📢 Transparencia', keys: ['Transparencia_1_Informa_Estud', 'Transparencia_2_Lineamientos_Uso', 'Transparencia_3_Alfabetizacion', 'Transparencia_4_Declaracion_Pub'], color: '#ec4899' }
                                             ].map((dim, i) => {
                                                 const valores = dim.keys.map(k => parseFloat(datosAsegurar.diagnostico[k] || 0));
                                                 const promDim = valores.reduce((a, b) => a + b, 0) / valores.length;
                                                 const pct = (promDim / 4) * 100;
                                                 return (
-                                                    <div key={i} style={{
-                                                        background: 'white', borderRadius: '10px', padding: '12px',
-                                                        border: `2px solid ${dim.color}20`,
-                                                        boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-                                                    }}>
-                                                        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#374151', marginBottom: '8px' }}>
-                                                            {dim.label}
-                                                        </div>
+                                                    <div key={i} style={{ background: 'white', borderRadius: '10px', padding: '12px', border: `2px solid ${dim.color}20`, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                                                        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#374151', marginBottom: '8px' }}>{dim.label}</div>
                                                         <div style={{ fontSize: '1.5rem', fontWeight: 700, color: dim.color }}>
-                                                            {promDim.toFixed(1)}
-                                                            <small style={{ fontSize: '0.7rem', color: '#94a3b8' }}>/4</small>
+                                                            {promDim.toFixed(1)}<small style={{ fontSize: '0.7rem', color: '#94a3b8' }}>/4</small>
                                                         </div>
                                                         <div style={{ marginTop: '6px', height: '6px', background: '#f1f5f9', borderRadius: '99px', overflow: 'hidden' }}>
                                                             <div style={{ height: '100%', width: `${pct}%`, background: dim.color, borderRadius: '99px', transition: 'width 0.8s ease' }}></div>
@@ -1571,7 +1662,6 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                             })}
                                         </div>
 
-                                        {/* Detalle por ítem de la dimensión más baja */}
                                         {(() => {
                                             const todasDims = [
                                                 { label: 'Gobernanza', keys: ['Gobernanza_1_Politica', 'Gobernanza_2_Responsable', 'Gobernanza_3_Evaluacion_Htas', 'Gobernanza_4_Protocolo_Incidentes'] },
@@ -1594,11 +1684,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                                         {dimDebil.keys.map((k, idx) => {
                                                             const val = parseFloat(datosAsegurar.diagnostico[k] || 0);
                                                             return (
-                                                                <div key={idx} style={{
-                                                                    background: val <= 2 ? '#fee2e2' : '#f0fdf4',
-                                                                    borderRadius: '8px', padding: '6px 10px',
-                                                                    fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: '6px'
-                                                                }}>
+                                                                <div key={idx} style={{ background: val <= 2 ? '#fee2e2' : '#f0fdf4', borderRadius: '8px', padding: '6px 10px', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                                     <span style={{ fontWeight: 700, color: val <= 2 ? '#dc2626' : '#16a34a' }}>{val}/4</span>
                                                                     <span style={{ color: '#374151' }}>{k.split('_').slice(2).join(' ')}</span>
                                                                 </div>
@@ -1616,7 +1702,6 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                     </div>
                                 )}
 
-                                {/* BLOQUE: PLAN DE ACCIÓN (ASEGURAR_Directivos_Plan_Accion) */}
                                 {datosAsegurar.planAccion ? (
                                     <div style={{ marginBottom: '28px' }}>
                                         <h4 style={{ color: '#1a237e', fontSize: '1rem', marginBottom: '14px', borderBottom: '2px solid #c5a059', paddingBottom: '6px' }}>
@@ -1631,28 +1716,13 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                                 { label: '⚡ Prioridad', value: datosAsegurar.planAccion.Dimension_Prioridad_1, full: false },
                                                 { label: '📈 Indicadores de Éxito', value: datosAsegurar.planAccion.Indicadores_Exito, full: true }
                                             ].map((campo, i) => campo.value ? (
-                                                <div key={i} style={{
-                                                    gridColumn: campo.full ? '1 / -1' : 'auto',
-                                                    background: 'white', borderRadius: '10px', padding: '14px',
-                                                    border: '1px solid #e2e8f0', boxShadow: '0 1px 4px rgba(0,0,0,0.05)'
-                                                }}>
-                                                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginBottom: '6px' }}>
-                                                        {campo.label}
-                                                    </div>
-                                                    <div style={{ fontSize: '0.85rem', color: '#1e293b', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
-                                                        {campo.value}
-                                                    </div>
+                                                <div key={i} style={{ gridColumn: campo.full ? '1 / -1' : 'auto', background: 'white', borderRadius: '10px', padding: '14px', border: '1px solid #e2e8f0', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+                                                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginBottom: '6px' }}>{campo.label}</div>
+                                                    <div style={{ fontSize: '0.85rem', color: '#1e293b', lineHeight: 1.5, whiteSpace: 'pre-line' }}>{campo.value}</div>
                                                 </div>
                                             ) : null)}
                                         </div>
-
-                                        {/* Barra de estado del plan */}
-                                        <div style={{
-                                            marginTop: '14px', padding: '12px 16px',
-                                            background: 'linear-gradient(90deg, #f0fdf4, #dcfce7)',
-                                            borderRadius: '10px', border: '1px solid #86efac',
-                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px'
-                                        }}>
+                                        <div style={{ marginTop: '14px', padding: '12px 16px', background: 'linear-gradient(90deg, #f0fdf4, #dcfce7)', borderRadius: '10px', border: '1px solid #86efac', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                                             <span style={{ fontSize: '0.8rem', color: '#15803d', fontWeight: 600 }}>
                                                 ✅ Plan estratégico registrado — Estado: {datosAsegurar.planAccion.Status || 'COMPLETADO'}
                                             </span>
@@ -1668,9 +1738,6 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                     </div>
                                 )}
 
-                                {/* SELECTOR DE APRENDIZAJE CLAVE (se mantiene) */}
-                                
-                                {/* CAMPO → Analisis_Implementacion */}
                                 <div className="at-c2-reflection-section">
                                     <div className="at-reflection-header">
                                         <h4>Análisis de la Implementación Institucional</h4>
@@ -1684,7 +1751,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                             readOnly={isReadOnly}
                                             placeholder="Analiza la implementación institucional (mínimo 150 caracteres)..."
                                             value={formDataCierre.Analisis_Implementacion}
-                                            onChange={(e) => setFormDataCierre({ ...formDataCierre, Analisis_Implementacion: e.target.value })}
+                                            onChange={(e) => updateFormField("Analisis_Implementacion", e.target.value)}
                                         />
                                         <div className={`at-char-counter ${formDataCierre.Analisis_Implementacion.length >= 150 ? 'at-ready' : ''}`}>
                                             <span className="at-counter-number">{formDataCierre.Analisis_Implementacion.length} / 150</span>
@@ -1695,7 +1762,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                             </div>
                         )}
 
-                        {/* FASE 4: CERTIFICACIÓN INSTITUCIONAL */}
+                        {/* ── FASE 4: REPORTE MAESTRO ── */}
                         {cierreStep === 4 && (
                             <div className="at-c4-wrapper animate-slide-up">
                                 <header className="at-c4-header-main">
@@ -1774,7 +1841,6 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                         );
                                     })()}
 
-                                    {/* Narrativa */}
                                     <div className="at-c4-narrative-section">
                                         <h5 className="at-section-subtitle">Trayectoria Reflexiva Institucional</h5>
                                         <div className="at-narrative-grid">
@@ -1795,7 +1861,6 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                         </div>
                                     </div>
 
-                                    {/* Auditoría ética grupal */}
                                     {statsPrompt && (
                                         <div className="at-c4-ethic-summary">
                                             <h5><span className="dot l"></span> Dictamen de Liderazgo Ético UNESCO — Grupal</h5>
@@ -1821,7 +1886,6 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                         </div>
                                     )}
 
-                                    {/* Misiones completadas */}
                                     <div className="at-c4-double-stats">
                                         <div className="at-c4-tech-block">
                                             <h5><span className="dot t"></span> Misiones Superadas</h5>
@@ -1858,7 +1922,6 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                         </div>
                                     </div>
 
-                                    {/* Indicadores de calidad */}
                                     <div className="at-c4-quality-checks">
                                         <div className="at-check-row">
                                             <span className={`pill ${parseFloat(statsPrompt?.priv) >= 3 ? 'on' : ''}`}>🛡️ Privacidad UNESCO</span>
@@ -1877,7 +1940,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                             </div>
                         )}
 
-                        {/* FASE 5: HOJA DE RUTA INSTITUCIONAL */}
+                        {/* ── FASE 5: HOJA DE RUTA ── */}
                         {cierreStep === 5 && (() => {
                             const m = getMetricasAuditoria();
                             const dims = [
@@ -1909,40 +1972,43 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                     </div>
 
                                     <div className="at-c5-roadmap-card">
-                                        {/* SELECTOR DE RUTA → Ruta_Elegida */}
-                                        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
-                                            {['Ruta A: Sostener y Consolidar', 'Ruta B: Avanzar hacia Certificación ATLAS'].map(ruta => (
-                                                <button
-                                                    key={ruta}
-                                                    disabled={isReadOnly}
-                                                    onClick={() => setFormDataCierre({ ...formDataCierre, Ruta_Elegida: ruta })}
-                                                    style={{
-                                                        flex: 1, minWidth: '200px', padding: '14px 16px', borderRadius: '12px',
-                                                        border: '2px solid',
-                                                        borderColor: formDataCierre.Ruta_Elegida === ruta ? '#15203c' : '#e2e8f0',
-                                                        background: formDataCierre.Ruta_Elegida === ruta ? '#15203c' : 'white',
-                                                        color: formDataCierre.Ruta_Elegida === ruta ? 'white' : '#64748b',
-                                                        cursor: isReadOnly ? 'default' : 'pointer',
-                                                        fontWeight: 600, fontSize: '0.9rem', position: 'relative'
-                                                    }}
-                                                >
-                                                    {formDataCierre.Ruta_Elegida === ruta ? '✅ ' : '☐ '}{ruta}
-                                                    {((ruta.includes('Consolidar') && !sugiereCertificacion) || (ruta.includes('Certificación') && sugiereCertificacion)) && (
-                                                        <span style={{
-                                                            position: 'absolute', top: '-10px', right: '10px',
-                                                            background: '#c5a059', color: 'white',
-                                                            fontSize: '0.65rem', padding: '2px 8px', borderRadius: '99px'
-                                                        }}>SUGERIDA</span>
-                                                    )}
-                                                </button>
-                                            ))}
+                                        <div className="at-c5-v2-grid-wrapper">
+                                            {['Ruta A: Sostener y Consolidar', 'Ruta B: Avanzar hacia Certificación ATLAS'].map(ruta => {
+                                                const isSelected = formDataCierre.Ruta_Elegida === ruta;
+                                                const esSugerida = (ruta.includes('Consolidar') && !sugiereCertificacion) ||
+                                                    (ruta.includes('Certificación') && sugiereCertificacion);
+
+                                                return (
+                                                    <button
+                                                        key={ruta}
+                                                        type="button"
+                                                        disabled={isReadOnly}
+                                                        onClick={() => updateFormField("Ruta_Elegida", ruta)}
+                                                        className={`at-c5-v2-card-btn ${isSelected ? 'is-selected' : ''}`}
+                                                    >
+                                                        {/* Badge Sugerida - Centrado arriba */}
+                                                        {esSugerida && (
+                                                            <span className="at-c5-v2-badge-sugerida">Ruta Recomendada</span>
+                                                        )}
+
+                                                        {/* Circulo de Indicador de Selección */}
+                                                        <div className="at-c5-v2-status-circle">
+                                                            ✓
+                                                        </div>
+
+                                                        {/* Texto de la Ruta */}
+                                                        <h4 className="at-c5-v2-route-title">
+                                                            {ruta}
+                                                        </h4>
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
 
                                         <div className="at-c5-form-grid">
-                                            {/* 1. PRIORIDAD → Prioridad_Estrategica_Anual */}
                                             <div className="at-c5-field full">
                                                 <label className="at-c5-label">
-                                                    1️⃣ Prioridad estratégica institucional (próximos 12 meses):
+                                                    1. Prioridad estratégica institucional (próximos 12 meses):
                                                     <span className={formDataCierre.Prioridad_Estrategica_Anual?.length < 150 ? "at-char-count error" : "at-char-count"}>
                                                         ({formDataCierre.Prioridad_Estrategica_Anual?.length || 0}/150 caracteres)
                                                     </span>
@@ -1952,56 +2018,52 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                                     readOnly={isReadOnly}
                                                     placeholder="¿Cuál es la prioridad estratégica institucional principal? (mínimo 150 caracteres)"
                                                     value={formDataCierre.Prioridad_Estrategica_Anual}
-                                                    onChange={(e) => setFormDataCierre({ ...formDataCierre, Prioridad_Estrategica_Anual: e.target.value })}
+                                                    onChange={(e) => updateFormField("Prioridad_Estrategica_Anual", e.target.value)}
                                                 />
                                             </div>
 
-                                            {/* 2. GOBERNANZA → Accion_Gobernanza */}
                                             <div className="at-c5-field full">
-                                                <label className="at-c5-label">2️⃣ Acción concreta a nivel de gobernanza:</label>
+                                                <label className="at-c5-label"> 2. Acción concreta a nivel de gobernanza:</label>
                                                 <textarea
                                                     className="at-c5-textarea"
                                                     readOnly={isReadOnly}
                                                     placeholder="¿Qué acción específica de gobernanza implementará la institución?"
                                                     value={formDataCierre.Accion_Gobernanza}
-                                                    onChange={(e) => setFormDataCierre({ ...formDataCierre, Accion_Gobernanza: e.target.value })}
+                                                    onChange={(e) => updateFormField("Accion_Gobernanza", e.target.value)}
                                                 />
                                             </div>
 
-                                            {/* 3. INDICADOR → Indicador_Medible */}
                                             <div className="at-c5-field">
-                                                <label className="at-c5-label">3️⃣ Indicador medible:</label>
+                                                <label className="at-c5-label"> 3. Indicador medible:</label>
                                                 <input
                                                     type="text"
                                                     className="at-c5-input"
                                                     readOnly={isReadOnly}
                                                     placeholder="¿Cómo medirá la institución el éxito?"
                                                     value={formDataCierre.Indicador_Medible}
-                                                    onChange={(e) => setFormDataCierre({ ...formDataCierre, Indicador_Medible: e.target.value })}
+                                                    onChange={(e) => updateFormField("Indicador_Medible", e.target.value)}
                                                 />
                                             </div>
 
-                                            {/* 4. FECHA → Fecha_Revision_Institucional */}
                                             <div className="at-c5-field">
-                                                <label className="at-c5-label">4️⃣ Calendario de revisión institucional:</label>
+                                                <label className="at-c5-label"> 4. Calendario de revisión institucional:</label>
                                                 <input
                                                     type="date"
                                                     className="at-c5-input-date"
                                                     readOnly={isReadOnly}
                                                     value={formDataCierre.Fecha_Revision_Institucional}
-                                                    onChange={(e) => setFormDataCierre({ ...formDataCierre, Fecha_Revision_Institucional: e.target.value })}
+                                                    onChange={(e) => updateFormField("Fecha_Revision_Institucional", e.target.value)}
                                                 />
                                             </div>
 
-                                            {/* 5. COMUNICACIÓN → Estrategia_Comunicacion */}
                                             <div className="at-c5-field full">
-                                                <label className="at-c5-label">5️⃣ Estrategia de comunicación institucional de IA:</label>
+                                                <label className="at-c5-label"> 5. Estrategia de comunicación institucional de IA:</label>
                                                 <textarea
                                                     className="at-c5-textarea"
                                                     readOnly={isReadOnly}
                                                     placeholder="¿Cómo comunicará la institución el uso responsable de IA a toda la comunidad educativa?"
                                                     value={formDataCierre.Estrategia_Comunicacion}
-                                                    onChange={(e) => setFormDataCierre({ ...formDataCierre, Estrategia_Comunicacion: e.target.value })}
+                                                    onChange={(e) => updateFormField("Estrategia_Comunicacion", e.target.value)}
                                                 />
                                             </div>
                                         </div>
@@ -2009,14 +2071,14 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                         <div className="at-c5-footer-quote">
                                             <div className="at-quote-line"></div>
                                             <p className="at-main-quote">"Sostener no es repetir acciones. Es institucionalizar buenas prácticas."</p>
-                                            <p className="at-sub-quote">Esta hoja de ruta guiará el próximo ciclo ATLAS institucional y se guardará en SOSTENER_Institucional.</p>
+                                            <p className="at-sub-quote">Esta hoja de ruta se guardará en SOSTENER_Institucional al finalizar.</p>
                                         </div>
                                     </div>
                                 </div>
                             );
                         })()}
 
-                        {/* NAVEGACIÓN INFERIOR */}
+                        {/* ── NAVEGACIÓN ── */}
                         <div className="cierre-actions-footer">
                             {cierreStep > 1 && (
                                 <button className="btn-sos-secondary" onClick={() => setCierreStep(cierreStep - 1)}>
@@ -2026,24 +2088,18 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                             <button
                                 className="btn-sos-primary btn-large"
                                 disabled={loading}
-                                onClick={() => {
-                                    if (cierreStep === 5) {
-                                        isReadOnly ? setView("menu") : handleFinalSaveCierre();
-                                    } else {
-                                        setCierreStep(cierreStep + 1);
-                                    }
-                                }}
+                                onClick={handleNextStep}
                             >
-                                {loading ? "Guardando..." : cierreStep === 5
+                                {loading ? "Guardando en Excel..." : cierreStep === 5
                                     ? (isReadOnly ? "Finalizar Consulta" : "Finalizar Ciclo Institucional e Integrar")
-                                    : "Siguiente Etapa"}
+                                    : "Siguiente Etapa →"}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* ======================== MODAL ANÁLISIS INSTITUCIONAL ======================== */}
+            {/* ======================== MODAL ANÁLISIS ======================== */}
             {showModal && (
                 <div className="atl-an-overlay">
                     <div className="atl-an-modal wide animate-fade-in">
