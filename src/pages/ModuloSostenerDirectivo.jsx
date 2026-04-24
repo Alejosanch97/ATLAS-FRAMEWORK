@@ -2072,6 +2072,20 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                             <div className="at-quote-line"></div>
                                             <p className="at-main-quote">"Sostener no es repetir acciones. Es institucionalizar buenas prácticas."</p>
                                             <p className="at-sub-quote">Esta hoja de ruta se guardará en SOSTENER_Institucional al finalizar.</p>
+
+                                            <div className="at-survey-container" style={{ marginTop: '15px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+                                                <p className="at-survey-text" style={{ fontSize: '0.9em', fontStyle: 'italic' }}>
+                                                    ¡Hola! Por favor, llena esta última encuesta para saber de tu experiencia:
+                                                    <a
+                                                        href="https://tinyurl.com/cierre-piloto"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        style={{ marginLeft: '5px', fontWeight: 'bold', color: '#2c3e50' }}
+                                                    >
+                                                        tinyurl.com/cierre-piloto
+                                                    </a>
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

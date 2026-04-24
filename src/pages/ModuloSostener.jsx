@@ -1814,6 +1814,22 @@ El progreso dependerá de fortalecer comprensión conceptual antes de escalar el
                                             <div className="at-quote-line"></div>
                                             <p className="at-main-quote">"No necesitas hacer más. Necesitas hacer mejor."</p>
                                             <p className="at-sub-quote">Este plan será tu guía para el siguiente ciclo ATLAS.</p>
+
+                                            {/* Nueva sección de encuesta */}
+                                            <div className="at-survey-section" style={{ marginTop: '20px' }}>
+                                                <p className="at-survey-text">
+                                                    ¡Hola! Espero estés muy bien hoy. Por favor, llena esta última encuesta para saber de tu experiencia:
+                                                </p>
+                                                <a
+                                                    href="https://tinyurl.com/cierre-piloto"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="at-survey-link"
+                                                    style={{ color: '#007bff', fontWeight: 'bold', textDecoration: 'underline' }}
+                                                >
+                                                    tinyurl.com/cierre-piloto
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
