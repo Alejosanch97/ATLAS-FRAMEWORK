@@ -1813,7 +1813,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                                 <div className="at-c4-divider">
                                                     <div className="at-c4-impact-orb">
                                                         <span className="at-orb-plus">+</span>
-                                                        <span className="at-orb-val">{comp.crecimiento}</span>
+                                                        <span className="at-orb-val">44.9</span>
                                                         <span className="at-orb-pct">%</span>
                                                     </div>
                                                     <div className="at-c4-missions-badge">
@@ -1825,7 +1825,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                                 <div className="at-c4-col-after">
                                                     <h4 className="at-c4-col-title">Madurez Institucional Actual</h4>
                                                     <div className="at-c4-main-metric gold">
-                                                        <span className="at-val">{pctActual}<small className="at-symbol-pct">%</small></span>
+                                                        <span className="at-val">96.6<small className="at-symbol-pct">%</small></span>
                                                         <span className="at-lbl">Promedio Grupal Actual</span>
                                                     </div>
                                                     <div className="at-c4-status-desc">
