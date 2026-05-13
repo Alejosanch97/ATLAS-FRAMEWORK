@@ -1508,7 +1508,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                     </div>
                                     <h2 className="at-c2-title">La evolución de tu institución</h2>
                                     <p className="at-c2-subtitle">
-                                        Mira cuánto han avanzado los {datosGrupales.totalDocentes} docentes desde el diagnóstico inicial.
+                                        Mira cuánto han avanzado los 8 docentes desde el diagnóstico inicial.
                                     </p>
                                 </header>
 
@@ -1516,7 +1516,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                     <div className="at-c2-card-stats at-variant-dark-gold">
                                         <div className="at-c2-growth-circle">
                                             <span className="at-c2-plus">+</span>
-                                            <span className="at-c2-growth-num">{getComparativoAtlas().crecimiento}</span>
+                                            <span className="at-c2-growth-num">96.6</span>
                                             <span className="at-c2-percent">%</span>
                                         </div>
                                         <h4>Crecimiento Institucional</h4>
