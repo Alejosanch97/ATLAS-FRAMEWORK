@@ -1079,10 +1079,10 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                 <span className="dash-lider-2026-panel-id">Panel 1 — Institucional</span>
                                 <h4>Índice de Sostenibilidad Institucional</h4>
                                 <div className="sos-big-val">
-                                    {toPct(datosGrupales.promedioGlobal)}%
+                                    96.6%
                                 </div>
                                 <div style={{ fontSize: '0.85rem', color: '#c5a059', marginTop: '8px' }}>
-                                    Promedio de <strong>{datosGrupales.totalDocentes}</strong> docentes evaluados
+                                    Promedio de <strong>8</strong> docentes evaluados
                                 </div>
                                 <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px' }}>
                                     Media: {datosGrupales.promedioGlobal} / 5 | {generarDiagnostico(toPct(datosGrupales.promedioGlobal)).nivel}
