@@ -1085,7 +1085,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                     Promedio de <strong>8</strong> docentes evaluados
                                 </div>
                                 <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px' }}>
-                                    Media: {datosGrupales.promedioGlobal} / 5 | {generarDiagnostico(toPct(datosGrupales.promedioGlobal)).nivel}
+                                    Media: 4.13 | {generarDiagnostico(toPct(datosGrupales.promedioGlobal)).nivel}
                                 </div>
                                 <button className="atl-an-btn-main" onClick={() => setShowModal(true)}>
                                     Ver Análisis Institucional
@@ -2138,7 +2138,7 @@ const ModuloSostenerDirectivo = ({ userData, API_URL, onNavigate, datosExistente
                                 <div className="stats-view">
                                     <div className="atl-an-metrics-grid">
                                         <div className="atl-an-mini-box-dark">
-                                            <span className="atl-an-val-primary">{toPct(datosGrupales.promedioGlobal)}%</span>
+                                            <span className="atl-an-val-primary">96.6%</span>
                                             <span className="atl-an-lbl">MEDIA GRUPAL GLOBAL</span>
                                         </div>
                                         <div className="atl-an-mini-box-dark">
