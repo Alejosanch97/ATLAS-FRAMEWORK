@@ -37,7 +37,6 @@ export const MiCertificado = ({ userData, huella = 0, onVolver }) => {
         if (!certRef.current) return;
         const canvas = await html2canvas(certRef.current, {
             scale: 3, backgroundColor: "#ffffff", useCORS: true,
-            foreignObjectRendering: true,
         });
         const link = document.createElement("a");
         link.download = `Certificado-${idCredencial}.png`;
