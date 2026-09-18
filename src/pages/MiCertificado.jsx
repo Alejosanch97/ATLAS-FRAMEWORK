@@ -60,10 +60,7 @@ export const MiCertificado = ({ userData, huella = 0, onVolver }) => {
                     <polygon points="920,560 770,560 920,410" fill="#16233f" />
                 </svg>
 
-                {/* Micro-textos de esquina */}
-                <div className="cert-corner tr">INSTITUCIONES<br />PERSONAS<br />COMUNIDADES<br />IMPACTO REAL</div>
-                <div className="cert-corner bl">CONOCIMIENTO<br />ACCIÓN<br />IMPACTO</div>
-                <div className="cert-corner br-text">JUNTOS<br />NAVEGAMOS<br />UN FUTURO<br />MEJOR</div>
+                
 
                 {/* Logo superior (logo6.png) */}
                 <div className="cert-logo-plate">
