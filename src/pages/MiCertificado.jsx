@@ -1,19 +1,16 @@
 // ══════════════════════════════════════════════════════════════════════
-// CERTIFICADO COMPASS (versión Apps Script / Excel)
+// CERTIFICADO DE PARTICIPACIÓN — PILOTO COMPASS IA RESPONSABLE
 // Colócalo en: src/front/pages/MiCertificado.jsx
-// No usa backend: arma el certificado con userData + la huella que le pases.
-// Solo botón de DESCARGA (sin LinkedIn, sin verificación).
-//
-// Requiere html2canvas (una sola vez):  npm install html2canvas
+// Logos desde /public:  logo6.png (arriba) · logo1.png (sello)
+// Usa Nombre_Completo. Solo botón de descarga.
+//   npm install html2canvas   (si no lo tienes)
 // ══════════════════════════════════════════════════════════════════════
 import React, { useRef } from "react";
 import html2canvas from "html2canvas";
 import "../Styles/miCertificado.css";
 
 const FASES = ["AUDITAR", "TRANSFORMAR", "LIDERAR", "ASEGURAR", "SOSTENER"];
-const PROGRAMA = "ATLAS Framework 2026 - Adopción Ética de IA";
 
-// Genera un código estable a partir del Teacher_Key (misma persona = mismo código)
 const generarCodigoCert = (key) => {
     const base = String(key || "ATLAS").toUpperCase();
     let hash = 0;
@@ -28,17 +25,19 @@ const generarCodigoCert = (key) => {
 export const MiCertificado = ({ userData, huella = 0, onVolver }) => {
     const certRef = useRef(null);
 
-    const nombre = userData?.Nombre_Completo || "Docente ATLAS";
-    // Si tu Excel trae un ID_Credencial lo usa; si no, genera uno estable
+    // ⬇ Nombre viene de la columna Nombre_Completo (NO del Teacher_Key)
+    const nombre = userData?.Nombre_Completo || "Participante COMPASS";
     const idCredencial = userData?.ID_Credencial || generarCodigoCert(userData?.Teacher_Key);
     const huellaFinal = Math.round(Number(huella) || 0);
     const fecha = new Date().toLocaleDateString("es-CO", {
         year: "numeric", month: "long", day: "numeric",
     });
 
-    const descargarImagen = async () => {
+    const descargar = async () => {
         if (!certRef.current) return;
-        const canvas = await html2canvas(certRef.current, { scale: 3, backgroundColor: null });
+        const canvas = await html2canvas(certRef.current, {
+            scale: 3, backgroundColor: "#ffffff", useCORS: true,
+        });
         const link = document.createElement("a");
         link.download = `Certificado-${idCredencial}.png`;
         link.href = canvas.toDataURL("image/png");
@@ -46,55 +45,78 @@ export const MiCertificado = ({ userData, huella = 0, onVolver }) => {
     };
 
     return (
-        <div className="cert-container">
+        <div className="cert-wrap">
             {onVolver && (
-                <button
-                    className="btn-back-atlas"
-                    onClick={onVolver}
-                    style={{ marginBottom: 16 }}
-                >
-                    ⬅ Volver
-                </button>
+                <button className="btn-back-atlas cert-back" onClick={onVolver}>⬅ Volver</button>
             )}
 
-            {/* ---- Tarjeta que se exporta a imagen ---- */}
+            {/* ---------- DIPLOMA (se exporta a PNG) ---------- */}
             <div className="cert-diploma" ref={certRef}>
-                <div className="cert-topbar" />
-                <div className="cert-brand">COMPASS</div>
-                <p className="cert-eyebrow">CERTIFICADO DE FINALIZACIÓN</p>
-                <h1 className="cert-nombre">{nombre}</h1>
-                <p className="cert-texto">ha completado exitosamente el programa</p>
-                <h2 className="cert-programa">{PROGRAMA}</h2>
+                {/* Cuñas decorativas de las esquinas */}
+                <span className="cert-wedge-gold tl" />
+                <span className="cert-wedge-gold br" />
+                <span className="cert-wedge tl" />
+                <span className="cert-wedge br" />
+
+                {/* Micro-textos de esquina */}
+                <div className="cert-corner tr">INSTITUCIONES<br />PERSONAS<br />COMUNIDADES<br />IMPACTO REAL</div>
+                <div className="cert-corner bl">CONOCIMIENTO<br />ACCIÓN<br />IMPACTO</div>
+                <div className="cert-corner br-text">JUNTOS<br />NAVEGAMOS<br />UN FUTURO<br />MEJOR</div>
+
+                {/* Logo superior (logo6.png) */}
+                <div className="cert-logo-plate">
+                    <img src="/logo6.png" alt="COMPASS" className="cert-logo-top" />
+                </div>
+                <div className="cert-logo-sub">— IA RESPONSABLE —</div>
+
+                <h1 className="cert-title">Certificado de participación</h1>
+                <p className="cert-subtitle">PILOTO COMPASS IA RESPONSABLE</p>
+
+                <div className="cert-otorgado"><span>OTORGADO A</span></div>
+                <h2 className="cert-name">{nombre}</h2>
+
+                <p className="cert-body">
+                    Por su compromiso y participación activa en el <strong>Piloto COMPASS IA Responsable</strong>,
+                    contribuyendo al desarrollo de una implementación ética, sostenible y centrada en las
+                    personas en instituciones educativas.
+                </p>
 
                 <div className="cert-fases">
-                    {FASES.map((f) => (
-                        <span key={f} className="cert-chip">{f}</span>
+                    {FASES.map((f, i) => (
+                        <React.Fragment key={f}>
+                            <span className="cert-fase">{f}</span>
+                            {i < FASES.length - 1 && <span className="cert-dot">·</span>}
+                        </React.Fragment>
                     ))}
                 </div>
 
-                <div className="cert-meta">
-                    <div>
-                        <span className="cert-meta-label">Huella COMPASS</span>
-                        <span className="cert-meta-val">{huellaFinal}/100</span>
+                {/* Fila de firma: fecha · sello · equipo */}
+                <div className="cert-signrow">
+                    <div className="cert-sign">
+                        <span className="cert-sign-val">{fecha}</span>
+                        <span className="cert-sign-lbl">CERTIFICADO EMITIDO EL DÍA</span>
                     </div>
-                    <div>
-                        <span className="cert-meta-label">Fecha</span>
-                        <span className="cert-meta-val">{fecha}</span>
+
+                    <div className="cert-seal">
+                        <img src="/logo1.png" alt="Sello COMPASS" className="cert-seal-img" />
+                    </div>
+
+                    <div className="cert-sign">
+                        <span className="cert-sign-val">Equipo COMPASS</span>
+                        <span className="cert-sign-lbl">IA RESPONSABLE</span>
                     </div>
                 </div>
 
-                <div className="cert-footer">
-                    <span className="cert-seal">✓</span>
-                    <div className="cert-footer-txt">
-                        <span>Credencial verificable</span>
-                        <span className="cert-id">{idCredencial}</span>
-                    </div>
+                {/* Datos que ya generábamos: huella + credencial */}
+                <div className="cert-meta-line">
+                    Huella COMPASS: <strong>{huellaFinal}/100</strong>
+                    &nbsp;·&nbsp; Credencial verificable: <strong>{idCredencial}</strong>
                 </div>
             </div>
 
-            {/* ---- Acción: solo descargar ---- */}
+            {/* ---------- Acción ---------- */}
             <div className="cert-acciones">
-                <button className="cert-btn cert-btn-download" onClick={descargarImagen}>
+                <button className="cert-btn cert-btn-download" onClick={descargar}>
                     ⬇ Descargar certificado
                 </button>
             </div>

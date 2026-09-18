@@ -108,11 +108,11 @@
 .cert-sign-lbl { color: #8a97af; letter-spacing: 2px; font-size: 10px; margin-top: 6px; }
 
 .cert-seal {
-    width: 96px; height: 96px; border-radius: 50%;
+    width: 132px; height: 132px; border-radius: 50%;
     border: 2px solid #c5a059; background: #fff;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.cert-seal-img { width: 64px; height: 64px; object-fit: contain; }
+.cert-seal-img { width: 104px; height: 104px; object-fit: contain; }
 
 .cert-meta-line {
     position: relative; z-index: 2;
