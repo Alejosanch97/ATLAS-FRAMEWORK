@@ -23,14 +23,14 @@
     box-shadow: 0 14px 40px rgba(15, 23, 42, 0.18);
 }
 
-/* Cuñas de esquina (dorada detrás, azul encima = doble línea) */
-.cert-wedge-gold, .cert-wedge { position: absolute; z-index: 0; }
-.cert-wedge-gold { width: 172px; height: 172px; background: #c5a059; }
-.cert-wedge      { width: 150px; height: 150px; background: #16233f; z-index: 1; }
-.cert-wedge-gold.tl { top: 0; left: 0;  clip-path: polygon(0 0, 100% 0, 0 100%); }
-.cert-wedge.tl      { top: 0; left: 0;  clip-path: polygon(0 0, 100% 0, 0 100%); }
-.cert-wedge-gold.br { bottom: 0; right: 0; clip-path: polygon(100% 100%, 100% 0, 0 100%); }
-.cert-wedge.br      { bottom: 0; right: 0; clip-path: polygon(100% 100%, 100% 0, 0 100%); }
+/* Cuñas de esquina (ahora dibujadas como SVG, evita bugs de clip-path al exportar) */
+.cert-corners-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
 
 /* Micro-textos de esquina */
 .cert-corner {

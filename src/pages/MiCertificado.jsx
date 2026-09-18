@@ -37,6 +37,7 @@ export const MiCertificado = ({ userData, huella = 0, onVolver }) => {
         if (!certRef.current) return;
         const canvas = await html2canvas(certRef.current, {
             scale: 3, backgroundColor: "#ffffff", useCORS: true,
+            foreignObjectRendering: true,
         });
         const link = document.createElement("a");
         link.download = `Certificado-${idCredencial}.png`;
@@ -52,11 +53,13 @@ export const MiCertificado = ({ userData, huella = 0, onVolver }) => {
 
             {/* ---------- DIPLOMA (se exporta a PNG) ---------- */}
             <div className="cert-diploma" ref={certRef}>
-                {/* Cuñas decorativas de las esquinas */}
-                <span className="cert-wedge-gold tl" />
-                <span className="cert-wedge-gold br" />
-                <span className="cert-wedge tl" />
-                <span className="cert-wedge br" />
+                {/* Cuñas decorativas de las esquinas (SVG, más seguro para exportar) */}
+                <svg className="cert-corners-svg" viewBox="0 0 920 560" preserveAspectRatio="none">
+                    <polygon points="0,0 172,0 0,172" fill="#c5a059" />
+                    <polygon points="0,0 150,0 0,150" fill="#16233f" />
+                    <polygon points="920,560 748,560 920,388" fill="#c5a059" />
+                    <polygon points="920,560 770,560 920,410" fill="#16233f" />
+                </svg>
 
                 {/* Micro-textos de esquina */}
                 <div className="cert-corner tr">INSTITUCIONES<br />PERSONAS<br />COMUNIDADES<br />IMPACTO REAL</div>
