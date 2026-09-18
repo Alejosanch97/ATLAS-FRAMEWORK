@@ -104,8 +104,8 @@ export const MiCertificado = ({ userData, huella = 0, onVolver }) => {
                     </div>
 
                     <div className="cert-sign">
-                        <span className="cert-sign-val">Equipo COMPASS</span>
-                        <span className="cert-sign-lbl">IA RESPONSABLE</span>
+                        <span className="cert-sign-val cert-signature">Felipe Cárdenas</span>
+                        <span className="cert-sign-lbl">EQUIPO COMPASS</span>
                     </div>
                 </div>
 

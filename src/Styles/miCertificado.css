@@ -105,6 +105,14 @@
     font-family: Georgia, serif; color: #16233f; font-size: 15px; font-weight: 700;
     border-top: 1px solid #b9c2d4; padding-top: 8px; width: 100%;
 }
+.cert-signature {
+    font-family: "Brush Script MT", "Segoe Script", "Lucida Handwriting", cursive;
+    font-style: italic;
+    font-size: 24px;
+    font-weight: 400;
+    color: #16233f;
+    padding-top: 2px;
+}
 .cert-sign-lbl { color: #8a97af; letter-spacing: 2px; font-size: 10px; margin-top: 6px; }
 
 .cert-seal {
