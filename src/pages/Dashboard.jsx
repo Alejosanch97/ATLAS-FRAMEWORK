@@ -18,14 +18,15 @@ import AnalisisLiderazgo from "./AnalisisLiderazgo";
 import FaseLiderar from "./FaseLiderar"; // Sin llaves si usaste export default
 import RetosLiderar from "./RetosLiderar";
 
-import FaseAsegurar from "./FaseAsegurar"; 
+import FaseAsegurar from "./FaseAsegurar";
 import TallerMejoraAsegurar from "./TallerMejoraAsegurar";
 
-import ModuloDirectivoEstrategico from "./ModuloDirectivoEstrategico"; 
+import ModuloDirectivoEstrategico from "./ModuloDirectivoEstrategico";
 
-import FaseSostener from "./FaseSostener"; 
+import FaseSostener from "./FaseSostener";
 import ModuloSostener from "./ModuloSostener";
 import ModuloSostenerDirectivo from "./ModuloSostenerDirectivo";
+import { MiCertificado } from "./MiCertificado";
 
 
 
@@ -44,9 +45,9 @@ export const Dashboard = ({ onLogout }) => {
     const [userSearchTerm, setUserSearchTerm] = useState("");
     const [isUserCardExpanded, setIsUserCardExpanded] = useState(true);
     const [compassTab, setCompassTab] = useState(0); // 0: 0-39, 1: 40-59, 2: 60-74, 3: 75-89, 4: 90-100
-    
+
     // --- NUEVO ESTADO PARA FILTRADO POR FASE ---
-    const [filterPhase, setFilterPhase] = useState(""); 
+    const [filterPhase, setFilterPhase] = useState("");
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [misRetos, setMisRetos] = useState([]);
@@ -213,7 +214,7 @@ export const Dashboard = ({ onLogout }) => {
                 // --- 1. AUDITAR (20%) - LÓGICA SIMPLIFICADA ---
                 const ID_DOCENTE = "FORM-1770684713222";
                 const ID_DIRECTIVO = "FORM-1770695655576";
-                
+
                 // Usamos Optional Chaining (?.) por seguridad extra
                 const idBuscado = userData?.Rol === "DIRECTIVO" ? ID_DIRECTIVO : ID_DOCENTE;
 
@@ -446,7 +447,7 @@ export const Dashboard = ({ onLogout }) => {
             case "fase_transformar": return { title: "Fase: Transformar", subtitle: "Estrategia Pedagógica UNESCO" };
             case "ejecutar_reto": return { title: `Mision ${activeRetoId}`, subtitle: "Consignación de Evidencia Pedagógica" };
             case "fase_auditar": return { title: "Fase: Auditar", subtitle: "Gobernanza y Sentido Crítico de la IA" };
-            case "responder_fase": 
+            case "responder_fase":
             case "fase_liderar": return { title: "Fase: Liderar", subtitle: "Gobernanza y Ética de la IA" };
             case "retos_liderar": return { title: `Misión`, subtitle: "Auditoría de Responsabilidad Pedagógica" };
             case "fase_asegurar":
@@ -457,6 +458,8 @@ export const Dashboard = ({ onLogout }) => {
                 return { title: "Fase: Sostener", subtitle: "S - Sostener: Radar de Madurez y Diario Reflexivo" };
             case "modulo_sostener_directivo":
                 return { title: "Panel de Impacto", subtitle: "S - Sostener: Proyección y Sostenibilidad Institucional" };
+            case "modulo_certificado":
+                return { title: "Mi Certificado COMPASS", subtitle: "Credencial verificable de finalización" };
             case "analisis_liderazgo":
                 return {
                     title: "Dashboard de Gobernanza",
@@ -478,10 +481,10 @@ export const Dashboard = ({ onLogout }) => {
     const headerContent = getHeaderContent();
 
     const filteredUsers = useMemo(() => {
-        return allUsers.filter(u => 
-            u.Teacher_Key !== userData?.Teacher_Key && 
-            (u.Nombre_Completo?.toLowerCase().includes(userSearchTerm.toLowerCase()) || 
-             u.Teacher_Key?.toLowerCase().includes(userSearchTerm.toLowerCase()))
+        return allUsers.filter(u =>
+            u.Teacher_Key !== userData?.Teacher_Key &&
+            (u.Nombre_Completo?.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+                u.Teacher_Key?.toLowerCase().includes(userSearchTerm.toLowerCase()))
         );
     }, [allUsers, userSearchTerm, userData]);
 
@@ -583,6 +586,10 @@ footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de
 
     // 2. Ahora que sabemos que userData EXISTE, calculamos los datos del compass
     const currentCompass = getCompassData();
+
+    // --- CERTIFICADO: usa la huella real de tu Excel (Huella_IA_Total); si no, la local ---
+    const huellaCertificado = Number(userData?.Huella_IA_Total ?? huellaPuntaje) || 0;
+    const certificadoListo = huellaCertificado >= 80; // baja este 80 si tu huella usa otra escala
 
     return (
         <div className={`atlas-dashboard-layout ${isMobileMenuOpen ? 'mobile-nav-open' : ''}`}>
@@ -827,6 +834,33 @@ footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de
 
                 {activeTab === "overview" && (
                     <section className="dashboard-grid">
+                        {/* CARD: CERTIFICADO DISPONIBLE (solo si terminó) */}
+                        {certificadoListo && (
+                            <div className="info-card wide-card" style={{
+                                background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+                                color: "#fff", textAlign: "center", padding: "28px",
+                                border: "1px solid rgba(197,160,89,0.35)"
+                            }}>
+                                <div style={{ fontSize: "2.4rem", marginBottom: "8px" }}>🎓</div>
+                                <h2 style={{ color: "#fff", margin: "0 0 6px" }}>
+                                    ¡Completaste el programa COMPASS!
+                                </h2>
+                                <p style={{ color: "#e7d9b8", margin: "0 0 18px", fontSize: "0.9rem" }}>
+                                    Alcanzaste una Huella de {Math.round(huellaCertificado)}/100. Tu certificado está listo para descargar.
+                                </p>
+                                <button
+                                    onClick={() => switchTab("modulo_certificado")}
+                                    style={{
+                                        padding: "12px 28px", background: "#c5a059", color: "#0f172a",
+                                        border: "none", borderRadius: "10px", cursor: "pointer",
+                                        fontWeight: 800, fontSize: "0.95rem"
+                                    }}
+                                >
+                                    Ver mi certificado →
+                                </button>
+                            </div>
+                        )}
+
                         {/* NUEVA CARD: ¿QUÉ ES EL COMPASS DE IA? */}
                         <div className={`info-card wide-card compass-explainer-card ${!isCompassInfoExpanded ? 'collapsed' : ''}`}>
                             <div
@@ -1171,7 +1205,7 @@ footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de
                                 </div>
                             </div>
                         )}
-  
+
                     </section>
                 )}
 
@@ -1284,7 +1318,7 @@ footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de
                 {activeTab === "formularios" && <Formularios userData={userData} isSyncing={isSyncing} setIsSyncing={setIsSyncing} API_URL={API_URL} />}
                 {activeTab === "explorador" && <ResponderFormularios userData={userData} isSyncing={isSyncing} setIsSyncing={setIsSyncing} API_URL={API_URL} />}
                 {activeTab === "analisis" && <Analisis userData={userData} API_URL={API_URL} />}
-                
+
                 {/* RENDERIZADO DE LA NUEVA FASE AUDITAR */}
                 {/* RENDERIZADO DE LA NUEVA FASE AUDITAR (Capa 1) */}
                 {activeTab === "fase_auditar" && (
@@ -1434,22 +1468,22 @@ footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de
                 )}
 
                 {/* --- SECCIÓN S - SOSTENER (SOLUCIÓN AL NOT FOUND) --- */}
-                
+
                 {/* 1. Vista principal de la fase para Docentes */}
                 {activeTab === "fase_sostener" && (
-                    <FaseSostener 
+                    <FaseSostener
                         userData={userData}
                         API_URL={API_URL}
                         onNavigate={switchTab}
                         onRefreshProgreso={handleManualRefresh}
-                        datosExistentes={datosSostener} 
+                        datosExistentes={datosSostener}
                         existingResponses={userResponses}
                     />
                 )}
 
                 {/* 2. El Radar y la Huella (Módulo detallado) */}
                 {activeTab === "modulo_sostener" && (
-                    <ModuloSostener 
+                    <ModuloSostener
                         userData={userData}
                         API_URL={API_URL}
                         onNavigate={switchTab}
@@ -1459,11 +1493,20 @@ footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de
 
                 {/* 3. Vista para Directivos (Impacto Institucional) */}
                 {activeTab === "modulo_sostener_directivo" && (
-                    <ModuloSostenerDirectivo 
+                    <ModuloSostenerDirectivo
                         userData={userData}
                         API_URL={API_URL}
                         onNavigate={switchTab}
                         datosSostener={datosSostenerDir}
+                    />
+                )}
+
+                {/* --- CERTIFICADO DE FINALIZACIÓN --- */}
+                {activeTab === "modulo_certificado" && (
+                    <MiCertificado
+                        userData={userData}
+                        huella={huellaCertificado}
+                        onVolver={() => switchTab("overview")}
                     />
                 )}
 
