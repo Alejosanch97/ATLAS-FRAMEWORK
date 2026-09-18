@@ -1,79 +1,144 @@
-/* Certificado del alumno + acción — Paleta ATLAS (azul · dorado · blanco) */
-.cert-container {
-    max-width: 640px;
-    margin: 24px auto;
+/* ===== CERTIFICADO DE PARTICIPACIÓN — Paleta ATLAS (azul marino · dorado · blanco) ===== */
+.cert-wrap {
+    max-width: 980px;
+    margin: 16px auto;
+    padding: 0 12px;
     font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
-.cert-loading { text-align: center; color: #64748b; padding: 40px; }
+.cert-back { margin-bottom: 14px; }
 
-/* ---- Diploma (se exporta a PNG) ---- */
+/* ---- Diploma horizontal ---- */
 .cert-diploma {
     position: relative;
-    background: linear-gradient(155deg, #ffffff 0%, #fbf7ee 100%);
-    border: 1px solid #ece1c6;
-    border-radius: 18px;
-    padding: 40px 44px 32px;
+    width: 920px;
+    max-width: 100%;
+    margin: 0 auto;
+    background: linear-gradient(160deg, #ffffff 0%, #f5f7fc 55%, #eceff7 100%);
+    border: 2px solid #c5a059;
+    border-radius: 6px;
+    padding: 52px 72px 40px;
     text-align: center;
-    box-shadow: 0 10px 34px rgba(15, 23, 42, 0.12);
     overflow: hidden;
+    box-sizing: border-box;
+    box-shadow: 0 14px 40px rgba(15, 23, 42, 0.18);
 }
-.cert-topbar {
-    position: absolute; top: 0; left: 0; right: 0; height: 6px;
-    background: linear-gradient(90deg, #e0c47e, #c5a059, #9c7a34);
+
+/* Cuñas de esquina (dorada detrás, azul encima = doble línea) */
+.cert-wedge-gold, .cert-wedge { position: absolute; z-index: 0; }
+.cert-wedge-gold { width: 172px; height: 172px; background: #c5a059; }
+.cert-wedge      { width: 150px; height: 150px; background: #16233f; z-index: 1; }
+.cert-wedge-gold.tl { top: 0; left: 0;  clip-path: polygon(0 0, 100% 0, 0 100%); }
+.cert-wedge.tl      { top: 0; left: 0;  clip-path: polygon(0 0, 100% 0, 0 100%); }
+.cert-wedge-gold.br { bottom: 0; right: 0; clip-path: polygon(100% 100%, 100% 0, 0 100%); }
+.cert-wedge.br      { bottom: 0; right: 0; clip-path: polygon(100% 100%, 100% 0, 0 100%); }
+
+/* Micro-textos de esquina */
+.cert-corner {
+    position: absolute; z-index: 3;
+    font-size: 9px; letter-spacing: 2px; line-height: 1.9; font-weight: 700;
+    color: #9aa6bd;
 }
-.cert-brand {
-    font-weight: 700; letter-spacing: 4px; color: #c5a059;
-    font-size: 15px; margin-bottom: 20px;
+.cert-corner.tr { top: 24px; right: 30px; text-align: right; }
+.cert-corner.bl { bottom: 24px; left: 30px; text-align: left; }
+.cert-corner.br-text { bottom: 22px; right: 26px; text-align: right; color: #e9edf6; } /* sobre la cuña azul */
+
+/* Logo superior (logo6.png es blanco → va sobre placa azul) */
+.cert-logo-plate {
+    position: relative; z-index: 2;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #16233f; border-radius: 12px; padding: 12px 26px; margin-bottom: 8px;
 }
-.cert-eyebrow {
-    font-size: 11px; letter-spacing: 2px; color: #94a3b8;
-    text-transform: uppercase; margin-bottom: 6px;
+.cert-logo-top { height: 46px; width: auto; object-fit: contain; display: block; }
+.cert-logo-sub {
+    position: relative; z-index: 2;
+    color: #b08a34; letter-spacing: 5px; font-size: 12px; font-weight: 700; margin-bottom: 14px;
 }
-.cert-nombre {
-    font-size: 28px; color: #0f172a; margin: 4px 0 10px; font-weight: 700;
+
+/* Títulos */
+.cert-title {
+    position: relative; z-index: 2;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 46px; color: #16233f; font-weight: 700; margin: 4px 0 2px; line-height: 1.05;
 }
-.cert-texto { font-size: 13px; color: #64748b; margin-bottom: 4px; }
-.cert-programa {
-    font-size: 18px; color: #b08a34; margin: 4px 0 18px; font-weight: 600; line-height: 1.35;
+.cert-subtitle {
+    position: relative; z-index: 2;
+    color: #b08a34; letter-spacing: 6px; font-size: 16px; font-weight: 700; margin: 0 0 16px;
 }
+
+.cert-otorgado {
+    position: relative; z-index: 2;
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    color: #8a97af; letter-spacing: 3px; font-size: 11px; margin: 4px 0;
+}
+.cert-otorgado::before, .cert-otorgado::after {
+    content: ""; height: 1px; width: 90px; background: #c9d2e2; display: inline-block;
+}
+.cert-name {
+    position: relative; z-index: 2;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 34px; color: #16233f; font-weight: 700; margin: 12px 0 2px;
+    border-bottom: 1px solid #c9d2e2; display: inline-block; padding: 0 34px 12px;
+}
+
+.cert-body {
+    position: relative; z-index: 2;
+    max-width: 640px; margin: 16px auto 12px;
+    color: #425069; font-size: 14px; line-height: 1.7;
+}
+.cert-body strong { color: #16233f; }
 
 .cert-fases {
-    display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 20px;
+    position: relative; z-index: 2;
+    display: flex; align-items: center; justify-content: center; gap: 9px; flex-wrap: wrap;
+    margin: 8px 0 20px;
 }
-.cert-chip {
-    background: #f7f1e3; color: #a07d2f; border-radius: 999px;
-    padding: 3px 11px; font-size: 11px; font-weight: 600; letter-spacing: .5px;
-}
+.cert-fase { color: #33507a; letter-spacing: 2px; font-size: 13px; font-weight: 700; }
+.cert-dot { color: #c5a059; font-weight: 700; }
 
-.cert-meta {
-    display: flex; justify-content: center; gap: 48px;
-    padding: 16px 0; border-top: 1px solid #eef1f6;
-    border-bottom: 1px solid #eef1f6; margin-bottom: 18px;
+/* Fila fecha · sello · equipo */
+.cert-signrow {
+    position: relative; z-index: 2;
+    display: flex; align-items: flex-end; justify-content: center; gap: 36px; margin-top: 4px;
 }
-.cert-meta div { display: flex; flex-direction: column; gap: 2px; }
-.cert-meta-label { font-size: 10px; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase; }
-.cert-meta-val { font-size: 16px; color: #0f172a; font-weight: 700; }
+.cert-sign { display: flex; flex-direction: column; align-items: center; min-width: 190px; }
+.cert-sign-val {
+    font-family: Georgia, serif; color: #16233f; font-size: 15px; font-weight: 700;
+    border-top: 1px solid #b9c2d4; padding-top: 8px; width: 100%;
+}
+.cert-sign-lbl { color: #8a97af; letter-spacing: 2px; font-size: 10px; margin-top: 6px; }
 
-.cert-footer { display: flex; align-items: center; justify-content: center; gap: 10px; }
 .cert-seal {
-    width: 30px; height: 30px; border-radius: 50%;
-    background: #c5a059; color: #0f172a; font-size: 15px; font-weight: 800;
-    display: flex; align-items: center; justify-content: center;
+    width: 96px; height: 96px; border-radius: 50%;
+    border: 2px solid #c5a059; background: #fff;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.cert-footer-txt { display: flex; flex-direction: column; text-align: left; }
-.cert-footer-txt span:first-child { font-size: 12px; color: #64748b; }
-.cert-id { font-size: 12px; font-weight: 700; color: #b08a34; letter-spacing: 1px; }
+.cert-seal-img { width: 64px; height: 64px; object-fit: contain; }
+
+.cert-meta-line {
+    position: relative; z-index: 2;
+    margin-top: 16px; color: #8a97af; font-size: 11px; letter-spacing: .4px;
+}
+.cert-meta-line strong { color: #b08a34; }
 
 /* ---- Botón ---- */
 .cert-acciones {
-    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 22px;
+    display: flex; justify-content: center; margin-top: 22px;
 }
 .cert-btn {
     border: none; cursor: pointer; border-radius: 10px;
-    padding: 11px 18px; font-size: 14px; font-weight: 600;
+    padding: 12px 22px; font-size: 14px; font-weight: 700;
     display: inline-flex; align-items: center; gap: 8px;
     transition: transform .1s ease, box-shadow .2s ease;
 }
 .cert-btn:active { transform: translateY(1px); }
-.cert-btn-download { background: #1e293b; color: #fff; }
-.cert-btn-download:hover { box-shadow: 0 6px 18px rgba(30,41,59,.25); }
+.cert-btn-download { background: #16233f; color: #fff; }
+.cert-btn-download:hover { box-shadow: 0 6px 18px rgba(22,35,63,.3); }
+
+/* ---- Responsive (para pantallas chicas) ---- */
+@media (max-width: 720px) {
+    .cert-diploma { padding: 40px 26px 30px; }
+    .cert-title { font-size: 32px; }
+    .cert-name { font-size: 26px; }
+    .cert-signrow { flex-direction: column; gap: 18px; }
+    .cert-corner { display: none; }
+}
