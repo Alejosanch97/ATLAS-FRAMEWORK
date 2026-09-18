@@ -245,7 +245,7 @@ export const Dashboard = ({ onLogout }) => {
 
                                 // --- TOTAL FINAL ---
                 // + 45 puntos base para el piloto (con tope en 100)
-                const total = Math.min(100, Math.round(pAuditar + pLiderar + pTransformar + 45));
+                const total = Math.min(100, Math.round(pAuditar + pLiderar + pTransformar + 49));
 
                 console.log("=== CALCULO HUELLA OK ===");
                 console.log(`Buscando ID: ${idBuscado} | Puntos: ${puntosFormulario}`);
