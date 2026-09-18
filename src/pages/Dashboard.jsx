@@ -588,9 +588,9 @@ footer: "Eres elegible para solicitar la Auditoría ATLAS en aula, un proceso de
     // 2. Ahora que sabemos que userData EXISTE, calculamos los datos del compass
     const currentCompass = getCompassData();
 
-    // --- CERTIFICADO: usa la huella real de tu Excel (Huella_IA_Total); si no, la local ---
-    const huellaCertificado = Number(userData?.Huella_IA_Total ?? huellaPuntaje) || 0;
-    const certificadoListo = huellaCertificado >= 80; // baja este 80 si tu huella usa otra escala
+    // --- CERTIFICADO: en el piloto usamos la huella que se ve en pantalla (huellaPuntaje) ---
+    const huellaCertificado = huellaPuntaje;
+    const certificadoListo = huellaCertificado >= 75;
 
     return (
         <div className={`atlas-dashboard-layout ${isMobileMenuOpen ? 'mobile-nav-open' : ''}`}>
